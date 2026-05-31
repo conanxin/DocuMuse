@@ -10,7 +10,8 @@ export async function POST() {
     return NextResponse.json({
       ok: true,
       model: result.model,
-      message: result.data.message || "连接成功"
+      provider: result.provider,
+      message: result.message
     });
   } catch (error) {
     const publicError = toPublicLlmError(error);

@@ -11,6 +11,11 @@ type ChatCompletionOptions = {
   maxTokens?: number;
 };
 
+type ChatCompletionPayload = {
+  choices?: Array<{ message?: { content?: string } }>;
+  model?: string;
+};
+
 export class LlmConfigError extends Error {}
 export class LlmResponseError extends Error {}
 
@@ -26,6 +31,13 @@ export function stripReasoningContent(content: string) {
 function extractJsonObject(content: string) {
   const withoutReasoning = stripReasoningContent(content);
   if (withoutReasoning.startsWith("{") && withoutReasoning.endsWith("}")) return withoutReasoning;
+
+  const fenced = withoutReasoning.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenced?.[1]) {
+    const fencedContent = fenced[1].trim();
+    if (fencedContent.startsWith("{") && fencedContent.endsWith("}")) return fencedContent;
+  }
+
   const match = withoutReasoning.match(/\{[\s\S]*\}/);
   if (!match) {
     throw new LlmResponseError("模型没有返回 JSON 对象。");
@@ -42,7 +54,7 @@ function normalizeTemperature(config: ResolvedLlmConfig, requested?: number) {
   return temperature;
 }
 
-function buildRequestBody(config: ResolvedLlmConfig, options: ChatCompletionOptions) {
+function buildRequestBody(config: ResolvedLlmConfig, options: ChatCompletionOptions, expectsJson: boolean) {
   const baseBody = {
     model: config.model,
     messages: options.messages,
@@ -59,7 +71,7 @@ function buildRequestBody(config: ResolvedLlmConfig, options: ChatCompletionOpti
   return {
     ...baseBody,
     max_tokens: options.maxTokens ?? 4000,
-    response_format: { type: "json_object" }
+    ...(expectsJson ? { response_format: { type: "json_object" } } : {})
   };
 }
 
@@ -74,7 +86,7 @@ function mapProviderError(status: number, raw: string, provider: ResolvedLlmConf
   return `LLM 请求失败：HTTP ${status} ${raw.slice(0, 200)}`;
 }
 
-export async function createJsonChatCompletion<T>(options: ChatCompletionOptions): Promise<{ data: T; model: string }> {
+async function requestChatCompletion(options: ChatCompletionOptions, expectsJson: boolean) {
   const config = await resolveLlmConfig();
   if (!config.apiKey) {
     throw new LlmConfigError("缺少 API Key，请在 API 设置中保存密钥，或在 .env.local 中配置 OPENAI_API_KEY。");
@@ -90,7 +102,7 @@ export async function createJsonChatCompletion<T>(options: ChatCompletionOptions
         Authorization: `Bearer ${config.apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(buildRequestBody(config, options)),
+      body: JSON.stringify(buildRequestBody(config, options, expectsJson)),
       signal: controller.signal
     });
 
@@ -99,7 +111,7 @@ export async function createJsonChatCompletion<T>(options: ChatCompletionOptions
       throw new LlmResponseError(mapProviderError(response.status, raw, config.provider));
     }
 
-    let payload: { choices?: Array<{ message?: { content?: string } }>; model?: string };
+    let payload: ChatCompletionPayload;
     try {
       payload = JSON.parse(raw);
     } catch (error) {
@@ -111,15 +123,11 @@ export async function createJsonChatCompletion<T>(options: ChatCompletionOptions
       throw new LlmResponseError("LLM 响应中没有 message content。");
     }
 
-    try {
-      return {
-        data: JSON.parse(extractJsonObject(content)) as T,
-        model: payload.model || config.model
-      };
-    } catch (error) {
-      if (error instanceof LlmResponseError) throw error;
-      throw new LlmResponseError(`模型返回的 JSON 无法解析：${getShortDetail(error)}`);
-    }
+    return {
+      content,
+      model: payload.model || config.model,
+      provider: config.provider
+    };
   } catch (error) {
     if (error instanceof LlmConfigError || error instanceof LlmResponseError) throw error;
     if (error instanceof Error && error.name === "AbortError") {
@@ -131,15 +139,51 @@ export async function createJsonChatCompletion<T>(options: ChatCompletionOptions
   }
 }
 
+export async function chatCompletionText(options: ChatCompletionOptions) {
+  const result = await requestChatCompletion(options, false);
+  const text = stripReasoningContent(result.content);
+  if (!text) {
+    throw new LlmResponseError("模型返回为空，请检查模型名或服务状态。");
+  }
+
+  return {
+    text,
+    model: result.model,
+    provider: result.provider
+  };
+}
+
+export async function chatCompletionJson<T>(options: ChatCompletionOptions): Promise<{ data: T; model: string }> {
+  const result = await requestChatCompletion(options, true);
+
+  try {
+    return {
+      data: JSON.parse(extractJsonObject(result.content)) as T,
+      model: result.model
+    };
+  } catch (error) {
+    if (error instanceof LlmResponseError) throw error;
+    throw new LlmResponseError(`模型返回的 JSON 无法解析：${getShortDetail(error)}`);
+  }
+}
+
+export const createJsonChatCompletion = chatCompletionJson;
+
 export async function testLlmConnection() {
-  return createJsonChatCompletion<{ message: string }>({
+  const result = await chatCompletionText({
     messages: [
-      { role: "system", content: "Return JSON only." },
-      { role: "user", content: "Return {\"message\":\"连接成功\"}." }
+      { role: "system", content: "You are a connection test endpoint. Reply with plain text only." },
+      { role: "user", content: "Reply with OK only." }
     ],
-    maxTokens: 40,
+    maxTokens: 32,
     temperature: 0
   });
+
+  return {
+    model: result.model,
+    provider: result.provider,
+    message: "连接成功"
+  };
 }
 
 export function toPublicLlmError(error: unknown) {

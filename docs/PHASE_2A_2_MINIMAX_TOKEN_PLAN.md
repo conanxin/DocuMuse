@@ -43,6 +43,14 @@ Anthropic-compatible MiniMax mode is not implemented in this phase.
 
 MiniMax responses may include `<think>...</think>` reasoning blocks. DocuMuse strips these blocks before JSON parsing, so reasoning content is not shown in the UI or saved to document JSON.
 
+## Connection Test vs Analysis
+
+The API Settings connection test only verifies that the configured provider, Base URL, key, and model can return non-empty text. It does not require the model to return JSON.
+
+Document analysis still requires structured JSON because the workspace panels need summary, translation, section analysis, and creative output fields. If the model returns plain text during analysis, DocuMuse reports a clear JSON parsing error and does not save the invalid content.
+
+For MiniMax responses, DocuMuse removes `<think>...</think>` content before checking test output or parsing analysis JSON.
+
 ## Security
 
 - The full Token Plan Key is stored only in local server config: `data/settings/llm-config.json`.
