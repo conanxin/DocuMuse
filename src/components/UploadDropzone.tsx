@@ -44,6 +44,19 @@ type UploadResponse = {
   error?: string;
 };
 
+async function parseUploadResponse(response: Response): Promise<UploadResponse> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    return (await response.json()) as UploadResponse;
+  }
+
+  const text = await response.text();
+  return {
+    ok: false,
+    error: text ? `上传接口返回了非 JSON 响应：${text.slice(0, 120)}` : "上传接口返回了非 JSON 响应。"
+  };
+}
+
 export function UploadDropzone() {
   const router = useRouter();
   const [state, setState] = useState<UploadState>("empty");
@@ -91,7 +104,7 @@ export function UploadDropzone() {
         method: "POST",
         body: formData
       });
-      const payload = (await response.json()) as UploadResponse;
+      const payload = await parseUploadResponse(response);
 
       if (!response.ok || !payload.ok || !payload.redirectUrl) {
         throw new Error(payload.error || "上传失败，请稍后重试。");

@@ -1,27 +1,28 @@
 import { randomUUID } from "node:crypto";
-import { PDFParse } from "pdf-parse";
 import { NextResponse } from "next/server";
 import { generateSimpleAnalysis } from "@/lib/simpleAnalysis";
 import { sanitizePdfFilename, saveParsedDocument, saveUploadedPdf } from "@/lib/documentStorage";
+import { extractPdfText } from "@/lib/pdfExtractor";
 import type { ParsedDocument } from "@/lib/documentTypes";
 
 export const runtime = "nodejs";
 
-function errorResponse(message: string, status = 400) {
-  return NextResponse.json({ ok: false, error: message }, { status });
+function getShortDetail(error: unknown) {
+  if (error instanceof Error) {
+    return error.message.slice(0, 300);
+  }
+  return String(error).slice(0, 300);
 }
 
-async function extractPdfText(buffer: Buffer) {
-  const parser = new PDFParse({ data: buffer });
-  try {
-    const result = await parser.getText();
-    return {
-      text: result.text.trim(),
-      pageCount: result.total ?? result.pages?.length ?? 0
-    };
-  } finally {
-    await parser.destroy();
-  }
+function errorResponse(message: string, status = 400, detail?: unknown) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: message,
+      detail: process.env.NODE_ENV === "development" && detail ? getShortDetail(detail) : undefined
+    },
+    { status }
+  );
 }
 
 export async function POST(request: Request) {
@@ -33,11 +34,12 @@ export async function POST(request: Request) {
       return errorResponse("未选择文件。");
     }
 
-    const safeFilename = sanitizePdfFilename(file.name);
-    const isPdf = file.type === "application/pdf" || safeFilename.toLowerCase().endsWith(".pdf");
+    const originalName = file.name || "";
+    const isPdf = file.type === "application/pdf" || originalName.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
       return errorResponse("仅支持上传 PDF 文件。");
     }
+    const safeFilename = sanitizePdfFilename(originalName);
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -51,12 +53,12 @@ export async function POST(request: Request) {
     let parsed;
     try {
       parsed = await extractPdfText(buffer);
-    } catch {
-      return errorResponse("PDF 解析失败，请确认文件未加密且格式有效。", 422);
+    } catch (error) {
+      return errorResponse("PDF 解析失败，请确认文件未加密且格式有效。", 422, error);
     }
 
     if (!parsed.text) {
-      return errorResponse("PDF 文本为空，暂时无法生成工作台。", 422);
+      return errorResponse("当前版本暂不支持 OCR，请上传包含可复制文本的 PDF。", 422);
     }
 
     const document: ParsedDocument = {
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
       status: "parsed",
       text: parsed.text,
       pageCount: parsed.pageCount,
-      metadata: {},
+      metadata: parsed.metadata ? { pdfParse: parsed.metadata } : {},
       analysis: generateSimpleAnalysis(parsed.text)
     };
 
@@ -79,7 +81,7 @@ export async function POST(request: Request) {
       documentId: id,
       redirectUrl: `/documents/${id}`
     });
-  } catch {
-    return errorResponse("上传或本地写入失败，请稍后重试。", 500);
+  } catch (error) {
+    return errorResponse("上传或本地写入失败，请稍后重试。", 500, error);
   }
 }
