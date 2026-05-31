@@ -19,6 +19,20 @@ export type ParsedDocument = {
   status: "parsed";
   text: string;
   pageCount: number;
+  uploadPath?: string;
   metadata: Record<string, unknown>;
   analysis: DocumentAnalysis;
+};
+
+export type DocumentListItem = {
+  id: string;
+  title: string;
+  filename: string;
+  fileType: string;
+  createdAt: string;
+  status: string;
+  pageCount: number;
+  textLength: number;
+  documentType: string;
+  language: string;
 };

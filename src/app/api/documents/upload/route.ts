@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { generateSimpleAnalysis } from "@/lib/simpleAnalysis";
-import { sanitizePdfFilename, saveParsedDocument, saveUploadedPdf } from "@/lib/documentStorage";
+import { sanitizePdfFilename, saveParsedDocument, saveUploadedPdf, toProjectRelativePath } from "@/lib/documentStorage";
 import { extractPdfText } from "@/lib/pdfExtractor";
 import type { ParsedDocument } from "@/lib/documentTypes";
 
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     const id = `doc_${randomUUID()}`;
-    await saveUploadedPdf(id, safeFilename, buffer);
+    const uploadPath = await saveUploadedPdf(id, safeFilename, buffer);
 
     let parsed;
     try {
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
       status: "parsed",
       text: parsed.text,
       pageCount: parsed.pageCount,
+      uploadPath: toProjectRelativePath(uploadPath),
       metadata: parsed.metadata ? { pdfParse: parsed.metadata } : {},
       analysis: generateSimpleAnalysis(parsed.text)
     };

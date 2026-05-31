@@ -99,3 +99,19 @@ Mock 交互包括：
 - 文档问答追加用户消息和 mock 回复。
 - API 设置保存到 localStorage。
 - API 测试连接 mock 成功 / 失败。
+
+## Phase 1.5 本地文档库
+
+Phase 1.5 在不接数据库和 LLM 的前提下，补齐了本地文档管理闭环：
+
+- 首页最近文档优先读取 `GET /api/documents` 返回的真实本地文档。
+- 如果没有真实文档，继续展示 mock 示例文档。
+- 点击真实文档进入 `/documents/{id}`。
+- 真实文档的原文页展示文本长度、页数、创建时间和可滚动提取文本。
+- 支持 `DELETE /api/documents/[id]` 删除本地解析 JSON 和上传 PDF。
+- 翻译、图谱、创意输出、聊天仍显示 mock / 占位内容，并提示将在 LLM 接入后生成真实内容。
+
+本地文件位置：
+
+- PDF：`data/uploads/`
+- document JSON：`data/documents/`

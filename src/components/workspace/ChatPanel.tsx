@@ -12,7 +12,7 @@ type ChatMessage = {
   source?: string;
 };
 
-export function ChatPanel() {
+export function ChatPanel({ isPlaceholder = false }: { isPlaceholder?: boolean }) {
   const [messages, setMessages] = useState<ChatMessage[]>(mockChatMessages);
   const [input, setInput] = useState("");
 
@@ -40,6 +40,7 @@ export function ChatPanel() {
     <aside className="flex min-h-0 flex-col border-l border-slate-200 bg-white">
       <div className="border-b border-slate-200 p-4">
         <h2 className="font-bold text-slate-950">与文档对话</h2>
+        {isPlaceholder && <p className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-700">此模块将在 LLM 接入后生成真实内容。</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           {quickQuestions.map((question) => (
             <button key={question} onClick={() => send(question)} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700">

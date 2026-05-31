@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
 import { StatusBadge } from "../StatusBadge";
 
-export function WorkspaceTopbar({ title = "demo-interview.pdf" }: { title?: string }) {
+export function WorkspaceTopbar({ title = "demo-interview.pdf", status = "已解析" }: { title?: string; status?: "已解析" | "解析中" | "失败" }) {
   const [apiOpen, setApiOpen] = useState(false);
 
   return (
@@ -14,7 +14,7 @@ export function WorkspaceTopbar({ title = "demo-interview.pdf" }: { title?: stri
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold text-slate-950">{title}</h1>
-            <StatusBadge status="已解析" />
+            <StatusBadge status={status} />
           </div>
           <p className="mt-1 text-sm text-slate-500">AI 文档阅读工作台 Demo</p>
         </div>
