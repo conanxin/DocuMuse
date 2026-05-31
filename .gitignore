@@ -9,4 +9,9 @@ coverage
 .DS_Store
 .tools
 .gitconfig-codex
+.npm-cache
 documuse-ui-demo.zip
+data/uploads/*
+data/documents/*
+!data/uploads/.gitkeep
+!data/documents/.gitkeep

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, FileUp, Loader2, RefreshCw } from "lucide-react";
 
@@ -8,65 +8,112 @@ type UploadState = "empty" | "dragging" | "uploading" | "extracting" | "analyzin
 
 const stateCopy: Record<UploadState, { title: string; subtitle: string }> = {
   empty: {
-    title: "拖入 PDF / EPUB / 文档",
-    subtitle: "上传后自动解析、翻译、摘要、问答与多模态生成"
+    title: "拖入 PDF 文档",
+    subtitle: "上传后将在本地保存 PDF、提取文本，并生成可交互的文档工作台。"
   },
   dragging: {
     title: "松开即可开始上传",
-    subtitle: "DocuMuse 会为你生成一个可交互的文档工作台"
+    subtitle: "DocuMuse 会在本地解析 PDF，不会上传到外部服务。"
   },
   uploading: {
     title: "正在上传文档",
-    subtitle: "Demo 使用模拟进度，不会把文件上传到云端"
+    subtitle: "正在把 PDF 发送到本地解析接口。"
   },
   extracting: {
     title: "正在提取文本",
-    subtitle: "模拟解析 PDF、EPUB 和文档中的正文结构"
+    subtitle: "正在读取 PDF 文本内容，请稍等。"
   },
   analyzing: {
     title: "正在生成工作台",
-    subtitle: "准备摘要、翻译、分段分析、图谱和问答视图"
+    subtitle: "正在根据提取文本生成占位摘要、观点和分段信息。"
   },
   done: {
     title: "工作台已生成",
-    subtitle: "demo-interview.pdf 已准备好，可以进入文档工作台"
+    subtitle: "即将进入真实文档工作台。"
   },
   error: {
     title: "解析失败",
-    subtitle: "模拟错误：文档页数过多或文件格式暂不支持"
+    subtitle: "请确认上传的是可解析的 PDF 文件。"
   }
 };
 
+type UploadResponse = {
+  ok: boolean;
+  documentId?: string;
+  redirectUrl?: string;
+  error?: string;
+};
+
 export function UploadDropzone() {
+  const router = useRouter();
   const [state, setState] = useState<UploadState>("empty");
   const [progress, setProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [lastFile, setLastFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const simulateUpload = () => {
+  const busy = state === "uploading" || state === "extracting" || state === "analyzing";
+  const done = state === "done";
+  const hasError = state === "error";
+
+  const uploadFile = async (file?: File | null) => {
+    if (!file) {
+      setErrorMessage("未选择文件。");
+      setState("error");
+      return;
+    }
+
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setErrorMessage("仅支持上传 PDF 文件。");
+      setState("error");
+      return;
+    }
+
+    setLastFile(file);
+    setErrorMessage("");
     setState("uploading");
-    setProgress(12);
-    const timers = [
-      window.setTimeout(() => setProgress(42), 450),
-      window.setTimeout(() => {
-        setState("extracting");
-        setProgress(66);
-      }, 1000),
-      window.setTimeout(() => {
-        setState("analyzing");
-        setProgress(86);
-      }, 1600),
-      window.setTimeout(() => {
-        setState("done");
-        setProgress(100);
-      }, 2300)
-    ];
-    return () => timers.forEach(window.clearTimeout);
+    setProgress(18);
+
+    const extractionTimer = window.setTimeout(() => {
+      setState("extracting");
+      setProgress(56);
+    }, 450);
+    const analysisTimer = window.setTimeout(() => {
+      setState("analyzing");
+      setProgress(82);
+    }, 1100);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/documents/upload", {
+        method: "POST",
+        body: formData
+      });
+      const payload = (await response.json()) as UploadResponse;
+
+      if (!response.ok || !payload.ok || !payload.redirectUrl) {
+        throw new Error(payload.error || "上传失败，请稍后重试。");
+      }
+
+      setState("done");
+      setProgress(100);
+      window.setTimeout(() => router.push(payload.redirectUrl!), 450);
+    } catch (error) {
+      setState("error");
+      setProgress(0);
+      setErrorMessage(error instanceof Error ? error.message : "前端请求失败，请稍后重试。");
+    } finally {
+      window.clearTimeout(extractionTimer);
+      window.clearTimeout(analysisTimer);
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+    }
   };
 
   const active = state === "dragging";
-  const busy = state === "uploading" || state === "extracting" || state === "analyzing";
-  const error = state === "error";
-  const done = state === "done";
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
@@ -80,18 +127,24 @@ export function UploadDropzone() {
         }}
         onDrop={(event) => {
           event.preventDefault();
-          simulateUpload();
+          void uploadFile(event.dataTransfer.files.item(0));
         }}
         className={`flex min-h-[390px] flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
-          active ? "border-blue-500 bg-blue-50" : error ? "border-rose-200 bg-rose-50" : done ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"
+          active ? "border-blue-500 bg-blue-50" : hasError ? "border-rose-200 bg-rose-50" : done ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"
         }`}
       >
-        <input ref={inputRef} type="file" className="hidden" onChange={simulateUpload} />
-        <div className={`mb-5 flex h-16 w-16 items-center justify-center rounded-2xl ${done ? "bg-emerald-100 text-emerald-700" : error ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>
-          {busy ? <Loader2 className="animate-spin" size={28} /> : done ? <CheckCircle2 size={28} /> : error ? <AlertCircle size={28} /> : <FileUp size={28} />}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="hidden"
+          onChange={(event) => void uploadFile(event.target.files?.item(0))}
+        />
+        <div className={`mb-5 flex h-16 w-16 items-center justify-center rounded-2xl ${done ? "bg-emerald-100 text-emerald-700" : hasError ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"}`}>
+          {busy ? <Loader2 className="animate-spin" size={28} /> : done ? <CheckCircle2 size={28} /> : hasError ? <AlertCircle size={28} /> : <FileUp size={28} />}
         </div>
         <h1 className="text-2xl font-bold text-slate-950">{stateCopy[state].title}</h1>
-        <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">{stateCopy[state].subtitle}</p>
+        <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">{hasError && errorMessage ? errorMessage : stateCopy[state].subtitle}</p>
 
         {(busy || done) && (
           <div className="mt-7 w-full max-w-md">
@@ -106,7 +159,7 @@ export function UploadDropzone() {
         )}
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          {!done && !error && (
+          {!done && !hasError && (
             <button
               onClick={() => inputRef.current?.click()}
               disabled={busy}
@@ -115,21 +168,16 @@ export function UploadDropzone() {
               选择文件
             </button>
           )}
-          {done && (
-            <Link href="/documents/demo" className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
-              进入文档工作台
-            </Link>
-          )}
-          {error && (
-            <button onClick={simulateUpload} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
-              <RefreshCw size={16} />
-              重试
-            </button>
-          )}
-          {!busy && !done && !error && (
-            <button onClick={() => setState("error")} className="rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-white">
-              模拟失败
-            </button>
+          {hasError && (
+            <>
+              <button onClick={() => void uploadFile(lastFile)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+                <RefreshCw size={16} />
+                重试
+              </button>
+              <button onClick={() => inputRef.current?.click()} className="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                重新选择
+              </button>
+            </>
           )}
         </div>
       </div>
