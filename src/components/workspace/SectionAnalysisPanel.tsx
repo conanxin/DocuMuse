@@ -23,7 +23,7 @@ export function SectionAnalysisPanel() {
             </div>
             <div className="rounded-xl bg-blue-50 p-4">
               <h3 className="text-sm font-semibold text-slate-900">可引用句子</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-700">"{item.quote}"</p>
+              <p className="mt-3 text-sm leading-6 text-slate-700">“{item.quote}”</p>
             </div>
           </div>
         </article>
