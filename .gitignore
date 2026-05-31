@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+dist
+.env
+.env*.local
+*.log
+coverage
+.DS_Store
+.tools
+.gitconfig-codex
+documuse-ui-demo.zip
