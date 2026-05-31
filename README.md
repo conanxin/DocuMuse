@@ -2,7 +2,7 @@
 
 DocuMuse 是一个开源的 AI 文档阅读工作台。用户可以上传 PDF、电子书或文档，系统将文档解析成一个可交互的阅读工作台，支持摘要、翻译、分段分析、图谱、创意输出和与文档对话等能力。
 
-当前版本是第一版 UI Demo，只实现前端界面、组件结构和 mock 交互，不包含真实后端、真实 PDF 解析或真实 LLM 调用。
+当前版本已包含本地 PDF 上传、文本解析、本地文档库和 OpenAI-compatible LLM 基础分析。数据库、认证、RAG 和多模态生成仍未实现。
 
 ## 当前 UI Demo 功能
 
@@ -10,6 +10,7 @@ DocuMuse 是一个开源的 AI 文档阅读工作台。用户可以上传 PDF、
 - 上传流程：empty、dragging、uploading、extracting、analyzing、done、error。
 - 本地 PDF 上传：上传普通可复制文本 PDF 后，文件保存到 `data/uploads/`，解析 JSON 保存到 `data/documents/`。
 - 本地文档库：首页最近文档优先读取真实本地文档，支持再次打开和删除。
+- LLM 基础分析：配置 `.env.local` 后，可在真实文档工作台点击“开始分析”生成结构化摘要、翻译、分段分析和创意输出。
 - 文档工作台：总览、原文、翻译、分段分析、图谱、创意输出。
 - 文档问答：快捷问题、mock 聊天记录、发送问题后生成 mock 回复和引用来源。
 - API 设置弹窗：Provider、API Key、Base URL、Model、Temperature、测试连接、保存到 localStorage。
@@ -38,6 +39,18 @@ http://localhost:3000
 http://localhost:3000/documents/demo
 ```
 
+## LLM 配置
+
+创建 `.env.local`：
+
+```env
+OPENAI_API_KEY=your_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4o-mini
+```
+
+`OPENAI_BASE_URL` 支持 OpenAI-compatible Chat Completions endpoint。当前版本只使用服务端环境变量，不会把完整 API Key 暴露到前端。
+
 ## 当前限制
 
 - 仅支持本地 PDF 上传和可复制文本提取。
@@ -46,14 +59,14 @@ http://localhost:3000/documents/demo
 - 不实现云存储。
 - 不接数据库。
 - 不接认证系统。
-- 不调用真实 LLM API。
+- 仅在配置 `OPENAI_API_KEY` 后调用 OpenAI-compatible Chat Completions API。
+- 未配置 `OPENAI_API_KEY` 时不会调用 LLM，并会返回清晰 JSON 错误。
 - 不生成真实音频、PPT 或图片。
-- 所有内容均来自 `src/lib/mockData.ts`。
 - 翻译、图谱、创意输出和文档问答仍为 mock / 占位内容。
 
 ## 下一阶段计划
 
-下一阶段建议优先实现真实 PDF 上传与文本解析，然后接入 OpenAI-compatible LLM，逐步加入文档问答、Markdown / PPT 导出、音频生成、图片生成和桌面版能力。
+下一阶段建议进入 Phase 2B：把文档问答升级为真实 LLM 对话，并开始设计轻量检索 / RAG。
 
 ## License
 

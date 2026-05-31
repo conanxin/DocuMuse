@@ -68,6 +68,7 @@ export async function POST(request: Request) {
       fileType: "pdf",
       createdAt: new Date().toISOString(),
       status: "parsed",
+      analysisStatus: "idle",
       text: parsed.text,
       pageCount: parsed.pageCount,
       uploadPath: toProjectRelativePath(uploadPath),

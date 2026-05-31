@@ -24,6 +24,7 @@ const defaultSettings: ApiSettings = {
 export function ApiSettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [settings, setSettings] = useState<ApiSettings>(defaultSettings);
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [testMessage, setTestMessage] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -39,11 +40,21 @@ export function ApiSettingsDialog({ open, onClose }: { open: boolean; onClose: (
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
-  const testConnection = () => {
+  const testConnection = async () => {
     setTestStatus("testing");
-    window.setTimeout(() => {
-      setTestStatus(settings.apiKey.trim() ? "success" : "error");
-    }, 700);
+    setTestMessage("");
+    try {
+      const response = await fetch("/api/llm/test", { method: "POST" });
+      const payload = (await response.json()) as { ok: boolean; model?: string; message?: string; error?: string };
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || "连接测试失败。");
+      }
+      setTestStatus("success");
+      setTestMessage(`${payload.message || "连接成功"}：${payload.model || "unknown model"}`);
+    } catch (error) {
+      setTestStatus("error");
+      setTestMessage(error instanceof Error ? error.message : "连接测试失败。");
+    }
   };
 
   const save = () => {
@@ -57,7 +68,7 @@ export function ApiSettingsDialog({ open, onClose }: { open: boolean; onClose: (
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-950">API 设置</h2>
-            <p className="mt-1 text-sm text-slate-500">Demo 仅保存到本地浏览器，不会发起真实请求。</p>
+            <p className="mt-1 text-sm text-slate-500">Phase 2A 使用服务端 .env.local 中的 API Key；这里不会暴露完整密钥。</p>
           </div>
           <button aria-label="关闭" onClick={onClose} className="rounded-full p-2 text-slate-500 hover:bg-slate-100">
             <X size={18} />
@@ -119,13 +130,13 @@ export function ApiSettingsDialog({ open, onClose }: { open: boolean; onClose: (
           {testStatus !== "idle" && (
             <div className={`rounded-lg px-3 py-2 text-sm ${testStatus === "success" ? "bg-emerald-50 text-emerald-700" : testStatus === "error" ? "bg-rose-50 text-rose-700" : "bg-blue-50 text-blue-700"}`}>
               {testStatus === "testing" && "正在测试连接..."}
-              {testStatus === "success" && "连接测试成功。"}
-              {testStatus === "error" && "连接测试失败：请填写 API Key。"}
+              {testStatus === "success" && (testMessage || "连接测试成功。")}
+              {testStatus === "error" && (testMessage || "连接测试失败。")}
             </div>
           )}
         </div>
         <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
-          <button onClick={testConnection} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          <button onClick={() => void testConnection()} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             测试连接
           </button>
           <button onClick={save} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">

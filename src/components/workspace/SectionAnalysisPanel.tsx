@@ -1,6 +1,43 @@
 import { mockSectionAnalysis } from "@/lib/mockData";
+import type { DocumentAnalysis } from "@/lib/documentTypes";
 
-export function SectionAnalysisPanel() {
+export function SectionAnalysisPanel({ analysis }: { analysis?: DocumentAnalysis }) {
+  if (analysis?.sectionSummaries?.length) {
+    return (
+      <div className="space-y-4">
+        {analysis.sectionSummaries.map((item, index) => (
+          <article key={`${item.title}-${index}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-bold text-slate-950">{item.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+              </div>
+              {item.sourceHint && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{item.sourceHint}</span>}
+            </div>
+            <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold text-slate-900">核心观点</h3>
+                <ul className="mt-3 space-y-2">
+                  {(item.keyPoints?.length ? item.keyPoints : ["点击开始分析后生成更完整观点。"]).map((point) => (
+                    <li key={point} className="text-sm text-slate-600">· {point}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-xl bg-blue-50 p-4">
+                <h3 className="text-sm font-semibold text-slate-900">可引用句子</h3>
+                <div className="mt-3 space-y-2">
+                  {(item.quotes?.length ? item.quotes : ["文档中未明确说明。"]).map((quote) => (
+                    <p key={quote} className="text-sm leading-6 text-slate-700">“{quote}”</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {mockSectionAnalysis.map((item) => (

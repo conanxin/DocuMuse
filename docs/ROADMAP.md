@@ -12,6 +12,7 @@
 - 接入 OpenAI / OpenAI Compatible / DeepSeek / Gemini / Anthropic / Ollama。
 - 使用 API 设置中的 Provider、Base URL、Model 和 Temperature。
 - 支持摘要、翻译和分段分析的真实生成。
+- Phase 2A 已加入服务端 `.env.local` 配置的基础文档分析接口。
 
 ## Phase 3：文档问答 / RAG
 

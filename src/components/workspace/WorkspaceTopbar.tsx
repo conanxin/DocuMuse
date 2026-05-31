@@ -1,11 +1,23 @@
 "use client";
 
-import { Download, Play, RefreshCw, Settings } from "lucide-react";
+import { Download, Loader2, Play, RefreshCw, Settings } from "lucide-react";
 import { useState } from "react";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
 import { StatusBadge } from "../StatusBadge";
 
-export function WorkspaceTopbar({ title = "demo-interview.pdf", status = "已解析" }: { title?: string; status?: "已解析" | "解析中" | "失败" }) {
+export function WorkspaceTopbar({
+  title = "demo-interview.pdf",
+  status = "已解析",
+  onAnalyze,
+  analyzing = false,
+  isDemo = true
+}: {
+  title?: string;
+  status?: "已解析" | "解析中" | "失败";
+  onAnalyze?: () => void;
+  analyzing?: boolean;
+  isDemo?: boolean;
+}) {
   const [apiOpen, setApiOpen] = useState(false);
 
   return (
@@ -19,9 +31,13 @@ export function WorkspaceTopbar({ title = "demo-interview.pdf", status = "已解
           <p className="mt-1 text-sm text-slate-500">AI 文档阅读工作台 Demo</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-            <Play size={16} />
-            开始分析
+          <button
+            onClick={onAnalyze}
+            disabled={analyzing || isDemo}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
+            {analyzing ? "正在分析" : "开始分析"}
           </button>
           <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <RefreshCw size={16} />

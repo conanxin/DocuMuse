@@ -1,5 +1,7 @@
 export type DocumentAnalysis = {
+  title?: string;
   oneSentenceSummary: string;
+  summary?: string;
   keyPoints: string[];
   keywords: string[];
   documentType: string;
@@ -7,7 +9,22 @@ export type DocumentAnalysis = {
   sectionSummaries: Array<{
     title: string;
     summary: string;
+    keyPoints?: string[];
+    quotes?: string[];
+    sourceHint?: string;
   }>;
+  translationZh?: string;
+  pptOutline?: Array<{
+    title: string;
+    bullets: string[];
+  }>;
+  podcastScript?: string;
+  imagePrompts?: Array<{
+    title: string;
+    prompt: string;
+  }>;
+  analyzedTextLength?: number;
+  isPartialAnalysis?: boolean;
 };
 
 export type ParsedDocument = {
@@ -17,6 +34,9 @@ export type ParsedDocument = {
   fileType: "pdf";
   createdAt: string;
   status: "parsed";
+  analysisStatus?: "idle" | "analyzing" | "completed" | "failed";
+  analyzedAt?: string;
+  analysisError?: string;
   text: string;
   pageCount: number;
   uploadPath?: string;
