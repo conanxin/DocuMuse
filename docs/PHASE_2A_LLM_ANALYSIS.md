@@ -14,6 +14,10 @@ OPENAI_MODEL=gpt-4o-mini
 
 `OPENAI_BASE_URL` can point to any OpenAI-compatible Chat Completions endpoint. If omitted, DocuMuse uses `https://api.openai.com/v1`. If `OPENAI_MODEL` is omitted, DocuMuse uses `gpt-4o-mini`.
 
+Phase 2A.1 also supports configuring these values from the API Settings dialog. UI-saved local settings live in `data/settings/llm-config.json` and take priority over `.env.local`.
+
+Phase 2A.2 adds MiniMax Token Plan as an OpenAI-compatible provider using `https://api.minimaxi.com/v1`.
+
 ## API Routes
 
 - `POST /api/llm/test`
@@ -31,6 +35,7 @@ OPENAI_MODEL=gpt-4o-mini
 - Generates summary, key points, keywords, section analysis, Chinese translation / rewrite, PPT outline, podcast script, and image prompts.
 - Only analyzes the first part of long documents, currently capped around 16,000 characters.
 - Uses server-side environment variables only.
+- Supports local UI-saved server settings without exposing the full API key to the browser.
 
 ## Limitations
 

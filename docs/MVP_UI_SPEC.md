@@ -97,7 +97,7 @@ Mock 交互包括：
 - 图谱节点点击与详情切换。
 - 创意输出重新生成 loading。
 - 文档问答追加用户消息和 mock 回复。
-- API 设置保存到 localStorage。
+- API 设置保存到服务端本地配置文件 `data/settings/llm-config.json`，不再写入浏览器 localStorage。
 - API 测试连接 mock 成功 / 失败。
 
 ## Phase 1.5 本地文档库

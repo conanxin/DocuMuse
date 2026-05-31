@@ -13,5 +13,7 @@ coverage
 documuse-ui-demo.zip
 data/uploads/*
 data/documents/*
+data/settings/*
 !data/uploads/.gitkeep
 !data/documents/.gitkeep
+!data/settings/.gitkeep

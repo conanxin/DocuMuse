@@ -13,7 +13,7 @@ DocuMuse 是一个开源的 AI 文档阅读工作台。用户可以上传 PDF、
 - LLM 基础分析：配置 `.env.local` 后，可在真实文档工作台点击“开始分析”生成结构化摘要、翻译、分段分析和创意输出。
 - 文档工作台：总览、原文、翻译、分段分析、图谱、创意输出。
 - 文档问答：快捷问题、mock 聊天记录、发送问题后生成 mock 回复和引用来源。
-- API 设置弹窗：Provider、API Key、Base URL、Model、Temperature、测试连接、保存到 localStorage。
+- API 设置弹窗：Provider、API Key、Base URL、Model、Temperature、测试连接、保存到服务端本地配置文件。
 
 ## 如何安装
 
@@ -50,6 +50,20 @@ OPENAI_MODEL=gpt-4o-mini
 ```
 
 `OPENAI_BASE_URL` 支持 OpenAI-compatible Chat Completions endpoint。当前版本只使用服务端环境变量，不会把完整 API Key 暴露到前端。
+
+也可以在应用内点击“API 设置”保存本地配置。UI 保存的配置位于 `data/settings/llm-config.json`，优先级高于 `.env.local`，并且不会把完整 API Key 返回给前端。
+
+MiniMax Token Plan 用户可以在 Provider 中选择 `MiniMax Token Plan`。推荐配置：
+
+```text
+Base URL: https://api.minimaxi.com/v1
+Model: MiniMax-M2.7
+Temperature: 1.0
+```
+
+MiniMax Token Plan Key 与按量计费 API Key 不互通。
+
+注意：当前 UI 保存 Key 的方式适合本地运行。如果公开部署，需要增加用户系统、加密存储和更严格的权限隔离。
 
 ## 当前限制
 

@@ -1,3 +1,5 @@
+import { resolveLlmConfig, type ResolvedLlmConfig } from "./llmSettings";
+
 type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -12,59 +14,89 @@ type ChatCompletionOptions = {
 export class LlmConfigError extends Error {}
 export class LlmResponseError extends Error {}
 
-function getLlmConfig() {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new LlmConfigError("缺少 OPENAI_API_KEY，请在 .env.local 中配置服务端 API Key。");
-  }
-
-  return {
-    apiKey,
-    baseUrl: (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, ""),
-    model: process.env.OPENAI_MODEL || "gpt-4o-mini"
-  };
-}
-
 function getShortDetail(error: unknown) {
   if (error instanceof Error) return error.message.slice(0, 300);
   return String(error).slice(0, 300);
 }
 
+export function stripReasoningContent(content: string) {
+  return content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+}
+
 function extractJsonObject(content: string) {
-  const trimmed = content.trim();
-  if (trimmed.startsWith("{") && trimmed.endsWith("}")) return trimmed;
-  const match = trimmed.match(/\{[\s\S]*\}/);
+  const withoutReasoning = stripReasoningContent(content);
+  if (withoutReasoning.startsWith("{") && withoutReasoning.endsWith("}")) return withoutReasoning;
+  const match = withoutReasoning.match(/\{[\s\S]*\}/);
   if (!match) {
     throw new LlmResponseError("模型没有返回 JSON 对象。");
   }
   return match[0];
 }
 
+function normalizeTemperature(config: ResolvedLlmConfig, requested?: number) {
+  const temperature = requested ?? config.temperature;
+  if (config.provider === "minimax-token-plan" && temperature <= 0) {
+    // MiniMax Token Plan models do not accept 0 temperature; keep calls valid while staying deterministic-ish.
+    return 1.0;
+  }
+  return temperature;
+}
+
+function buildRequestBody(config: ResolvedLlmConfig, options: ChatCompletionOptions) {
+  const baseBody = {
+    model: config.model,
+    messages: options.messages,
+    temperature: normalizeTemperature(config, options.temperature)
+  };
+
+  if (config.provider === "minimax-token-plan") {
+    return {
+      ...baseBody,
+      max_completion_tokens: options.maxTokens ?? 4000
+    };
+  }
+
+  return {
+    ...baseBody,
+    max_tokens: options.maxTokens ?? 4000,
+    response_format: { type: "json_object" }
+  };
+}
+
+function mapProviderError(status: number, raw: string, provider: ResolvedLlmConfig["provider"]) {
+  if (provider === "minimax-token-plan") {
+    if (status === 401 || status === 403) return "MiniMax Token Plan Key 无效或没有权限。";
+    if (status === 402) return "MiniMax Token Plan 没有可用资源或额度不足。";
+    if (status === 404) return "MiniMax Base URL 或模型名错误。";
+    if (status === 429) return "MiniMax 额度或频率限制，请稍后重试。";
+    if (status >= 500) return "MiniMax 服务暂时不可用，请稍后重试。";
+  }
+  return `LLM 请求失败：HTTP ${status} ${raw.slice(0, 200)}`;
+}
+
 export async function createJsonChatCompletion<T>(options: ChatCompletionOptions): Promise<{ data: T; model: string }> {
-  const config = getLlmConfig();
+  const config = await resolveLlmConfig();
+  if (!config.apiKey) {
+    throw new LlmConfigError("缺少 API Key，请在 API 设置中保存密钥，或在 .env.local 中配置 OPENAI_API_KEY。");
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000);
 
   try {
-    const response = await fetch(`${config.baseUrl}/chat/completions`, {
+    const response = await fetch(`${config.baseUrl.replace(/\/+$/, "")}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${config.apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: config.model,
-        messages: options.messages,
-        temperature: options.temperature ?? 0.2,
-        max_tokens: options.maxTokens ?? 4000,
-        response_format: { type: "json_object" }
-      }),
+      body: JSON.stringify(buildRequestBody(config, options)),
       signal: controller.signal
     });
 
     const raw = await response.text();
     if (!response.ok) {
-      throw new LlmResponseError(`LLM 请求失败：HTTP ${response.status} ${raw.slice(0, 200)}`);
+      throw new LlmResponseError(mapProviderError(response.status, raw, config.provider));
     }
 
     let payload: { choices?: Array<{ message?: { content?: string } }>; model?: string };
