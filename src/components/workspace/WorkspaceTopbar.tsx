@@ -1,10 +1,10 @@
 "use client";
 
-import { Download, Loader2, Play, RefreshCw, Settings, Upload } from "lucide-react";
+import { Loader2, Play, Settings, Upload } from "lucide-react";
 import { useState } from "react";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
-import { StatusBadge } from "../StatusBadge";
 import { DocumentUploadPanel } from "../DocumentUploadPanel";
+import { StatusBadge } from "../StatusBadge";
 
 type AnalyzeMode = "quick" | "full";
 
@@ -33,12 +33,12 @@ export function WorkspaceTopbar({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold text-slate-950">{title}</h1>
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-3">
+            <h1 className="truncate text-lg font-bold text-slate-950">{title}</h1>
             <StatusBadge status={status} />
           </div>
-          <p className="mt-1 text-sm text-slate-500">AI 文档阅读工作台 Demo</p>
+          <p className="mt-1 text-sm text-slate-500">AI 文档阅读工作台</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
@@ -60,14 +60,6 @@ export function WorkspaceTopbar({
           >
             {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
             {analyzing ? "分析中..." : fullLabel}
-          </button>
-          <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            <RefreshCw size={16} />
-            重新生成
-          </button>
-          <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            <Download size={16} />
-            导出 Markdown
           </button>
           <button onClick={() => setApiOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <Settings size={16} />
