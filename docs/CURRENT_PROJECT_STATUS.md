@@ -15,6 +15,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Ask grounded questions against document text.
 - Show source citations and jump to paragraph anchors in the original text.
 - Clear and export chat history as Markdown.
+- Use `/settings/validation` for local real-model validation.
 
 ## Current Architecture
 
@@ -23,7 +24,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - UI: Tailwind CSS with custom shadcn-style components.
 - Storage: local filesystem only.
 - LLM: OpenAI-compatible Chat Completions via `fetch`.
-- Retrieval: lightweight paragraph keyword matching.
+- Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 
 ## Main Data Directories
@@ -51,6 +52,7 @@ data/settings/    Local LLM settings
 - `POST /api/settings/llm`: save local LLM settings.
 - `DELETE /api/settings/llm/key`: clear local API Key.
 - `POST /api/llm/test`: test the configured LLM with a plain text completion.
+- `GET /settings/validation`: local validation UI for connection, analysis, and document chat checks.
 
 ## Main Components
 
@@ -83,7 +85,6 @@ data/settings/    Local LLM settings
 ## Recommended Next Steps
 
 1. Real-key validation across OpenAI-compatible and MiniMax Token Plan providers.
-2. Improve paragraph search and source ranking.
-3. Add source history and original-text search.
-4. Add optional streaming responses.
-5. Consider embeddings and vector storage only after the local baseline is stable.
+2. Add source history and original-text search.
+3. Add optional streaming responses.
+4. Consider embeddings and vector storage only after the local baseline is stable.

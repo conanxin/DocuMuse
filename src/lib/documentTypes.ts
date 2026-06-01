@@ -73,6 +73,9 @@ export type ChatSource = {
   quote: string;
   startChar: number;
   endChar: number;
+  score?: number;
+  matchedTerms?: string[];
+  retrievalReason?: string;
 };
 
 export type DocumentChatMessage = {

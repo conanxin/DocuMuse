@@ -8,6 +8,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Run `npm run dev`.
 - [ ] Open `http://localhost:3000`.
 - [ ] Run `npm run build`.
+- [ ] Open `http://localhost:3000/settings/validation`.
 
 ## Upload And Library
 
@@ -24,6 +25,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Save an OpenAI-compatible API Key, Base URL, model, and temperature.
 - [ ] Reopen API Settings and confirm only the masked key is shown.
 - [ ] Test connection.
+- [ ] Confirm validation page shows provider, model, base URL, masked key, and config source.
+- [ ] Run validation page connection test.
 - [ ] Select MiniMax Token Plan.
 - [ ] Confirm Base URL defaults to `https://api.minimaxi.com/v1`.
 - [ ] Confirm model defaults to `MiniMax-M2.7`.
@@ -32,8 +35,10 @@ Use this checklist before tagging a release or sharing a demo build.
 ## Analysis
 
 - [ ] Run quick analysis on a short PDF.
+- [ ] Run quick analysis from `/settings/validation`.
 - [ ] Confirm analysis result is saved.
 - [ ] Run full analysis on a longer PDF.
+- [ ] Run full analysis from `/settings/validation`.
 - [ ] Confirm chunks are created.
 - [ ] Confirm chunk analyses are saved.
 - [ ] Confirm global synthesis is saved.
@@ -43,8 +48,10 @@ Use this checklist before tagging a release or sharing a demo build.
 ## Document Chat
 
 - [ ] Ask: `这篇文章讲了什么？`
+- [ ] Run document chat from `/settings/validation`.
 - [ ] Confirm an LLM answer is returned.
 - [ ] Confirm sources are shown.
+- [ ] Confirm source quotes are short and relevant to the question.
 - [ ] Click a source and confirm the original text tab opens.
 - [ ] Confirm the matching paragraph is highlighted.
 - [ ] Clear highlight.

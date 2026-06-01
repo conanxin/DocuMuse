@@ -223,7 +223,7 @@ export function ChatPanel({
               {message.loading && <Loader2 className="mt-1 shrink-0 animate-spin text-slate-500" size={14} />}
               <p className="text-sm leading-6">{message.content}</p>
             </div>
-            {message.role === "assistant" && message.sources?.length ? <SourceList sources={message.sources} selectedSource={selectedSource} onSourceClick={onSourceClick} /> : null}
+            {message.role === "assistant" && !message.loading && (message.sources?.length ? <SourceList sources={message.sources} selectedSource={selectedSource} onSourceClick={onSourceClick} /> : <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">未找到明确来源，建议换一种问法或使用完整分析后再提问。</p>)}
           </div>
         ))}
       </div>
@@ -247,7 +247,12 @@ function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatS
         {sources.slice(0, 5).map((source, index) => {
           const active = isSameSource(source, selectedSource);
           return (
-          <button key={`${source.sourceHint}-${index}`} onClick={() => onSourceClick?.(source)} className={`rounded-lg border px-2.5 py-1.5 text-left text-xs transition ${active ? "border-blue-300 bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}`}>
+          <button
+            key={`${source.sourceHint}-${index}`}
+            title={process.env.NODE_ENV === "development" ? `score=${source.score ?? "n/a"} terms=${source.matchedTerms?.join(", ") || "n/a"} reason=${source.retrievalReason || "n/a"}` : undefined}
+            onClick={() => onSourceClick?.(source)}
+            className={`rounded-lg border px-2.5 py-1.5 text-left text-xs transition ${active ? "border-blue-300 bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}`}
+          >
             <span className="font-medium">{source.sourceHint}</span>
             <span className="block max-w-[220px] truncate">{source.quote}</span>
           </button>

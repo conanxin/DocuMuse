@@ -12,6 +12,7 @@
 - [Phase 2B Document Chat](./PHASE_2B_DOCUMENT_CHAT.md): lightweight paragraph retrieval, LLM answers, citations, and saved chat history.
 - [Phase 2B.1 Chat Source Export](./PHASE_2B_1_CHAT_SOURCE_EXPORT.md): source navigation, chat clearing, and Markdown export.
 - [Phase 2B.2 Source Anchors](./PHASE_2B_2_SOURCE_ANCHORS.md): paragraph anchors, selected source state, and original text highlighting.
+- [Phase 2C Retrieval Validation](./PHASE_2C_RETRIEVAL_VALIDATION.md): real-model validation page and lightweight retrieval quality improvements.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

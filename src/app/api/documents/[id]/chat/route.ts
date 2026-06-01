@@ -94,9 +94,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const sources: ChatSource[] = relevantChunks.map((chunk) => ({
       anchorId: chunk.anchorId,
       sourceHint: chunk.sourceHint,
-      quote: sourceQuote(chunk.text),
+      quote: sourceQuote(chunk.text, 180, chunk.matchedTerms ?? []),
       startChar: chunk.startChar,
-      endChar: chunk.endChar
+      endChar: chunk.endChar,
+      score: chunk.score,
+      matchedTerms: chunk.matchedTerms,
+      retrievalReason: chunk.retrievalReason
     }));
 
     const now = new Date().toISOString();
