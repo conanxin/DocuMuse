@@ -55,12 +55,14 @@ export function ChatPanel({
   documentTitle = "demo-interview.pdf",
   isPlaceholder = false,
   initialMessages = [],
+  selectedSource,
   onSourceClick
 }: {
   documentId?: string;
   documentTitle?: string;
   isPlaceholder?: boolean;
   initialMessages?: DocumentChatMessage[];
+  selectedSource?: ChatSource | null;
   onSourceClick?: (source: ChatSource) => void;
 }) {
   const isDemo = documentId === "demo";
@@ -221,7 +223,7 @@ export function ChatPanel({
               {message.loading && <Loader2 className="mt-1 shrink-0 animate-spin text-slate-500" size={14} />}
               <p className="text-sm leading-6">{message.content}</p>
             </div>
-            {message.role === "assistant" && message.sources?.length ? <SourceList sources={message.sources} onSourceClick={onSourceClick} /> : null}
+            {message.role === "assistant" && message.sources?.length ? <SourceList sources={message.sources} selectedSource={selectedSource} onSourceClick={onSourceClick} /> : null}
           </div>
         ))}
       </div>
@@ -237,20 +239,29 @@ export function ChatPanel({
   );
 }
 
-function SourceList({ sources, onSourceClick }: { sources: ChatSource[]; onSourceClick?: (source: ChatSource) => void }) {
+function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatSource[]; selectedSource?: ChatSource | null; onSourceClick?: (source: ChatSource) => void }) {
   return (
     <div className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-xs text-slate-600">
       <p className="font-semibold text-slate-700">来源</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        {sources.slice(0, 5).map((source, index) => (
-          <button key={`${source.sourceHint}-${index}`} onClick={() => onSourceClick?.(source)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-left text-xs text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+        {sources.slice(0, 5).map((source, index) => {
+          const active = isSameSource(source, selectedSource);
+          return (
+          <button key={`${source.sourceHint}-${index}`} onClick={() => onSourceClick?.(source)} className={`rounded-lg border px-2.5 py-1.5 text-left text-xs transition ${active ? "border-blue-300 bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}`}>
             <span className="font-medium">{source.sourceHint}</span>
             <span className="block max-w-[220px] truncate">{source.quote}</span>
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
+}
+
+function isSameSource(source: ChatSource, selected?: ChatSource | null) {
+  if (!selected) return false;
+  if (source.anchorId && selected.anchorId) return source.anchorId === selected.anchorId;
+  return source.startChar === selected.startChar && source.endChar === selected.endChar && source.sourceHint === selected.sourceHint;
 }
 
 function buildChatMarkdown(documentTitle: string, messages: ChatMessage[]) {
@@ -267,7 +278,8 @@ function buildChatMarkdown(documentTitle: string, messages: ChatMessage[]) {
       if (message.sources?.length) {
         lines.push("### 来源", "");
         for (const source of message.sources) {
-          lines.push(`- ${source.sourceHint}：${source.quote.slice(0, 300)}`);
+          const anchorNote = source.anchorId ? `（${source.anchorId}）` : "";
+          lines.push(`- ${source.sourceHint}${anchorNote}：${source.quote.slice(0, 300)}`);
         }
         lines.push("");
       }

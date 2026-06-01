@@ -68,6 +68,7 @@ export type ChunkAnalysis = {
 };
 
 export type ChatSource = {
+  anchorId?: string;
   sourceHint: string;
   quote: string;
   startChar: number;

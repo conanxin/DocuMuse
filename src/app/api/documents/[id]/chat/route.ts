@@ -92,6 +92,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     const sources: ChatSource[] = relevantChunks.map((chunk) => ({
+      anchorId: chunk.anchorId,
       sourceHint: chunk.sourceHint,
       quote: sourceQuote(chunk.text),
       startChar: chunk.startChar,

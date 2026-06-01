@@ -1,5 +1,8 @@
+import { buildParagraphAnchors } from "./sourceAnchors";
+
 export type SearchChunk = {
   id: string;
+  anchorId?: string;
   index: number;
   text: string;
   startChar: number;
@@ -21,63 +24,15 @@ function tokenize(input: string) {
 }
 
 export function buildSearchChunks(text: string): SearchChunk[] {
-  const normalized = text.replace(/\r\n/g, "\n");
-  const paragraphs = normalized
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-
-  const chunks: SearchChunk[] = [];
-  let cursor = 0;
-  let buffer = "";
-  let startChar = 0;
-
-  const flush = () => {
-    const clean = normalizeText(buffer);
-    if (!clean) return;
-    const index = chunks.length + 1;
-    chunks.push({
-      id: `search_${index}`,
-      index,
-      text: clean,
-      startChar,
-      endChar: startChar + buffer.length,
-      sourceHint: `第 ${index} 段`
-    });
-    buffer = "";
-  };
-
-  for (const paragraph of paragraphs.length ? paragraphs : [normalized]) {
-    const paragraphStart = normalized.indexOf(paragraph, cursor);
-    if (!buffer) startChar = paragraphStart >= 0 ? paragraphStart : cursor;
-    if ((buffer + "\n\n" + paragraph).length > 1500) {
-      flush();
-      startChar = paragraphStart >= 0 ? paragraphStart : cursor;
-      buffer = paragraph;
-    } else {
-      buffer = buffer ? `${buffer}\n\n${paragraph}` : paragraph;
-    }
-
-    while (buffer.length > 1600) {
-      const slice = buffer.slice(0, 1200);
-      const index = chunks.length + 1;
-      chunks.push({
-        id: `search_${index}`,
-        index,
-        text: normalizeText(slice),
-        startChar,
-        endChar: startChar + slice.length,
-        sourceHint: `第 ${index} 段`
-      });
-      startChar += 1200;
-      buffer = buffer.slice(1200);
-    }
-
-    cursor = (paragraphStart >= 0 ? paragraphStart : cursor) + paragraph.length;
-  }
-
-  flush();
-  return chunks;
+  return buildParagraphAnchors(text).map((anchor) => ({
+    id: `search_${anchor.id}`,
+    anchorId: anchor.id,
+    index: anchor.index,
+    text: normalizeText(anchor.text),
+    startChar: anchor.startChar,
+    endChar: anchor.endChar,
+    sourceHint: anchor.sourceHint
+  }));
 }
 
 export function searchRelevantChunks(question: string, chunks: SearchChunk[]) {
