@@ -32,6 +32,29 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   }
 }
 
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+
+  if (!isValidDocumentId(id)) {
+    return NextResponse.json({ ok: false, error: "文档 id 无效。" }, { status: 400 });
+  }
+
+  try {
+    const document = await readParsedDocument(id);
+    await saveParsedDocument({
+      ...document,
+      chatMessages: []
+    });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT") {
+      return NextResponse.json({ ok: false, error: "文档不存在。" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: false, error: "清空聊天记录失败。" }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AnalysisMode, ParsedDocument } from "@/lib/documentTypes";
+import type { AnalysisMode, ChatSource, ParsedDocument } from "@/lib/documentTypes";
 import { ChatPanel } from "./ChatPanel";
 import { CreativeOutputsPanel } from "./CreativeOutputsPanel";
 import { GraphPanel } from "./GraphPanel";
@@ -19,6 +19,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
   const [analysisState, setAnalysisState] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [analysisError, setAnalysisError] = useState("");
+  const [selectedSourceRange, setSelectedSourceRange] = useState<ChatSource | null>(null);
   const pollRef = useRef<number | null>(null);
   const isDemo = documentId === "demo";
 
@@ -132,6 +133,10 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
   const hasAnalysis = document?.analysisStatus === "completed";
   const analysisFailed = analysisState === "error" || document?.analysisStatus === "failed";
   const topbarStatus = analysisState === "loading" ? "正在分析" : analysisFailed ? "失败" : document?.status === "parsed" ? "已解析" : undefined;
+  const handleSourceClick = (source: ChatSource) => {
+    setSelectedSourceRange(source);
+    setActiveTab("original");
+  };
 
   return (
     <main className="flex h-screen min-h-[760px] flex-col bg-slate-50">
@@ -154,7 +159,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
           {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
-          {loadState === "idle" && activeTab === "original" && <OriginalTextPanel text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} />}
+          {loadState === "idle" && activeTab === "original" && <OriginalTextPanel text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "translation" && <TranslationPanel translation={document?.analysis?.translationZh} />}
           {loadState === "idle" && activeTab === "analysis" && <SectionAnalysisPanel analysis={document?.analysis} />}
@@ -163,7 +168,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && !isDemo && activeTab === "creative" && !document?.analysis?.pptOutline?.length && !document?.analysis?.podcastScript && !document?.analysis?.imagePrompts?.length && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "creative" && <CreativeOutputsPanel analysis={document?.analysis} />}
         </section>
-        <ChatPanel documentId={documentId} isPlaceholder={!isDemo} initialMessages={document?.chatMessages ?? []} />
+        <ChatPanel documentId={documentId} documentTitle={document?.title} isPlaceholder={!isDemo} initialMessages={document?.chatMessages ?? []} onSourceClick={handleSourceClick} />
       </div>
     </main>
   );
