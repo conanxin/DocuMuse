@@ -163,7 +163,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && !isDemo && activeTab === "creative" && !document?.analysis?.pptOutline?.length && !document?.analysis?.podcastScript && !document?.analysis?.imagePrompts?.length && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "creative" && <CreativeOutputsPanel analysis={document?.analysis} />}
         </section>
-        <ChatPanel isPlaceholder={!isDemo} />
+        <ChatPanel documentId={documentId} isPlaceholder={!isDemo} initialMessages={document?.chatMessages ?? []} />
       </div>
     </main>
   );

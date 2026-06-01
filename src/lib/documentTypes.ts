@@ -67,6 +67,21 @@ export type ChunkAnalysis = {
   sourceHint: string;
 };
 
+export type ChatSource = {
+  sourceHint: string;
+  quote: string;
+  startChar: number;
+  endChar: number;
+};
+
+export type DocumentChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: string;
+  sources?: ChatSource[];
+};
+
 export type ParsedDocument = {
   id: string;
   title: string;
@@ -91,6 +106,7 @@ export type ParsedDocument = {
   analysis: DocumentAnalysis;
   chunks?: TextChunkMetadata[];
   chunkAnalyses?: ChunkAnalysis[];
+  chatMessages?: DocumentChatMessage[];
 };
 
 export type DocumentListItem = {
