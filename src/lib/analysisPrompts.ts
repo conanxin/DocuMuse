@@ -34,6 +34,17 @@ const ANALYSIS_SCHEMA = `{
   ]
 }`;
 
+const CHUNK_ANALYSIS_SCHEMA = `{
+  "chunkId": "",
+  "title": "",
+  "summary": "",
+  "keyPoints": [],
+  "keywords": [],
+  "quotes": [],
+  "entities": [],
+  "sourceHint": ""
+}`;
+
 export function getAnalysisTextSlice(text: string) {
   const normalized = text.replace(/\s+\n/g, "\n").trim();
   return {
@@ -113,6 +124,103 @@ ${ANALYSIS_SCHEMA}
 
 需要修复的模型输出：
 ${safeOutput}`
+    }
+  ] as const;
+}
+
+export function buildChunkJsonRepairMessages(rawModelOutput: string) {
+  const safeOutput = rawModelOutput.slice(0, MAX_REPAIR_INPUT_CHARS);
+
+  return [
+    {
+      role: "system",
+      content: [
+        "You repair malformed chunk analysis JSON for DocuMuse.",
+        "Return one valid JSON object only.",
+        "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
+        "Do not invent facts beyond the provided model output.",
+        "If a field cannot be recovered, use an empty string or empty array.",
+        "Prefer Chinese content when content is recoverable."
+      ].join(" ")
+    },
+    {
+      role: "user",
+      content: `请把下面的 chunk analysis 模型输出修复为符合目标 schema 的合法 JSON。
+
+规则：
+- 只输出 JSON。
+- 不要输出 Markdown。
+- 不要解释修复过程。
+- 不要补充文档外事实。
+- 缺失字符串字段补空字符串。
+- 缺失数组字段补空数组。
+
+目标 JSON schema：
+${CHUNK_ANALYSIS_SCHEMA}
+
+需要修复的模型输出：
+${safeOutput}`
+    }
+  ] as const;
+}
+
+export function buildChunkAnalysisMessages(chunk: { id: string; index: number; text: string; sourceHint: string }, documentTitle: string) {
+  return [
+    {
+      role: "system",
+      content: [
+        "You analyze one text chunk for DocuMuse.",
+        "Return one valid JSON object only.",
+        "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
+        "Use Chinese.",
+        "Only use facts from the current chunk.",
+        "If content is unclear, use empty strings or empty arrays."
+      ].join(" ")
+    },
+    {
+      role: "user",
+      content: `文档标题：${documentTitle}
+当前文本块：${chunk.sourceHint}
+
+只基于当前文本块生成 JSON：
+${CHUNK_ANALYSIS_SCHEMA}
+
+要求：
+- 不要编造当前文本块之外的内容。
+- 引用不要太长。
+- 没有内容时返回空数组或空字符串。
+
+文本块：
+${chunk.text}`
+    }
+  ] as const;
+}
+
+export function buildGlobalSynthesisMessages(chunkAnalyses: unknown[], documentTitle: string) {
+  return [
+    {
+      role: "system",
+      content: [
+        "You synthesize chunk analyses for DocuMuse.",
+        "Return one valid JSON object only.",
+        "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
+        "Use Chinese.",
+        "Do not invent facts outside the provided chunk analyses.",
+        "All fields must exist. Use empty strings or empty arrays when needed."
+      ].join(" ")
+    },
+    {
+      role: "user",
+      content: `文档标题：${documentTitle}
+
+请综合所有 chunk analysis，输出完整文档分析 JSON。
+不要重复堆砌，尽量标明内容来自哪些部分。
+
+目标 JSON schema：
+${ANALYSIS_SCHEMA}
+
+chunk analyses：
+${JSON.stringify(chunkAnalyses).slice(0, 24000)}`
     }
   ] as const;
 }

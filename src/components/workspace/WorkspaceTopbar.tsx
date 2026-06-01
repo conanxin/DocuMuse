@@ -1,9 +1,12 @@
 "use client";
 
-import { Download, Loader2, Play, RefreshCw, Settings } from "lucide-react";
+import { Download, Loader2, Play, RefreshCw, Settings, Upload } from "lucide-react";
 import { useState } from "react";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
 import { StatusBadge } from "../StatusBadge";
+import { DocumentUploadPanel } from "../DocumentUploadPanel";
+
+type AnalyzeMode = "quick" | "full";
 
 export function WorkspaceTopbar({
   title = "demo-interview.pdf",
@@ -16,14 +19,16 @@ export function WorkspaceTopbar({
 }: {
   title?: string;
   status?: "已解析" | "解析中" | "失败" | "正在分析";
-  onAnalyze?: () => void;
+  onAnalyze?: (mode: AnalyzeMode) => void;
   analyzing?: boolean;
   isDemo?: boolean;
   hasAnalysis?: boolean;
   analysisFailed?: boolean;
 }) {
   const [apiOpen, setApiOpen] = useState(false);
-  const analyzeLabel = analyzing ? "分析中..." : hasAnalysis || analysisFailed ? "重新分析" : "开始分析";
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const quickLabel = hasAnalysis || analysisFailed ? "重新快速分析" : "快速分析";
+  const fullLabel = hasAnalysis || analysisFailed ? "重新完整分析" : "完整分析";
 
   return (
     <>
@@ -36,13 +41,25 @@ export function WorkspaceTopbar({
           <p className="mt-1 text-sm text-slate-500">AI 文档阅读工作台 Demo</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <Upload size={16} />
+            上传新文档
+          </button>
           <button
-            onClick={onAnalyze}
+            onClick={() => onAnalyze?.("quick")}
+            disabled={analyzing || isDemo}
+            className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
+            {analyzing ? "分析中..." : quickLabel}
+          </button>
+          <button
+            onClick={() => onAnalyze?.("full")}
             disabled={analyzing || isDemo}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
-            {analyzeLabel}
+            {analyzing ? "分析中..." : fullLabel}
           </button>
           <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <RefreshCw size={16} />
@@ -59,6 +76,22 @@ export function WorkspaceTopbar({
         </div>
       </div>
       <ApiSettingsDialog open={apiOpen} onClose={() => setApiOpen(false)} />
+      {uploadOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">上传新文档</h2>
+                <p className="mt-1 text-sm text-slate-500">上传成功后会自动进入新的文档工作台。</p>
+              </div>
+              <button onClick={() => setUploadOpen(false)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+                关闭
+              </button>
+            </div>
+            <DocumentUploadPanel compact onSuccess={(redirectUrl) => (window.location.href = redirectUrl)} />
+          </div>
+        </div>
+      )}
     </>
   );
 }

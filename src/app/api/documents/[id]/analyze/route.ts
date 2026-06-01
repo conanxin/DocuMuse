@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { buildDocumentAnalysisMessages, buildJsonRepairMessages, getAnalysisTextSlice } from "@/lib/analysisPrompts";
+import { buildChunkAnalysisMessages, buildChunkJsonRepairMessages, buildDocumentAnalysisMessages, buildGlobalSynthesisMessages, buildJsonRepairMessages, getAnalysisTextSlice } from "@/lib/analysisPrompts";
 import { normalizeLlmAnalysis } from "@/lib/analysisResult";
 import { isValidDocumentId, readParsedDocument, saveParsedDocument } from "@/lib/documentStorage";
 import { createJsonChatCompletion, toPublicLlmError } from "@/lib/llmClient";
-import type { AnalysisDiagnostics, DocumentAnalysis, ParsedDocument } from "@/lib/documentTypes";
+import { chunkText } from "@/lib/textChunker";
+import type { AnalysisDiagnostics, AnalysisMode, ChunkAnalysis, DocumentAnalysis, ParsedDocument } from "@/lib/documentTypes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,9 +13,156 @@ function shortError(error: string) {
   return error.slice(0, 300);
 }
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
+async function readMode(request: Request): Promise<AnalysisMode> {
+  try {
+    const body = (await request.json()) as { mode?: string };
+    return body.mode === "quick" ? "quick" : "full";
+  } catch {
+    return "full";
+  }
+}
+
+function chunkMetadata(chunks: ReturnType<typeof chunkText>) {
+  return chunks.map(({ id, index, startChar, endChar, sourceHint }) => ({ id, index, startChar, endChar, sourceHint }));
+}
+
+async function saveProgress(document: ParsedDocument, progress: ParsedDocument["analysisProgress"], extra: Partial<ParsedDocument> = {}) {
+  await saveParsedDocument({
+    ...document,
+    ...extra,
+    analysisStatus: "running",
+    analysisProgress: progress
+  });
+}
+
+async function runQuickAnalysis(document: ParsedDocument) {
+  const slice = getAnalysisTextSlice(document.text);
+  const result = await createJsonChatCompletion<Partial<DocumentAnalysis>>({
+    messages: buildDocumentAnalysisMessages(document.title, document.text),
+    repairMessages: buildJsonRepairMessages,
+    temperature: 0.2,
+    maxTokens: 5000
+  });
+
+  return {
+    analysis: normalizeLlmAnalysis(result.data, document.analysis),
+    model: result.model,
+    provider: result.provider,
+    diagnostics: result.diagnostics,
+    inputChars: slice.analyzedTextLength,
+    truncated: slice.isPartialAnalysis,
+    chunks: undefined,
+    chunkAnalyses: undefined
+  };
+}
+
+async function runFullAnalysis(document: ParsedDocument) {
+  const chunks = chunkText(document.text);
+  await saveProgress(
+    document,
+    {
+      step: "chunking",
+      totalChunks: chunks.length,
+      completedChunks: 0,
+      message: `文本切分已完成，共 ${chunks.length} 段。`
+    },
+    {
+      chunks: chunkMetadata(chunks),
+      analysisMode: "full"
+    }
+  );
+
+  const chunkAnalyses: ChunkAnalysis[] = [];
+  let lastModel = "";
+  let lastProvider = "";
+  let repairedJson = false;
+
+  for (const chunk of chunks) {
+    await saveProgress(document, {
+      step: "chunk_analysis",
+      totalChunks: chunks.length,
+      completedChunks: chunkAnalyses.length,
+      currentChunk: chunk.index,
+      message: `正在分析第 ${chunk.index} / ${chunks.length} 段。`
+    }, { chunks: chunkMetadata(chunks), chunkAnalyses });
+
+    const result = await createJsonChatCompletion<Partial<ChunkAnalysis>>({
+      messages: buildChunkAnalysisMessages(chunk, document.title),
+      repairMessages: buildChunkJsonRepairMessages,
+      temperature: 0.2,
+      maxTokens: 2200
+    });
+    lastModel = result.model;
+    lastProvider = result.provider;
+    repairedJson = repairedJson || Boolean(result.diagnostics.repairedJson);
+    const raw = result.data;
+    chunkAnalyses.push({
+      chunkId: typeof raw.chunkId === "string" ? raw.chunkId : chunk.id,
+      title: typeof raw.title === "string" ? raw.title : "",
+      summary: typeof raw.summary === "string" ? raw.summary : "",
+      keyPoints: Array.isArray(raw.keyPoints) ? raw.keyPoints.filter((item): item is string => typeof item === "string") : [],
+      keywords: Array.isArray(raw.keywords) ? raw.keywords.filter((item): item is string => typeof item === "string") : [],
+      quotes: Array.isArray(raw.quotes) ? raw.quotes.filter((item): item is string => typeof item === "string") : [],
+      entities: Array.isArray(raw.entities) ? raw.entities.filter((item): item is string => typeof item === "string") : [],
+      sourceHint: typeof raw.sourceHint === "string" ? raw.sourceHint : chunk.sourceHint
+    });
+
+    await saveProgress(
+      document,
+      {
+        step: "chunk_analysis",
+        totalChunks: chunks.length,
+        completedChunks: chunkAnalyses.length,
+        currentChunk: chunk.index,
+        message: `已完成第 ${chunk.index} / ${chunks.length} 段。`
+      },
+      {
+        chunks: chunkMetadata(chunks),
+        chunkAnalyses
+      }
+    );
+  }
+
+  await saveProgress(
+    document,
+    {
+      step: "synthesis",
+      totalChunks: chunks.length,
+      completedChunks: chunks.length,
+      message: "正在综合所有文本块。"
+    },
+    {
+      chunks: chunkMetadata(chunks),
+      chunkAnalyses
+    }
+  );
+
+  const synthesis = await createJsonChatCompletion<Partial<DocumentAnalysis>>({
+    messages: buildGlobalSynthesisMessages(chunkAnalyses, document.title),
+    repairMessages: buildJsonRepairMessages,
+    temperature: 0.2,
+    maxTokens: 5000
+  });
+
+  return {
+    analysis: normalizeLlmAnalysis(synthesis.data, document.analysis),
+    model: synthesis.model || lastModel,
+    provider: synthesis.provider || lastProvider,
+    diagnostics: {
+      ...synthesis.diagnostics,
+      repairedJson: repairedJson || Boolean(synthesis.diagnostics.repairedJson)
+    },
+    inputChars: document.text.trim().length,
+    truncated: false,
+    chunks: chunkMetadata(chunks),
+    chunkAnalyses
+  };
+}
+
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   let document: ParsedDocument | undefined;
+  let mode: AnalysisMode = "full";
   let inputChars = 0;
   let analysisTruncated = false;
 
@@ -23,6 +171,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
   }
 
   try {
+    mode = await readMode(request);
     document = await readParsedDocument(id);
     if (!document.text?.trim()) {
       const failedDiagnostics: AnalysisDiagnostics = {
@@ -32,25 +181,29 @@ export async function POST(_request: Request, { params }: { params: { id: string
       };
       await saveParsedDocument({
         ...document,
+        analysisMode: mode,
         analysisStatus: "failed",
         analysisError: "文档文本为空，无法分析。",
+        analysisProgress: { step: "failed", message: "文档文本为空，无法分析。" },
         analysisDiagnostics: failedDiagnostics
       });
       return NextResponse.json({ ok: false, error: "文档文本为空，无法分析。" }, { status: 422 });
     }
 
-    const slice = getAnalysisTextSlice(document.text);
-    inputChars = slice.analyzedTextLength;
-    analysisTruncated = slice.isPartialAnalysis;
-
-    const messages = buildDocumentAnalysisMessages(document.title, document.text);
-    const result = await createJsonChatCompletion<Partial<DocumentAnalysis>>({
-      messages,
-      repairMessages: buildJsonRepairMessages,
-      temperature: 0.2,
-      maxTokens: 5000
+    await saveParsedDocument({
+      ...document,
+      analysisMode: mode,
+      analysisStatus: "running",
+      analysisError: undefined,
+      analysisProgress: {
+        step: mode === "quick" ? "synthesis" : "chunking",
+        message: mode === "quick" ? "正在进行快速分析。" : "正在切分全文。"
+      }
     });
-    const analysis = normalizeLlmAnalysis(result.data, document.analysis);
+
+    const result = mode === "quick" ? await runQuickAnalysis(document) : await runFullAnalysis(document);
+    inputChars = result.inputChars;
+    analysisTruncated = result.truncated;
 
     const diagnostics: AnalysisDiagnostics = {
       ...result.diagnostics,
@@ -61,36 +214,42 @@ export async function POST(_request: Request, { params }: { params: { id: string
       rawPreview: result.diagnostics.rawPreview?.slice(0, 300)
     };
 
-    const updatedDocument: ParsedDocument = {
+    await saveParsedDocument({
       ...document,
       analysis: {
-        ...analysis,
+        ...result.analysis,
         analyzedTextLength: inputChars,
         isPartialAnalysis: analysisTruncated
       },
+      analysisMode: mode,
       analysisStatus: "completed",
+      analysisProgress: {
+        step: "completed",
+        totalChunks: result.chunks?.length,
+        completedChunks: result.chunks?.length,
+        message: mode === "full" ? "完整分块分析已完成。" : "快速分析已完成。"
+      },
       analyzedAt: new Date().toISOString(),
       analysisError: undefined,
       analysisInputChars: inputChars,
       analysisModel: result.model,
       analysisProvider: result.provider,
       analysisTruncated,
-      analysisDiagnostics: diagnostics
-    };
-
-    await saveParsedDocument(updatedDocument);
+      analysisDiagnostics: diagnostics,
+      chunks: result.chunks,
+      chunkAnalyses: result.chunkAnalyses
+    });
 
     return NextResponse.json({
       ok: true,
       documentId: id,
-      analysis: updatedDocument.analysis,
-      analysisStatus: updatedDocument.analysisStatus,
-      analyzedAt: updatedDocument.analyzedAt,
-      analysisInputChars: updatedDocument.analysisInputChars,
-      analysisModel: updatedDocument.analysisModel,
-      analysisProvider: updatedDocument.analysisProvider,
-      analysisTruncated: updatedDocument.analysisTruncated,
-      analysisDiagnostics: updatedDocument.analysisDiagnostics
+      analysisStatus: "completed",
+      analysisMode: mode,
+      analysisInputChars: inputChars,
+      analysisModel: result.model,
+      analysisProvider: result.provider,
+      analysisTruncated,
+      analysisDiagnostics: diagnostics
     });
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
@@ -114,8 +273,15 @@ export async function POST(_request: Request, { params }: { params: { id: string
       try {
         await saveParsedDocument({
           ...document,
+          analysisMode: mode,
           analysisStatus: "failed",
           analysisError: shortError(publicError.message),
+          analysisProgress: {
+            step: "failed",
+            totalChunks: document.chunks?.length,
+            completedChunks: document.chunkAnalyses?.length,
+            message: shortError(publicError.message)
+          },
           analysisInputChars: inputChars || document.analysisInputChars,
           analysisTruncated,
           analysisDiagnostics: failedDiagnostics

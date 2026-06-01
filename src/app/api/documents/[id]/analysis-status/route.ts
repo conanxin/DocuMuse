@@ -15,13 +15,17 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     const document = await readParsedDocument(id);
     return NextResponse.json({
       ok: true,
+      analysisMode: document.analysisMode,
       analysisStatus: document.analysisStatus,
+      analysisProgress: document.analysisProgress,
       analyzedAt: document.analyzedAt,
       analysisError: document.analysisError,
       analysisModel: document.analysisModel,
       analysisProvider: document.analysisProvider,
       analysisInputChars: document.analysisInputChars,
       analysisTruncated: document.analysisTruncated,
+      chunks: document.chunks,
+      chunkAnalyses: document.chunkAnalyses,
       analysisDiagnostics: document.analysisDiagnostics
     });
   } catch (error) {

@@ -38,6 +38,35 @@ export type AnalysisDiagnostics = {
   rawPreview?: string;
 };
 
+export type AnalysisMode = "quick" | "full";
+
+export type AnalysisProgress = {
+  step: "idle" | "chunking" | "chunk_analysis" | "synthesis" | "saving" | "completed" | "failed";
+  totalChunks?: number;
+  completedChunks?: number;
+  currentChunk?: number;
+  message?: string;
+};
+
+export type TextChunkMetadata = {
+  id: string;
+  index: number;
+  startChar: number;
+  endChar: number;
+  sourceHint: string;
+};
+
+export type ChunkAnalysis = {
+  chunkId: string;
+  title: string;
+  summary: string;
+  keyPoints: string[];
+  keywords: string[];
+  quotes: string[];
+  entities: string[];
+  sourceHint: string;
+};
+
 export type ParsedDocument = {
   id: string;
   title: string;
@@ -45,7 +74,9 @@ export type ParsedDocument = {
   fileType: "pdf";
   createdAt: string;
   status: "parsed";
-  analysisStatus?: "idle" | "analyzing" | "completed" | "failed";
+  analysisMode?: AnalysisMode;
+  analysisStatus?: "idle" | "analyzing" | "running" | "completed" | "failed";
+  analysisProgress?: AnalysisProgress;
   analyzedAt?: string;
   analysisError?: string;
   analysisInputChars?: number;
@@ -58,6 +89,8 @@ export type ParsedDocument = {
   uploadPath?: string;
   metadata: Record<string, unknown>;
   analysis: DocumentAnalysis;
+  chunks?: TextChunkMetadata[];
+  chunkAnalyses?: ChunkAnalysis[];
 };
 
 export type DocumentListItem = {
