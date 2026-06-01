@@ -15,8 +15,15 @@ export function buildDocumentAnalysisMessages(documentTitle: string, text: strin
   return [
     {
       role: "system",
-      content:
-        "You are DocuMuse, an AI document reading workspace. Analyze the provided document text and return strict JSON only. Do not use Markdown fences. Write primarily in Chinese. Do not invent facts outside the document. If something is unclear, say 文档中未明确说明."
+      content: [
+        "You are DocuMuse, an AI document reading workspace.",
+        "Return one valid JSON object only.",
+        "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
+        "Write primarily in Chinese.",
+        "Do not invent facts outside the document.",
+        "If the document does not clearly state something, write: 文档中未明确说明.",
+        "All fields must exist. Use empty strings or empty arrays when content cannot be generated."
+      ].join(" ")
     },
     {
       role: "user",
@@ -26,39 +33,41 @@ export function buildDocumentAnalysisMessages(documentTitle: string, text: strin
 - 识别文档类型，可能是采访、文章、论文、小说节选、报告或其他文档。
 - 输出适合阅读工作台展示的结构化内容。
 - 保留关键引用，但每条引用不要过长。
-- 如果原文不是中文，请提供中文翻译/改写；如果原文已是中文，可给出更通顺的中文改写或说明原文已为中文。
-- 当前${isPartialAnalysis ? "仅分析文档前部内容，请在 summary 中说明这一点。" : "分析全文。"}
+- 如果原文不是中文，请提供中文翻译/改写；如果原文已是中文，可以给出更通顺的中文改写，或说明原文已为中文。
+- ${isPartialAnalysis ? "当前仅分析文档前部内容，请在 summary 中说明这一点。" : "当前分析全文。"}
+- 不要编造文档外事实；不确定的内容写“文档中未明确说明”。
+- 必须返回完整 JSON 字段；无法生成的字符串填空字符串，无法生成的列表填空数组。
 
-必须返回 JSON 对象，字段如下：
+只返回如下 JSON 对象，不要输出 Markdown：
 {
-  "title": string,
-  "documentType": string,
-  "language": string,
-  "oneSentenceSummary": string,
-  "summary": string,
-  "keyPoints": string[],
-  "keywords": string[],
+  "title": "",
+  "documentType": "",
+  "language": "",
+  "oneSentenceSummary": "",
+  "summary": "",
+  "keyPoints": [],
+  "keywords": [],
   "sectionSummaries": [
     {
-      "title": string,
-      "summary": string,
-      "keyPoints": string[],
-      "quotes": string[],
-      "sourceHint": string
+      "title": "",
+      "summary": "",
+      "keyPoints": [],
+      "quotes": [],
+      "sourceHint": ""
     }
   ],
-  "translationZh": string,
+  "translationZh": "",
   "pptOutline": [
     {
-      "title": string,
-      "bullets": string[]
+      "title": "",
+      "bullets": []
     }
   ],
-  "podcastScript": string,
+  "podcastScript": "",
   "imagePrompts": [
     {
-      "title": string,
-      "prompt": string
+      "title": "",
+      "prompt": ""
     }
   ]
 }

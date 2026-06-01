@@ -10,15 +10,20 @@ export function WorkspaceTopbar({
   status = "已解析",
   onAnalyze,
   analyzing = false,
-  isDemo = true
+  isDemo = true,
+  hasAnalysis = false,
+  analysisFailed = false
 }: {
   title?: string;
   status?: "已解析" | "解析中" | "失败";
   onAnalyze?: () => void;
   analyzing?: boolean;
   isDemo?: boolean;
+  hasAnalysis?: boolean;
+  analysisFailed?: boolean;
 }) {
   const [apiOpen, setApiOpen] = useState(false);
+  const analyzeLabel = analyzing ? "分析中..." : hasAnalysis || analysisFailed ? "重新分析" : "开始分析";
 
   return (
     <>
@@ -37,7 +42,7 @@ export function WorkspaceTopbar({
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {analyzing ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
-            {analyzing ? "正在分析" : "开始分析"}
+            {analyzeLabel}
           </button>
           <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <RefreshCw size={16} />

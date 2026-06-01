@@ -37,6 +37,10 @@ export type ParsedDocument = {
   analysisStatus?: "idle" | "analyzing" | "completed" | "failed";
   analyzedAt?: string;
   analysisError?: string;
+  analysisInputChars?: number;
+  analysisModel?: string;
+  analysisProvider?: string;
+  analysisTruncated?: boolean;
   text: string;
   pageCount: number;
   uploadPath?: string;

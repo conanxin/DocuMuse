@@ -1,6 +1,18 @@
 import type { CreativeStatus, DocumentStatus } from "@/lib/mockData";
 
-type Status = DocumentStatus | CreativeStatus | "已解析" | "上传中" | "正在提取" | "正在分析";
+type Status =
+  | DocumentStatus
+  | CreativeStatus
+  | "已解析"
+  | "解析中"
+  | "失败"
+  | "未生成"
+  | "生成中"
+  | "已生成"
+  | "生成失败"
+  | "上传中"
+  | "正在提取"
+  | "正在分析";
 
 const statusClass: Record<string, string> = {
   已解析: "bg-emerald-50 text-emerald-700 ring-emerald-200",

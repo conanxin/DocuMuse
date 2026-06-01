@@ -16,8 +16,24 @@ type ChatCompletionPayload = {
   model?: string;
 };
 
+type ProviderError = {
+  message: string;
+  retryable: boolean;
+  status: number;
+};
+
 export class LlmConfigError extends Error {}
-export class LlmResponseError extends Error {}
+
+export class LlmResponseError extends Error {
+  retryable: boolean;
+  status: number;
+
+  constructor(message: string, options: { retryable?: boolean; status?: number } = {}) {
+    super(message);
+    this.retryable = Boolean(options.retryable);
+    this.status = options.status ?? 502;
+  }
+}
 
 function getShortDetail(error: unknown) {
   if (error instanceof Error) return error.message.slice(0, 300);
@@ -28,21 +44,37 @@ export function stripReasoningContent(content: string) {
   return content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
 }
 
+function tryParseJsonObject(content: string) {
+  try {
+    const parsed = JSON.parse(content);
+    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
+  } catch {
+    return false;
+  }
+}
+
 function extractJsonObject(content: string) {
   const withoutReasoning = stripReasoningContent(content);
-  if (withoutReasoning.startsWith("{") && withoutReasoning.endsWith("}")) return withoutReasoning;
+
+  if (tryParseJsonObject(withoutReasoning)) return withoutReasoning;
 
   const fenced = withoutReasoning.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fenced?.[1]) {
     const fencedContent = fenced[1].trim();
-    if (fencedContent.startsWith("{") && fencedContent.endsWith("}")) return fencedContent;
+    if (tryParseJsonObject(fencedContent)) return fencedContent;
   }
 
-  const match = withoutReasoning.match(/\{[\s\S]*\}/);
-  if (!match) {
-    throw new LlmResponseError("模型没有返回 JSON 对象。");
+  const firstBrace = withoutReasoning.indexOf("{");
+  const lastBrace = withoutReasoning.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    const sliced = withoutReasoning.slice(firstBrace, lastBrace + 1);
+    if (tryParseJsonObject(sliced)) return sliced;
   }
-  return match[0];
+
+  throw new LlmResponseError("模型没有返回有效 JSON，请重新生成或更换模型。", {
+    retryable: true,
+    status: 502
+  });
 }
 
 function normalizeTemperature(config: ResolvedLlmConfig, requested?: number) {
@@ -75,18 +107,24 @@ function buildRequestBody(config: ResolvedLlmConfig, options: ChatCompletionOpti
   };
 }
 
-function mapProviderError(status: number, raw: string, provider: ResolvedLlmConfig["provider"]) {
+function mapProviderError(status: number, raw: string, provider: ResolvedLlmConfig["provider"]): ProviderError {
   if (provider === "minimax-token-plan") {
-    if (status === 401 || status === 403) return "MiniMax Token Plan Key 无效或没有权限。";
-    if (status === 402) return "MiniMax Token Plan 没有可用资源或额度不足。";
-    if (status === 404) return "MiniMax Base URL 或模型名错误。";
-    if (status === 429) return "MiniMax 额度或频率限制，请稍后重试。";
-    if (status >= 500) return "MiniMax 服务暂时不可用，请稍后重试。";
+    if (status === 401 || status === 403) return { message: "MiniMax Token Plan Key 无效或没有权限。", retryable: false, status };
+    if (status === 402) return { message: "MiniMax Token Plan 没有可用资源或额度不足。", retryable: false, status };
+    if (status === 404) return { message: "MiniMax Base URL 或模型名错误。", retryable: false, status };
+    if (status === 429) return { message: "MiniMax 额度或频率限制，请稍后重试。", retryable: false, status };
+    if (status === 502 || status === 503 || status === 504) return { message: "MiniMax 服务暂时不可用，请稍后重试。", retryable: true, status };
+    if (status >= 500) return { message: "MiniMax 服务暂时不可用，请稍后重试。", retryable: false, status };
   }
-  return `LLM 请求失败：HTTP ${status} ${raw.slice(0, 200)}`;
+
+  return {
+    message: `LLM 请求失败：HTTP ${status} ${raw.slice(0, 200)}`,
+    retryable: status === 502 || status === 503 || status === 504,
+    status
+  };
 }
 
-async function requestChatCompletion(options: ChatCompletionOptions, expectsJson: boolean) {
+async function requestChatCompletionOnce(options: ChatCompletionOptions, expectsJson: boolean) {
   const config = await resolveLlmConfig();
   if (!config.apiKey) {
     throw new LlmConfigError("缺少 API Key，请在 API 设置中保存密钥，或在 .env.local 中配置 OPENAI_API_KEY。");
@@ -108,19 +146,29 @@ async function requestChatCompletion(options: ChatCompletionOptions, expectsJson
 
     const raw = await response.text();
     if (!response.ok) {
-      throw new LlmResponseError(mapProviderError(response.status, raw, config.provider));
+      const providerError = mapProviderError(response.status, raw, config.provider);
+      throw new LlmResponseError(providerError.message, {
+        retryable: providerError.retryable,
+        status: providerError.status
+      });
     }
 
     let payload: ChatCompletionPayload;
     try {
       payload = JSON.parse(raw);
     } catch (error) {
-      throw new LlmResponseError(`LLM 响应不是合法 JSON：${getShortDetail(error)}`);
+      throw new LlmResponseError(`LLM 响应不是合法 JSON：${getShortDetail(error)}`, {
+        retryable: false,
+        status: 502
+      });
     }
 
     const content = payload.choices?.[0]?.message?.content;
     if (!content) {
-      throw new LlmResponseError("LLM 响应中没有 message content。");
+      throw new LlmResponseError("LLM 响应中没有 message content。", {
+        retryable: true,
+        status: 502
+      });
     }
 
     return {
@@ -131,40 +179,62 @@ async function requestChatCompletion(options: ChatCompletionOptions, expectsJson
   } catch (error) {
     if (error instanceof LlmConfigError || error instanceof LlmResponseError) throw error;
     if (error instanceof Error && error.name === "AbortError") {
-      throw new LlmResponseError("LLM 请求超时，请稍后重试。");
+      throw new LlmResponseError("LLM 请求超时，请稍后重试。", { retryable: true, status: 504 });
     }
-    throw new LlmResponseError(`LLM 请求失败：${getShortDetail(error)}`);
+    throw new LlmResponseError(`LLM 请求失败：${getShortDetail(error)}`, { retryable: true, status: 502 });
   } finally {
     clearTimeout(timeout);
   }
 }
 
-export async function chatCompletionText(options: ChatCompletionOptions) {
-  const result = await requestChatCompletion(options, false);
-  const text = stripReasoningContent(result.content);
-  if (!text) {
-    throw new LlmResponseError("模型返回为空，请检查模型名或服务状态。");
+async function withSingleRetry<T>(operation: () => Promise<T>) {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof LlmResponseError && error.retryable) {
+      return operation();
+    }
+    throw error;
   }
-
-  return {
-    text,
-    model: result.model,
-    provider: result.provider
-  };
 }
 
-export async function chatCompletionJson<T>(options: ChatCompletionOptions): Promise<{ data: T; model: string }> {
-  const result = await requestChatCompletion(options, true);
+export async function chatCompletionText(options: ChatCompletionOptions) {
+  return withSingleRetry(async () => {
+    const result = await requestChatCompletionOnce(options, false);
+    const text = stripReasoningContent(result.content);
+    if (!text) {
+      throw new LlmResponseError("模型返回为空，请检查模型名或服务状态。", {
+        retryable: true,
+        status: 502
+      });
+    }
 
-  try {
     return {
-      data: JSON.parse(extractJsonObject(result.content)) as T,
-      model: result.model
+      text,
+      model: result.model,
+      provider: result.provider
     };
-  } catch (error) {
-    if (error instanceof LlmResponseError) throw error;
-    throw new LlmResponseError(`模型返回的 JSON 无法解析：${getShortDetail(error)}`);
-  }
+  });
+}
+
+export async function chatCompletionJson<T>(options: ChatCompletionOptions): Promise<{ data: T; model: string; provider: string }> {
+  return withSingleRetry(async () => {
+    const result = await requestChatCompletionOnce(options, true);
+
+    try {
+      return {
+        data: JSON.parse(extractJsonObject(result.content)) as T,
+        model: result.model,
+        provider: result.provider
+      };
+    } catch (error) {
+      if (error instanceof LlmResponseError) throw error;
+      throw new LlmResponseError("模型没有返回有效 JSON，请重新生成或更换模型。", {
+        retryable: true,
+        status: 502
+      });
+    }
+  });
 }
 
 export const createJsonChatCompletion = chatCompletionJson;
@@ -191,7 +261,7 @@ export function toPublicLlmError(error: unknown) {
     return { message: error.message, status: 400 };
   }
   if (error instanceof LlmResponseError) {
-    return { message: error.message, status: 502 };
+    return { message: error.message, status: error.status };
   }
   return { message: "LLM 调用失败。", status: 500 };
 }
