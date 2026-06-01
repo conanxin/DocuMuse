@@ -27,6 +27,17 @@ export type DocumentAnalysis = {
   isPartialAnalysis?: boolean;
 };
 
+export type AnalysisDiagnostics = {
+  parserStrategy?: "direct" | "code_block" | "brace_extract" | "repair" | "failed";
+  repairedJson?: boolean;
+  provider?: string;
+  model?: string;
+  inputChars?: number;
+  outputChars?: number;
+  errorType?: string;
+  rawPreview?: string;
+};
+
 export type ParsedDocument = {
   id: string;
   title: string;
@@ -41,6 +52,7 @@ export type ParsedDocument = {
   analysisModel?: string;
   analysisProvider?: string;
   analysisTruncated?: boolean;
+  analysisDiagnostics?: AnalysisDiagnostics;
   text: string;
   pageCount: number;
   uploadPath?: string;

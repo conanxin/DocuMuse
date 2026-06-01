@@ -85,12 +85,13 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
 
   const hasAnalysis = document?.analysisStatus === "completed";
   const analysisFailed = analysisState === "error" || document?.analysisStatus === "failed";
+  const topbarStatus = analysisState === "loading" ? "正在分析" : analysisFailed ? "失败" : document?.status === "parsed" ? "已解析" : undefined;
 
   return (
     <main className="flex h-screen min-h-[760px] flex-col bg-slate-50">
       <WorkspaceTopbar
         title={document?.title}
-        status={document?.status === "parsed" ? "已解析" : undefined}
+        status={topbarStatus}
         onAnalyze={() => void analyzeDocument()}
         analyzing={analysisState === "loading"}
         isDemo={isDemo}
@@ -104,7 +105,8 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "error" && <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">{errorMessage}</div>}
           {analysisState === "loading" && <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">正在分析文档，请稍候...</div>}
           {analysisFailed && analysisError && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{analysisError}</div>}
-          {loadState === "idle" && document?.analysisTruncated && <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">当前仅分析文档前部内容。</div>}
+          {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
+          {loadState === "idle" && document?.analysisTruncated && <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">当前仅分析文档前部内容，长文完整分块分析将在后续版本支持。</div>}
           {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
           {loadState === "idle" && activeTab === "original" && <OriginalTextPanel text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}

@@ -15,7 +15,7 @@ export function WorkspaceTopbar({
   analysisFailed = false
 }: {
   title?: string;
-  status?: "已解析" | "解析中" | "失败";
+  status?: "已解析" | "解析中" | "失败" | "正在分析";
   onAnalyze?: () => void;
   analyzing?: boolean;
   isDemo?: boolean;
