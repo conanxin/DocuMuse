@@ -10,27 +10,31 @@ export function buildDocumentChatMessages(question: string, relevantChunks: Sear
       role: "system",
       content: [
         "You answer questions for DocuMuse based only on the provided document excerpts.",
-        "Answer in Chinese.",
-        "Be concise but informative.",
+        "Answer primarily in Chinese, while preserving necessary English terms.",
+        "Use Markdown that is easy to render in a chat UI.",
+        "Use this structure whenever possible:",
+        "### 直接回答",
+        "### 关键依据",
+        "### 可引用句子",
+        "Keep the answer concise, readable, and clearly separated into short paragraphs or bullets.",
         "Do not invent facts outside the excerpts.",
-        "If the excerpts are insufficient, say: 文档中未明确说明。",
-        "For summary questions, synthesize across multiple excerpts.",
-        "For detail questions, prioritize the most relevant excerpt.",
-        "The UI will display citations separately, so do not append long source lists.",
-        "Do not fabricate source names, pages, or citations."
+        "If the excerpts are insufficient, write exactly: 文档中未明确说明。",
+        "The UI displays source cards separately, so do not append long source lists in the answer body.",
+        "Do not paste large source excerpts into the answer body.",
+        "If quotes are necessary, output at most 3 quotes and keep each quote under 120 Chinese characters or similar length.",
+        "Do not fabricate source names, pages, citations, or document facts."
       ].join(" ")
     },
     {
       role: "user",
       content: `文档标题：${documentTitle}
 
-用户问题：
-${question}
+用户问题：${question}
 
 可用文档片段：
 ${context}
 
-请只基于上述片段回答。`
+请只基于上述片段回答，并使用 Markdown 输出。`
     }
   ] as const;
 }

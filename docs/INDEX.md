@@ -12,6 +12,7 @@
 - [Phase 2B Document Chat](./PHASE_2B_DOCUMENT_CHAT.md): lightweight paragraph retrieval, LLM answers, citations, and saved chat history.
 - [Phase 2B.1 Chat Source Export](./PHASE_2B_1_CHAT_SOURCE_EXPORT.md): source navigation, chat clearing, and Markdown export.
 - [Phase 2B.2 Source Anchors](./PHASE_2B_2_SOURCE_ANCHORS.md): paragraph anchors, selected source state, and original text highlighting.
+- [Phase 2B.3 Chat Readability](./PHASE_2B_3_CHAT_READABILITY.md): safe Markdown answer rendering, answer actions, expanded reading, and source UI cleanup.
 - [Phase 2C Retrieval Validation](./PHASE_2C_RETRIEVAL_VALIDATION.md): real-model validation page and lightweight retrieval quality improvements.
 - [Phase 2C.1 Real Model Validation Report](./PHASE_2C_1_REAL_MODEL_VALIDATION_REPORT.md): real MiniMax Token Plan validation results, performance observations, and next-phase recommendation.
 - [Phase 3A Export System](./PHASE_3A_EXPORT_SYSTEM.md): Markdown, JSON, and chat-only exports with sensitive-field filtering.

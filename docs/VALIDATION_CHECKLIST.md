@@ -56,6 +56,10 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm an LLM answer is returned.
 - [ ] Confirm sources are shown.
 - [ ] Confirm source quotes are short and relevant to the question.
+- [ ] Confirm assistant answers render Markdown headings, bold text, lists, blockquotes, and inline code.
+- [ ] Confirm raw Markdown markers such as `**bold**` are not shown for supported syntax.
+- [ ] Copy an assistant answer.
+- [ ] Open expanded reading for an assistant answer.
 - [ ] Click a source and confirm the original text tab opens.
 - [ ] Confirm the matching paragraph is highlighted.
 - [ ] Clear highlight.

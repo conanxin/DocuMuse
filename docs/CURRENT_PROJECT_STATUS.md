@@ -20,6 +20,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Track analysis status and diagnostics.
 - Ask grounded questions against document text.
 - Show source citations and jump to paragraph anchors in the original text.
+- Render assistant answers as safe Markdown with copy and expanded reading actions.
 - Clear and export chat history as Markdown.
 - Use `/settings/validation` for local real-model validation.
 - MiniMax Token Plan with `MiniMax-M2.7` has passed real local validation for connection test, quick analysis, full analysis, and document chat.
@@ -79,6 +80,7 @@ data/settings/    Local LLM settings
 - `SectionAnalysisPanel`
 - `CreativeOutputsPanel`
 - `ChatPanel`
+- `ChatAnswerRenderer`
 
 ## Current Limits
 

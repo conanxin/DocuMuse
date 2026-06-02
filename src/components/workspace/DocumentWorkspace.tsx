@@ -182,7 +182,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         hasAnalysis={hasAnalysis}
         analysisFailed={analysisFailed}
       />
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[260px_minmax(0,1fr)_360px]">
+      <div className="grid min-h-0 flex-1 lg:grid-cols-[250px_minmax(0,1fr)_400px]">
         <WorkspaceSidebar activeTab={activeTab} onChange={setActiveTab} />
         <section className="min-h-0 overflow-auto p-5 thin-scrollbar">
           {loadState === "loading" && <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">正在读取文档...</div>}

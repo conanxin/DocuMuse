@@ -1,9 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Download, Loader2, Send, Trash2 } from "lucide-react";
+import { Check, Copy, Download, ExternalLink, Loader2, Maximize2, Send, Trash2, X } from "lucide-react";
 import { mockChatMessages } from "@/lib/mockData";
 import type { ChatSource, DocumentChatMessage } from "@/lib/documentTypes";
+import { ChatAnswerRenderer } from "./ChatAnswerRenderer";
 
 const quickQuestions = ["这篇文章讲了什么？", "有哪些核心观点？", "有哪些值得引用的句子？", "帮我生成一篇中文总结"];
 
@@ -25,7 +26,7 @@ type ChatResponse = {
 };
 
 function mockMessages(): ChatMessage[] {
-  return mockChatMessages.map((message, index) => ({
+  const mapped = mockChatMessages.map((message, index) => ({
     id: `mock_${index}`,
     role: message.role,
     content: message.content,
@@ -40,6 +41,16 @@ function mockMessages(): ChatMessage[] {
         ]
       : undefined
   }));
+
+  return [
+    ...mapped,
+    {
+      id: "mock_markdown_answer",
+      role: "assistant",
+      content: "### 直接回答\n\n这份 demo 展示了 **可追溯的文档问答**。\n\n### 关键依据\n\n- 回答会优先基于文档片段。\n- 来源会显示在回答下方，便于定位原文。\n\n### 可引用句子\n\n> every summary, quote, and generated output can be traced back to its source",
+      sources: [{ sourceHint: "Demo source", quote: "every summary, quote, and generated output can be traced back to its source", startChar: 0, endChar: 120 }]
+    }
+  ];
 }
 
 async function safeJson(response: Response): Promise<ChatResponse> {
@@ -70,6 +81,8 @@ export function ChatPanel({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [copiedId, setCopiedId] = useState("");
+  const [modalMessage, setModalMessage] = useState<ChatMessage | null>(null);
 
   useEffect(() => {
     if (isDemo) {
@@ -78,6 +91,16 @@ export function ChatPanel({
     }
     setMessages(initialMessages);
   }, [isDemo, initialMessages]);
+
+  const copyAnswer = async (message: ChatMessage) => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopiedId(message.id);
+      window.setTimeout(() => setCopiedId(""), 1200);
+    } catch {
+      setError("复制失败，请手动选择文本复制。");
+    }
+  };
 
   const send = async (content: string) => {
     const trimmed = content.trim();
@@ -90,7 +113,7 @@ export function ChatPanel({
         {
           id: `demo_assistant_${Date.now()}`,
           role: "assistant",
-          content: "这是一个 mock 回复：根据文档内容，我会优先引用原文中的关键段落，并给出可追溯的回答。",
+          content: "### 直接回答\n\n这是一个 **mock 回复**。我会先概括问题，再列出关键依据。\n\n### 关键依据\n\n- 来源引用会保留在回答下方。\n- 点击来源仍可切换到原文页。\n\n### 可引用句子\n\n> demo 引用来源",
           sources: [{ sourceHint: "第 2 页 / 第 3 段", quote: "demo 引用来源", startChar: 0, endChar: 120 }]
         }
       ]);
@@ -206,7 +229,7 @@ export function ChatPanel({
             </button>
           </div>
         </div>
-        {isPlaceholder && <p className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-700">基于轻量段落检索生成回答，并显示来源引用。</p>}
+        {isPlaceholder && <p className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-700">基于轻量段落检索生成回答，来源引用会显示在回答下方。</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           {quickQuestions.map((question) => (
             <button key={question} onClick={() => void send(question)} disabled={sending} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
@@ -216,15 +239,17 @@ export function ChatPanel({
         </div>
         {error && <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs leading-5 text-rose-700">{error}</p>}
       </div>
-      <div className="min-h-0 flex-1 space-y-3 overflow-auto p-4 thin-scrollbar">
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 thin-scrollbar">
         {messages.map((message) => (
-          <div key={message.id} className={`rounded-2xl px-4 py-3 ${message.role === "user" ? "ml-8 bg-blue-600 text-white" : "mr-8 bg-slate-100 text-slate-800"}`}>
-            <div className="flex items-start gap-2">
-              {message.loading && <Loader2 className="mt-1 shrink-0 animate-spin text-slate-500" size={14} />}
-              <p className="text-sm leading-6">{message.content}</p>
-            </div>
-            {message.role === "assistant" && !message.loading && (message.sources?.length ? <SourceList sources={message.sources} selectedSource={selectedSource} onSourceClick={onSourceClick} /> : <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">未找到明确来源，建议换一种问法或使用完整分析后再提问。</p>)}
-          </div>
+          <MessageBubble
+            key={message.id}
+            message={message}
+            selectedSource={selectedSource}
+            copied={copiedId === message.id}
+            onCopy={() => void copyAnswer(message)}
+            onOpen={() => setModalMessage(message)}
+            onSourceClick={onSourceClick}
+          />
         ))}
       </div>
       <form onSubmit={onSubmit} className="border-t border-slate-200 p-4">
@@ -235,29 +260,114 @@ export function ChatPanel({
           </button>
         </div>
       </form>
+      {modalMessage && <ChatAnswerModal message={modalMessage} selectedSource={selectedSource} onCopy={() => void copyAnswer(modalMessage)} onClose={() => setModalMessage(null)} onSourceClick={onSourceClick} />}
     </aside>
   );
 }
 
-function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatSource[]; selectedSource?: ChatSource | null; onSourceClick?: (source: ChatSource) => void }) {
+function MessageBubble({
+  message,
+  selectedSource,
+  copied,
+  onCopy,
+  onOpen,
+  onSourceClick
+}: {
+  message: ChatMessage;
+  selectedSource?: ChatSource | null;
+  copied: boolean;
+  onCopy: () => void;
+  onOpen: () => void;
+  onSourceClick?: (source: ChatSource) => void;
+}) {
+  const isAssistant = message.role === "assistant";
+
   return (
-    <div className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-xs text-slate-600">
+    <div className={`rounded-2xl px-4 py-3 ${isAssistant ? "mr-2 border border-slate-200 bg-slate-50 text-slate-800 shadow-sm" : "ml-10 bg-blue-600 text-white"}`}>
+      <div className="flex items-start gap-2">
+        {message.loading && <Loader2 className="mt-1 shrink-0 animate-spin text-slate-500" size={14} />}
+        {isAssistant && !message.loading ? <ChatAnswerRenderer content={message.content} /> : <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>}
+      </div>
+      {isAssistant && !message.loading && (
+        <>
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-200 pt-3">
+            <button onClick={onCopy} className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+              {copied ? "已复制" : "复制回答"}
+            </button>
+            <button onClick={onOpen} className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">
+              <Maximize2 size={13} />
+              展开阅读
+            </button>
+          </div>
+          <SourceList sources={message.sources ?? []} selectedSource={selectedSource} onSourceClick={onSourceClick} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatSource[]; selectedSource?: ChatSource | null; onSourceClick?: (source: ChatSource) => void }) {
+  if (!sources.length) {
+    return <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">未找到明确来源。</p>;
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
       <p className="font-semibold text-slate-700">来源</p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-2 grid gap-2">
         {sources.slice(0, 5).map((source, index) => {
           const active = isSameSource(source, selectedSource);
           return (
-          <button
-            key={`${source.sourceHint}-${index}`}
-            title={process.env.NODE_ENV === "development" ? `score=${source.score ?? "n/a"} terms=${source.matchedTerms?.join(", ") || "n/a"} reason=${source.retrievalReason || "n/a"}` : undefined}
-            onClick={() => onSourceClick?.(source)}
-            className={`rounded-lg border px-2.5 py-1.5 text-left text-xs transition ${active ? "border-blue-300 bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}`}
-          >
-            <span className="font-medium">{source.sourceHint}</span>
-            <span className="block max-w-[220px] truncate">{source.quote}</span>
-          </button>
+            <button
+              key={`${source.sourceHint}-${index}`}
+              title={process.env.NODE_ENV === "development" ? `score=${source.score ?? "n/a"} terms=${source.matchedTerms?.join(", ") || "n/a"} reason=${source.retrievalReason || "n/a"}` : undefined}
+              onClick={() => onSourceClick?.(source)}
+              className={`rounded-lg border px-3 py-2 text-left transition ${active ? "border-blue-300 bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}`}
+            >
+              <span className="flex items-center gap-1 font-medium">
+                <ExternalLink size={12} />
+                {source.sourceHint}
+              </span>
+              <span className="mt-1 block leading-5">{shortQuote(source.quote, 120)}</span>
+            </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function ChatAnswerModal({ message, selectedSource, onCopy, onClose, onSourceClick }: { message: ChatMessage; selectedSource?: ChatSource | null; onCopy: () => void; onClose: () => void; onSourceClick?: (source: ChatSource) => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+      <div className="flex max-h-[86vh] w-full max-w-3xl flex-col rounded-2xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+          <div>
+            <h3 className="font-bold text-slate-950">回答详情</h3>
+            <p className="mt-1 text-xs text-slate-500">完整 Markdown 渲染内容与来源引用</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={onCopy} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">
+              <Copy size={14} />
+              复制回答
+            </button>
+            <button onClick={onClose} aria-label="关闭" className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto p-5 thin-scrollbar">
+          <ChatAnswerRenderer content={message.content} expanded />
+          <SourceList
+            sources={message.sources ?? []}
+            selectedSource={selectedSource}
+            onSourceClick={(source) => {
+              onSourceClick?.(source);
+              onClose();
+            }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -283,8 +393,8 @@ function buildChatMarkdown(documentTitle: string, messages: ChatMessage[]) {
       if (message.sources?.length) {
         lines.push("### 来源", "");
         for (const source of message.sources) {
-          const anchorNote = source.anchorId ? `（${source.anchorId}）` : "";
-          lines.push(`- ${source.sourceHint}${anchorNote}：${source.quote.slice(0, 300)}`);
+          const anchorNote = source.anchorId ? ` (${source.anchorId})` : "";
+          lines.push(`- ${source.sourceHint}${anchorNote}：${shortQuote(source.quote, 300)}`);
         }
         lines.push("");
       }
@@ -292,6 +402,11 @@ function buildChatMarkdown(documentTitle: string, messages: ChatMessage[]) {
   }
 
   return lines.join("\n");
+}
+
+function shortQuote(value: string, maxLength: number) {
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}...`;
 }
 
 function safeFilename(filename: string) {
