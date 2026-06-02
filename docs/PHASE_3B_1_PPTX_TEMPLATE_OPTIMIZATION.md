@@ -77,6 +77,8 @@ After opening real exports in WPS / PowerPoint, the template received another re
 - Summary, Section Analysis, Podcast Script, and Q&A pages use shorter excerpts.
 - Q&A answers and sources are visually separated.
 
+Local WPS / PowerPoint visual validation has passed. The current PPTX export is considered usable as a basic deliverable deck.
+
 ## Security
 
 PPTX export still excludes:

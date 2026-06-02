@@ -64,6 +64,27 @@ Document Q&A slides are less dense:
 
 The PPTX still excludes API keys, prompts, raw model output, full original document text, `analysisDiagnostics.rawPreview`, `data/settings`, absolute upload paths, and full chunk text.
 
+## Visual Validation Result
+
+Phase 3B.1.1 has passed local visual validation in WPS / PowerPoint.
+
+Confirmed:
+
+- PPTX downloads successfully.
+- WPS / PowerPoint opens the deck normally.
+- Slide titles are Chinese-first.
+- Cover metadata is clear and row-based.
+- Summary readability is improved.
+- Key Points cards render normally.
+- Keywords tags render normally.
+- Section Analysis knowledge cards render normally.
+- PPT Outline cards render normally.
+- Podcast Script is no longer overly dense.
+- Image Prompts pages render normally.
+- Document Q&A density is improved.
+- No `undefined`, `null`, or `[object Object]` was found.
+- No API key, prompt, raw output, or full original text leakage was found.
+
 ## Current Limits
 
 - Layout is template-based, not user-editable.

@@ -14,6 +14,12 @@ Use this checklist before tagging a release or sharing a demo build.
 
 - [x] MiniMax Token Plan / MiniMax-M2.7 / PDF analysis / document chat.
 
+## Passed PPTX Visual Validation
+
+- [x] Phase 3B.1.1 PPTX opened successfully in WPS / PowerPoint.
+- [x] Chinese slide titles, row-based cover metadata, readable Summary, card-based Key Points, Keywords, Section Analysis, PPT Outline, Podcast Script, Image Prompts, and Document Q&A pages were visually checked.
+- [x] No `undefined`, `null`, `[object Object]`, API key, prompt, raw output, or full original text leakage was observed.
+
 ## Upload And Library
 
 - [ ] Upload a normal selectable-text PDF.

@@ -22,6 +22,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Chat history clearing and Markdown export.
 - Workspace export for Markdown reports, structured JSON, and Q&A records.
 - Modernized PPTX export generated from existing document analysis, with Chinese report titles and cleaner card-based layouts.
+- PPTX export has passed local WPS / PowerPoint visual validation and is usable as a basic deliverable deck.
 
 ## Install
 
@@ -128,6 +129,12 @@ data/settings/    Local LLM settings
 - Embeddings.
 - Streaming responses.
 - Generated images inside PPTX.
+- PPTX brand theme switching.
+- PPTX export section selection.
+- Inserted images in PPTX.
+- PPTX animations.
+- Speaker notes.
+- Complex PPTX template editor.
 - Real image generation.
 - Audio generation.
 - Multi-user auth.
@@ -151,6 +158,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 3B: PPTX export from existing analysis is implemented.
 - Phase 3B.1: PPTX template and layout optimization is implemented.
 - Phase 3B.1.1: PPTX visual feedback fixes are implemented.
+- Phase 3B.1.2: PPTX visual validation has been recorded.
 - Phase 3B.2: optional brand themes and user-selected export sections.
 - Phase 4: optional embeddings and vector database RAG.
 - Phase 5: audio generation.

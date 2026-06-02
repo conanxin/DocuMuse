@@ -6,6 +6,8 @@ MVP Alpha / real model validated / export baseline / PPTX visual polish
 
 Real MiniMax Token Plan validation: passed.
 
+PPTX WPS / PowerPoint visual validation: passed.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -26,6 +28,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - MiniMax Token Plan with `MiniMax-M2.7` has passed real local validation for connection test, quick analysis, full analysis, and document chat.
 - Export Markdown reports, structured JSON, and Q&A records from the workspace.
 - Export modernized PPTX decks from existing document analysis, with Chinese slide titles, cleaner metadata, shorter excerpts, and card-based report pages.
+- Current PPTX export status: basic deliverable usable.
 
 ## Current Architecture
 
@@ -95,6 +98,7 @@ data/settings/    Local LLM settings
 - No embeddings or vector database.
 - No streaming responses.
 - No generated images, audio generation, animations, or external PPTX template files.
+- No PPTX brand theme switching, export section picker, inserted images, speaker notes, or complex template editor.
 - PDF source navigation is based on extracted text, not PDF coordinates.
 - Export does not include full original text by default.
 

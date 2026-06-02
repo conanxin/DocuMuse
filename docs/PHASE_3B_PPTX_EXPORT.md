@@ -61,6 +61,8 @@ Phase 3B.1 adds a reusable in-code template layer for cover, summary, key points
 
 Phase 3B.1.1 applies real export feedback: Chinese-first slide titles, row-based cover metadata, stricter text cleaning, shorter summary and section excerpts, paragraph-style podcast excerpts, and less dense Q&A slides.
 
+Local WPS / PowerPoint validation has passed for the Phase 3B.1.1 template. The current PPTX export status is: basic deliverable usable.
+
 ## Security Filtering
 
 The PPTX export does not include:
@@ -88,9 +90,13 @@ The PPTX may include:
 ## Current Limits
 
 - No user-editable template system.
+- No brand theme switching.
+- No export section picker.
 - No image generation.
+- No inserted generated images.
 - No speaker notes.
 - No animations or transitions.
+- No complex template editor.
 - No full source text export.
 - Layout is intentionally simple and conservative.
 
