@@ -17,8 +17,10 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
   const [document, setDocument] = useState<ParsedDocument | null>(null);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "error">("idle");
   const [analysisState, setAnalysisState] = useState<"idle" | "loading" | "error">("idle");
+  const [exportState, setExportState] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [analysisError, setAnalysisError] = useState("");
+  const [exportError, setExportError] = useState("");
   const [selectedSourceRange, setSelectedSourceRange] = useState<ChatSource | null>(null);
   const pollRef = useRef<number | null>(null);
   const isDemo = documentId === "demo";
@@ -138,13 +140,44 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
+  const exportDocument = async (format: "markdown" | "json", only?: "chat") => {
+    setExportState("loading");
+    setExportError("");
+
+    try {
+      if (isDemo) {
+        downloadText(buildDemoExport(format, only), demoExportFilename(format, only), format === "json" ? "application/json;charset=utf-8" : "text/markdown;charset=utf-8");
+        setExportState("idle");
+        return;
+      }
+
+      const query = new URLSearchParams({ format });
+      if (only) query.set("only", only);
+      const response = await fetch(`/api/documents/${documentId}/export?${query.toString()}`, { cache: "no-store" });
+      if (!response.ok) {
+        const payload = await safeJson(response);
+        throw new Error(payload.error || "Export failed.");
+      }
+
+      const blob = await response.blob();
+      const filename = filenameFromDisposition(response.headers.get("Content-Disposition")) ?? `documuse-${documentId}.${format === "json" ? "json" : "md"}`;
+      downloadBlob(blob, filename);
+      setExportState("idle");
+    } catch (error) {
+      setExportState("error");
+      setExportError(error instanceof Error ? error.message : "Export failed.");
+    }
+  };
+
   return (
     <main className="flex h-screen min-h-[760px] flex-col bg-slate-50">
       <WorkspaceTopbar
         title={document?.title}
         status={topbarStatus}
         onAnalyze={(mode) => void analyzeDocument(mode)}
+        onExport={(format, only) => void exportDocument(format, only)}
         analyzing={analysisState === "loading"}
+        exporting={exportState === "loading"}
         isDemo={isDemo}
         hasAnalysis={hasAnalysis}
         analysisFailed={analysisFailed}
@@ -156,6 +189,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "error" && <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">{errorMessage}</div>}
           <AnalysisProcessPanel document={document} analyzing={analysisState === "loading"} />
           {analysisFailed && analysisError && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{analysisError}</div>}
+          {exportState === "error" && exportError && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{exportError}</div>}
           {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
           {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
@@ -238,4 +272,73 @@ async function safeJson(response: Response) {
 
 function PlaceholderNotice() {
   return <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">此模块将在 LLM 接入后生成真实内容。</div>;
+}
+function downloadText(content: string, filename: string, type: string) {
+  downloadBlob(new Blob([content], { type }), filename);
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function filenameFromDisposition(disposition: string | null) {
+  if (!disposition) return null;
+  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/)?.[1];
+  if (encoded) return decodeURIComponent(encoded);
+  return disposition.match(/filename="([^"]+)"/)?.[1] ?? null;
+}
+
+function demoExportFilename(format: "markdown" | "json", only?: "chat") {
+  const prefix = only === "chat" ? "documuse-chat" : "documuse";
+  return `${prefix}-demo-interview.${format === "json" ? "json" : "md"}`;
+}
+
+function buildDemoExport(format: "markdown" | "json", only?: "chat") {
+  const exportedAt = new Date().toISOString();
+  const payload = {
+    exportedAt,
+    metadata: {
+      id: "demo",
+      title: "demo-interview.pdf",
+      filename: "demo-interview.pdf",
+      fileType: "pdf",
+      analysisStatus: "mock"
+    },
+    note: "Demo export uses mock content only. It does not include API keys, prompts, raw model output, or full document text.",
+    chatMessages:
+      only === "chat"
+        ? [
+            { role: "assistant", content: "Demo assistant message.", sources: [{ sourceHint: "Demo source", quote: "Short demo quote." }] }
+          ]
+        : undefined
+  };
+
+  if (format === "json") {
+    return JSON.stringify(payload, null, 2);
+  }
+
+  if (only === "chat") {
+    return ["# DocuMuse Document Q&A Record", "", "Document: demo-interview.pdf", `Exported at: ${new Date(exportedAt).toLocaleString("zh-CN")}`, "", "## Q&A", "", "Demo assistant message.", "", "### Sources", "", "- Demo source: Short demo quote.", ""].join("\n");
+  }
+
+  return [
+    "# DocuMuse Document Analysis Report",
+    "",
+    "Document: demo-interview.pdf",
+    `Exported at: ${new Date(exportedAt).toLocaleString("zh-CN")}`,
+    "",
+    "## 1. One-Sentence Summary",
+    "",
+    "This is a mock demo export for the sample workspace.",
+    "",
+    "## 10. Document Q&A Record",
+    "",
+    "Demo content only.",
+    ""
+  ].join("\n");
 }

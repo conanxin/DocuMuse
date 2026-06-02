@@ -51,7 +51,7 @@ Use this checklist before tagging a release or sharing a demo build.
 
 ## Document Chat
 
-- [ ] Ask: `这篇文章讲了什么？`
+- [ ] Ask: `What is this document about?`
 - [ ] Run document chat from `/settings/validation`.
 - [ ] Confirm an LLM answer is returned.
 - [ ] Confirm sources are shown.
@@ -61,8 +61,18 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Clear highlight.
 - [ ] Clear chat history.
 - [ ] Refresh and confirm chat history remains empty.
-- [ ] Export chat Markdown.
+- [ ] Export chat Markdown from ChatPanel.
 - [ ] Confirm exported Markdown contains questions, answers, and short source quotes only.
+
+## Workspace Export
+
+- [ ] Open a real document workspace.
+- [ ] Export Markdown from the top bar.
+- [ ] Confirm the Markdown contains metadata, summaries, key points, section analysis, creative outputs, and Q&A records when available.
+- [ ] Export structured JSON from the top bar.
+- [ ] Confirm the JSON does not contain full `text`, API keys, prompts, raw model output, or `analysisDiagnostics.rawPreview`.
+- [ ] Export Q&A-only Markdown from the top bar.
+- [ ] Open `/documents/demo` and confirm demo export does not crash.
 
 ## Failure Scenarios
 
@@ -70,7 +80,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] No API Key: analysis returns a clear JSON error.
 - [ ] No API Key: document chat returns a clear JSON error.
 - [ ] Fake API Key: returns a clear JSON error, not HTML 500.
-- [ ] Non-PDF upload: returns `仅支持 PDF 文件`.
+- [ ] Non-PDF upload: returns a clear PDF-only error.
 - [ ] Scanned PDF / no selectable text: returns an OCR limitation error.
 - [ ] Blank PDF: returns a clear empty-text error.
 - [ ] Analysis failure saves `analysisStatus: "failed"` and a short `analysisError`.

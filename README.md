@@ -20,6 +20,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Lightweight document chat using paragraph keyword retrieval plus LLM answers.
 - Source citations with paragraph anchor navigation in the original text view.
 - Chat history clearing and Markdown export.
+- Workspace export for Markdown reports, structured JSON, and Q&A records.
 
 ## Install
 
@@ -139,12 +140,13 @@ DocuMuse is currently a local single-user tool.
 - API Keys are not returned in full to the frontend.
 - Document JSON does not store API Keys.
 - Chat Markdown export does not include full document text, prompts, or API Keys.
+- Workspace Markdown and JSON exports do not include full document text, prompts, raw model output, or API Keys.
 - Do not deploy this implementation as a public multi-user service without adding user accounts, encrypted secret storage, access control, and stronger isolation.
 
 ## Roadmap
 
-- Phase 3A: export system for full analysis reports, workspace content, and chat records.
-- Phase 3B: optional PPT file generation from exported outlines.
+- Phase 3A: export system for full analysis reports, workspace content, and chat records. Basic Markdown / JSON export is implemented.
+- Phase 3B: optional PPTX file generation from exported outlines.
 - Phase 4: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
