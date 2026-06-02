@@ -29,6 +29,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Export Markdown reports, structured JSON, and Q&A records from the workspace.
 - Export modernized PPTX decks from existing document analysis, with Chinese slide titles, cleaner metadata, shorter excerpts, and card-based report pages.
 - Current PPTX export status: basic deliverable usable.
+- Configure PPTX export theme color, cover style, and included content sections before download.
 
 ## Current Architecture
 
@@ -40,7 +41,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
-- PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, and conservative truncation.
+- PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
 ## Main Data Directories
 
@@ -98,13 +99,13 @@ data/settings/    Local LLM settings
 - No embeddings or vector database.
 - No streaming responses.
 - No generated images, audio generation, animations, or external PPTX template files.
-- No PPTX brand theme switching, export section picker, inserted images, speaker notes, or complex template editor.
+- No inserted images, speaker notes, brand-kit editor, animations, or complex PPTX template editor.
 - PDF source navigation is based on extracted text, not PDF coordinates.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 3B.2 brand themes and user-selected PPTX export sections.
+1. Phase 3B.3 optional speaker notes and richer report outline controls.
 2. Add source history and original-text search.
 3. Add optional streaming responses.
 4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.

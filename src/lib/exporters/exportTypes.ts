@@ -7,6 +7,21 @@ export type DocumentExportOptions = {
   only?: "chat";
 };
 
+export type PptxThemeName = "blue" | "green" | "purple" | "slate";
+export type PptxCoverStyle = "standard" | "minimal" | "report";
+
+export interface PptxExportOptions {
+  theme: PptxThemeName;
+  cover: PptxCoverStyle;
+  includeSummary: boolean;
+  includeKeyPoints: boolean;
+  includeKeywords: boolean;
+  includeSections: boolean;
+  includeOutline: boolean;
+  includeCreative: boolean;
+  includeChat: boolean;
+}
+
 export type SafeExportSource = {
   sourceHint: string;
   quote: string;

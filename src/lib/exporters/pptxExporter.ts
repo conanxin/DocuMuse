@@ -1,15 +1,91 @@
 import pptxgen from "pptxgenjs";
 import type { DocumentChatMessage, ParsedDocument } from "../documentTypes";
+import type { PptxCoverStyle, PptxExportOptions, PptxThemeName } from "./exportTypes";
 
-const THEME = {
+type PptxTheme = {
+  blue: string;
+  dark: string;
+  gray: string;
+  lightGray: string;
+  border: string;
+  paleBlue: string;
+  white: string;
+  accentBorder: string;
+  decorative: string;
+};
+
+const PPTX_THEMES: Record<PptxThemeName, PptxTheme> = {
+  blue: {
+    blue: "2563EB",
+    dark: "111827",
+    gray: "64748B",
+    lightGray: "F1F5F9",
+    border: "E2E8F0",
+    paleBlue: "EFF6FF",
+    white: "FFFFFF",
+    accentBorder: "BFDBFE",
+    decorative: "DBEAFE"
+  },
+  green: {
+    blue: "059669",
+    dark: "111827",
+    gray: "64748B",
+    lightGray: "F1F5F9",
+    border: "D1FAE5",
+    paleBlue: "ECFDF5",
+    white: "FFFFFF",
+    accentBorder: "A7F3D0",
+    decorative: "BBF7D0"
+  },
+  purple: {
+    blue: "7C3AED",
+    dark: "111827",
+    gray: "64748B",
+    lightGray: "F8FAFC",
+    border: "E9D5FF",
+    paleBlue: "F5F3FF",
+    white: "FFFFFF",
+    accentBorder: "DDD6FE",
+    decorative: "EDE9FE"
+  },
+  slate: {
+    blue: "334155",
+    dark: "111827",
+    gray: "64748B",
+    lightGray: "F8FAFC",
+    border: "CBD5E1",
+    paleBlue: "F8FAFC",
+    white: "FFFFFF",
+    accentBorder: "CBD5E1",
+    decorative: "E2E8F0"
+  }
+};
+
+const DEFAULT_PPTX_OPTIONS: PptxExportOptions = {
+  theme: "blue",
+  cover: "report",
+  includeSummary: true,
+  includeKeyPoints: true,
+  includeKeywords: true,
+  includeSections: true,
+  includeOutline: true,
+  includeCreative: true,
+  includeChat: true
+};
+
+const BASE_THEME = {
   blue: "2563EB",
   dark: "111827",
   gray: "64748B",
   lightGray: "F1F5F9",
   border: "E2E8F0",
   paleBlue: "EFF6FF",
-  white: "FFFFFF"
+  white: "FFFFFF",
+  accentBorder: "BFDBFE",
+  decorative: "DBEAFE"
 };
+
+let THEME = BASE_THEME;
 
 const SLIDE = {
   width: 13.333,
@@ -48,7 +124,9 @@ type ChatRound = {
   sources: NonNullable<DocumentChatMessage["sources"]>;
 };
 
-export async function buildDocumentPptxExport(document: ParsedDocument): Promise<Buffer> {
+export async function buildDocumentPptxExport(document: ParsedDocument, options: Partial<PptxExportOptions> = {}): Promise<Buffer> {
+  const exportOptions = normalizePptxExportOptions(options);
+  THEME = PPTX_THEMES[exportOptions.theme];
   const pptx = new pptxgen();
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "DocuMuse";
@@ -61,22 +139,53 @@ export async function buildDocumentPptxExport(document: ParsedDocument): Promise
   };
 
   let page = 1;
-  addCoverSlide(pptx, document);
-  addSummarySlide(pptx, document, page++);
-  page = addKeyPointsSlides(pptx, document, page);
-  addKeywordsSlide(pptx, document, page++);
-  page = addSectionSlides(pptx, document, page);
-  page = addPptOutlineSlides(pptx, document, page);
-  addPodcastSlide(pptx, document, page++);
-  page = addImagePromptSlides(pptx, document, page);
-  page = addChatSlides(pptx, document, page);
+  addCoverSlide(pptx, document, exportOptions.cover);
+  if (exportOptions.includeSummary) addSummarySlide(pptx, document, page++);
+  if (exportOptions.includeKeyPoints) page = addKeyPointsSlides(pptx, document, page);
+  if (exportOptions.includeKeywords) addKeywordsSlide(pptx, document, page++);
+  if (exportOptions.includeSections) page = addSectionSlides(pptx, document, page);
+  if (exportOptions.includeOutline) page = addPptOutlineSlides(pptx, document, page);
+  if (exportOptions.includeCreative) {
+    addPodcastSlide(pptx, document, page++);
+    page = addImagePromptSlides(pptx, document, page);
+  }
+  if (exportOptions.includeChat) page = addChatSlides(pptx, document, page);
   addClosingSlide(pptx, page++);
 
   const output = await pptx.write({ outputType: "nodebuffer", compression: true });
   return Buffer.isBuffer(output) ? output : Buffer.from(output as ArrayBuffer);
 }
 
-function addCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
+export function normalizePptxExportOptions(options: Partial<PptxExportOptions> = {}): PptxExportOptions {
+  return {
+    ...DEFAULT_PPTX_OPTIONS,
+    ...options,
+    theme: isPptxTheme(options.theme) ? options.theme : DEFAULT_PPTX_OPTIONS.theme,
+    cover: isPptxCoverStyle(options.cover) ? options.cover : DEFAULT_PPTX_OPTIONS.cover
+  };
+}
+
+function isPptxTheme(value: unknown): value is PptxThemeName {
+  return value === "blue" || value === "green" || value === "purple" || value === "slate";
+}
+
+function isPptxCoverStyle(value: unknown): value is PptxCoverStyle {
+  return value === "standard" || value === "minimal" || value === "report";
+}
+
+function addCoverSlide(pptx: PptxDocument, document: ParsedDocument, cover: PptxCoverStyle) {
+  if (cover === "minimal") {
+    addMinimalCoverSlide(pptx, document);
+    return;
+  }
+  if (cover === "report") {
+    addReportCoverSlide(pptx, document);
+    return;
+  }
+  addStandardCoverSlide(pptx, document);
+}
+
+function addStandardCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
   const slide = newBaseSlide(pptx);
   slide.addShape(pptx.ShapeType.rect, {
     x: 10.15,
@@ -91,8 +200,8 @@ function addCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     y: 0.86,
     w: 1.78,
     h: 5.55,
-    fill: { color: "DBEAFE", transparency: 35 },
-    line: { color: "DBEAFE", transparency: 100 }
+    fill: { color: THEME.decorative, transparency: 35 },
+    line: { color: THEME.decorative, transparency: 100 }
   });
 
   slide.addText("DocuMuse", {
@@ -146,6 +255,110 @@ function addCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     bold: true,
     color: THEME.blue
   });
+}
+
+function addMinimalCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
+  const slide = newBaseSlide(pptx);
+  slide.addText("DocuMuse", {
+    x: SLIDE.marginX,
+    y: 0.62,
+    w: 2.8,
+    h: 0.35,
+    fontSize: 16,
+    bold: true,
+    color: THEME.blue
+  });
+  slide.addShape("line", { x: SLIDE.marginX, y: 1.14, w: 2.25, h: 0, line: { color: THEME.blue, width: 2 } });
+  slide.addText(truncateText(document.title || document.filename, 100), {
+    x: SLIDE.marginX,
+    y: 2.02,
+    w: 10.4,
+    h: 1.35,
+    fontSize: 36,
+    bold: true,
+    color: THEME.dark,
+    fit: "shrink"
+  });
+  slide.addText("AI Document Reading Report", {
+    x: SLIDE.marginX,
+    y: 3.48,
+    w: 5.6,
+    h: 0.35,
+    fontSize: 15,
+    color: THEME.gray
+  });
+  addMetadataCard(slide, {
+    x: SLIDE.marginX,
+    y: 4.46,
+    w: 6.6,
+    h: 1.55,
+    rows: [
+      ["文件", truncateText(document.filename, 52)],
+      ["服务", document.analysisProvider || "未生成"],
+      ["模型", document.analysisModel || "未生成"]
+    ]
+  });
+  slide.addText(`导出：${new Date().toLocaleString("zh-CN")}`, {
+    x: SLIDE.marginX,
+    y: 6.55,
+    w: 4.6,
+    h: 0.24,
+    fontSize: 10.5,
+    color: THEME.gray
+  });
+}
+
+function addReportCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
+  const slide = newBaseSlide(pptx);
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0,
+    y: 0,
+    w: SLIDE.width,
+    h: SLIDE.height,
+    fill: { color: THEME.white },
+    line: { color: THEME.white }
+  });
+  slide.addShape("roundRect", {
+    x: 8.35,
+    y: 0.62,
+    w: 4.36,
+    h: 6.2,
+    rectRadius: 0.12,
+    fill: { color: THEME.paleBlue },
+    line: { color: THEME.accentBorder, width: 1 }
+  });
+  slide.addText("DocuMuse", { x: SLIDE.marginX, y: 0.55, w: 2.8, h: 0.35, fontSize: 16, bold: true, color: THEME.blue });
+  slide.addText(truncateText(document.title || document.filename, 98), {
+    x: SLIDE.marginX,
+    y: 1.42,
+    w: 7.2,
+    h: 1.35,
+    fontSize: 33,
+    bold: true,
+    color: THEME.dark,
+    fit: "shrink"
+  });
+  slide.addText("AI Document Reading Report", { x: SLIDE.marginX, y: 2.96, w: 5.8, h: 0.35, fontSize: 16, color: THEME.gray });
+  addMetadataCard(slide, {
+    x: SLIDE.marginX,
+    y: 3.86,
+    w: 6.8,
+    h: 1.95,
+    rows: [
+      ["文件", truncateText(document.filename, 52)],
+      ["服务", document.analysisProvider || "未生成"],
+      ["模型", document.analysisModel || "未生成"],
+      ["导出", new Date().toLocaleString("zh-CN")]
+    ]
+  });
+  const keywords = (document.analysis?.keywords ?? []).slice(0, 8);
+  slide.addText("关键词预览", { x: 8.76, y: 1.05, w: 3.5, h: 0.28, fontSize: 13, bold: true, color: THEME.blue });
+  if (keywords.length) {
+    addTagList(slide, keywords, { x: 8.76, y: 1.55, w: 3.35, h: 2.2 });
+  } else {
+    slide.addText("尚未生成关键词", { x: 8.76, y: 1.55, w: 3.35, h: 0.3, fontSize: 11, color: THEME.gray });
+  }
+  slide.addText("Generated by DocuMuse", { x: 8.76, y: 6.1, w: 3.2, h: 0.28, fontSize: 12, bold: true, color: THEME.blue });
 }
 
 function addSummarySlide(pptx: PptxDocument, document: ParsedDocument, page: number) {
@@ -467,7 +680,7 @@ function addCard(slide: PptxSlide, options: CardOptions) {
     h: options.h,
     rectRadius: 0.08,
     fill: { color: options.fill || THEME.lightGray },
-    line: { color: options.accent ? "BFDBFE" : THEME.border, width: 1 }
+    line: { color: options.accent ? THEME.accentBorder : THEME.border, width: 1 }
   });
 
   const textX = options.x + 0.24;
@@ -550,7 +763,7 @@ function addNumberedCard(slide: PptxSlide, options: { x: number; y: number; w: n
     h: options.h,
     rectRadius: 0.08,
     fill: { color: options.fill },
-    line: { color: "BFDBFE", width: 1 }
+    line: { color: THEME.accentBorder, width: 1 }
   });
   slide.addText(String(options.number).padStart(2, "0"), {
     x: options.x + 0.22,
@@ -654,7 +867,7 @@ function addTagList(slide: PptxSlide, tags: string[], bounds: { x: number; y: nu
       align: "center",
       margin: 0.04,
       fill: { color: THEME.paleBlue },
-      line: { color: "BFDBFE", width: 1 },
+      line: { color: THEME.accentBorder, width: 1 },
       fit: "shrink"
     });
     x += width + 0.18;

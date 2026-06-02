@@ -90,6 +90,11 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm cover metadata is shown in separate rows and does not squeeze into one dense line.
 - [ ] Confirm Summary, Section Analysis, Podcast Script, and Q&A slides do not feel overfilled.
 - [ ] Confirm Q&A answers and sources are visually separated.
+- [ ] Open the PPTX export dialog and confirm theme, cover, and section options are available.
+- [ ] Export with `theme=blue`, `theme=green`, `theme=purple`, and `theme=slate`.
+- [ ] Export with `cover=standard`, `cover=minimal`, and `cover=report`.
+- [ ] Disable chat / creative / section pages and confirm the generated deck omits them.
+- [ ] Disable every content section and confirm the deck still contains cover and closing slides.
 - [ ] Confirm PPTX does not show `undefined`, `null`, or `[object Object]`.
 - [ ] Confirm empty analysis exports show `尚未生成分析结果`.
 - [ ] Confirm empty chat exports show `暂无问答记录`.

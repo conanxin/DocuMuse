@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { buildDocumentJsonExport, buildSafeExportFilename, normalizeExportOptions } from "@/lib/exporters/jsonExporter";
 import { buildDocumentMarkdownExport } from "@/lib/exporters/markdownExporter";
-import { buildDocumentPptxExport } from "@/lib/exporters/pptxExporter";
+import { buildDocumentPptxExport, normalizePptxExportOptions } from "@/lib/exporters/pptxExporter";
 import { isValidDocumentId, readParsedDocument } from "@/lib/documentStorage";
-import type { DocumentExportOptions, ExportFormat } from "@/lib/exporters/exportTypes";
+import type { DocumentExportOptions, ExportFormat, PptxCoverStyle, PptxExportOptions, PptxThemeName } from "@/lib/exporters/exportTypes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     if (format === "pptx") {
-      const buffer = await buildDocumentPptxExport(document);
+      const buffer = await buildDocumentPptxExport(document, parsePptxOptions(url.searchParams));
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -78,6 +78,30 @@ function parseFormat(value: string | null): ExportFormat | null {
   if (value === "json") return "json";
   if (value === "pptx") return "pptx";
   return null;
+}
+
+function parsePptxOptions(searchParams: URLSearchParams): PptxExportOptions {
+  return normalizePptxExportOptions({
+    theme: parsePptxTheme(searchParams.get("theme")),
+    cover: parsePptxCover(searchParams.get("cover")),
+    includeSummary: parseBoolean(searchParams.get("includeSummary"), true),
+    includeKeyPoints: parseBoolean(searchParams.get("includeKeyPoints"), true),
+    includeKeywords: parseBoolean(searchParams.get("includeKeywords"), true),
+    includeSections: parseBoolean(searchParams.get("includeSections"), true),
+    includeOutline: parseBoolean(searchParams.get("includeOutline"), true),
+    includeCreative: parseBoolean(searchParams.get("includeCreative"), true),
+    includeChat: parseBoolean(searchParams.get("includeChat"), true)
+  });
+}
+
+function parsePptxTheme(value: string | null): PptxThemeName | undefined {
+  if (value === "blue" || value === "green" || value === "purple" || value === "slate") return value;
+  return undefined;
+}
+
+function parsePptxCover(value: string | null): PptxCoverStyle | undefined {
+  if (value === "standard" || value === "minimal" || value === "report") return value;
+  return undefined;
 }
 
 function parseOptions(searchParams: URLSearchParams): DocumentExportOptions {

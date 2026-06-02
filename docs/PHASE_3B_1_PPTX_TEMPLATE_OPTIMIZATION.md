@@ -79,6 +79,8 @@ After opening real exports in WPS / PowerPoint, the template received another re
 
 Local WPS / PowerPoint visual validation has passed. The current PPTX export is considered usable as a basic deliverable deck.
 
+Phase 3B.2 keeps this template structure and adds lightweight theme, cover, and section-selection controls.
+
 ## Security
 
 PPTX export still excludes:

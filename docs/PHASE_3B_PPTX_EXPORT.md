@@ -63,6 +63,8 @@ Phase 3B.1.1 applies real export feedback: Chinese-first slide titles, row-based
 
 Local WPS / PowerPoint validation has passed for the Phase 3B.1.1 template. The current PPTX export status is: basic deliverable usable.
 
+Phase 3B.2 adds export options for theme color, cover style, and included content sections.
+
 ## Security Filtering
 
 The PPTX export does not include:
@@ -90,8 +92,6 @@ The PPTX may include:
 ## Current Limits
 
 - No user-editable template system.
-- No brand theme switching.
-- No export section picker.
 - No image generation.
 - No inserted generated images.
 - No speaker notes.

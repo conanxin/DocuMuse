@@ -20,6 +20,7 @@
 - [Phase 3B PPTX Export](./PHASE_3B_PPTX_EXPORT.md): basic real PPTX generation from existing analysis without LLM calls.
 - [Phase 3B.1 PPTX Template Optimization](./PHASE_3B_1_PPTX_TEMPLATE_OPTIMIZATION.md): card-based report template, pagination, truncation, and visual cleanup.
 - [Phase 3B.1.1 PPTX Visual Fixes](./PHASE_3B_1_1_PPTX_VISUAL_FIXES.md): Chinese slide titles, cover metadata rows, text cleanup, denser-slide fixes, and passed WPS / PowerPoint visual validation.
+- [Phase 3B.2 PPTX Export Options](./PHASE_3B_2_PPTX_EXPORT_OPTIONS.md): PPTX theme colors, cover styles, section selection, and export dialog.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

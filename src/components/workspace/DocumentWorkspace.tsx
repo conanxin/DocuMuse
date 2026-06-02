@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AnalysisMode, ChatSource, ParsedDocument } from "@/lib/documentTypes";
+import type { PptxExportOptions } from "@/lib/exporters/exportTypes";
 import { ChatPanel } from "./ChatPanel";
 import { CreativeOutputsPanel } from "./CreativeOutputsPanel";
 import { GraphPanel } from "./GraphPanel";
@@ -140,7 +141,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
-  const exportDocument = async (format: "markdown" | "json" | "pptx", only?: "chat") => {
+  const exportDocument = async (format: "markdown" | "json" | "pptx", only?: "chat", pptxOptions?: PptxExportOptions) => {
     setExportState("loading");
     setExportError("");
 
@@ -156,6 +157,17 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
 
       const query = new URLSearchParams({ format });
       if (only) query.set("only", only);
+      if (format === "pptx" && pptxOptions) {
+        query.set("theme", pptxOptions.theme);
+        query.set("cover", pptxOptions.cover);
+        query.set("includeSummary", String(pptxOptions.includeSummary));
+        query.set("includeKeyPoints", String(pptxOptions.includeKeyPoints));
+        query.set("includeKeywords", String(pptxOptions.includeKeywords));
+        query.set("includeSections", String(pptxOptions.includeSections));
+        query.set("includeOutline", String(pptxOptions.includeOutline));
+        query.set("includeCreative", String(pptxOptions.includeCreative));
+        query.set("includeChat", String(pptxOptions.includeChat));
+      }
       const response = await fetch(`/api/documents/${documentId}/export?${query.toString()}`, { cache: "no-store" });
       if (!response.ok) {
         const payload = await safeJson(response);
@@ -178,7 +190,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         title={document?.title}
         status={topbarStatus}
         onAnalyze={(mode) => void analyzeDocument(mode)}
-        onExport={(format, only) => void exportDocument(format, only)}
+        onExport={(format, only, pptxOptions) => void exportDocument(format, only, pptxOptions)}
         analyzing={analysisState === "loading"}
         exporting={exportState === "loading"}
         isDemo={isDemo}
