@@ -25,6 +25,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - PPTX export has passed local WPS / PowerPoint visual validation and is usable as a basic deliverable deck.
 - PPTX export options for theme color, cover style, and selected sections.
 - PPTX export options have passed route-level validation and user-completed WPS / PowerPoint visual validation.
+- Export presets for study notes, presentation packs, research digests, podcast preparation, and full archives.
 
 ## Install
 
@@ -139,6 +140,8 @@ data/settings/    Local LLM settings
 - Audio generation.
 - Multi-user auth.
 - Cloud sync or storage.
+- ZIP package export.
+- Saved custom export presets.
 
 ## Security Notes
 
@@ -161,6 +164,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 3B.1.2: PPTX visual validation has been recorded.
 - Phase 3B.2: PPTX theme, cover style, and section export options are implemented.
 - Phase 3B.3: PPTX option route-level and WPS / PowerPoint visual validation are recorded.
+- Phase 3C: export presets and local multi-file downloads are implemented.
 - Phase 4: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.

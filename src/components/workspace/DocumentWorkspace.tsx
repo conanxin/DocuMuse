@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AnalysisMode, ChatSource, ParsedDocument } from "@/lib/documentTypes";
-import type { PptxExportOptions } from "@/lib/exporters/exportTypes";
+import type { ExportPresetPlan, PptxExportOptions } from "@/lib/exporters/exportTypes";
 import { ChatPanel } from "./ChatPanel";
 import { CreativeOutputsPanel } from "./CreativeOutputsPanel";
 import { GraphPanel } from "./GraphPanel";
@@ -22,6 +22,9 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
   const [errorMessage, setErrorMessage] = useState("");
   const [analysisError, setAnalysisError] = useState("");
   const [exportError, setExportError] = useState("");
+  const [presetPlans, setPresetPlans] = useState<ExportPresetPlan[]>([]);
+  const [presetExportState, setPresetExportState] = useState<"idle" | "loading" | "error">("idle");
+  const [presetMessage, setPresetMessage] = useState("");
   const [selectedSourceRange, setSelectedSourceRange] = useState<ChatSource | null>(null);
   const pollRef = useRef<number | null>(null);
   const isDemo = documentId === "demo";
@@ -89,6 +92,30 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
       stopPolling();
     };
   }, [isDemo, loadDocument]);
+
+  useEffect(() => {
+    if (isDemo) return;
+
+    let cancelled = false;
+    async function loadPresets() {
+      try {
+        const response = await fetch(`/api/documents/${documentId}/export/presets`, { cache: "no-store" });
+        const payload = await safeJson(response);
+        if (response.ok && payload.ok && !cancelled) {
+          setPresetPlans(payload.presets ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setPresetMessage("导出预设读取失败，但单项导出仍可使用。");
+        }
+      }
+    }
+
+    void loadPresets();
+    return () => {
+      cancelled = true;
+    };
+  }, [documentId, isDemo]);
 
   const analyzeDocument = async (mode: AnalysisMode) => {
     if (isDemo || analysisState === "loading") return;
@@ -184,6 +211,36 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     }
   };
 
+  const exportPreset = async (preset: ExportPresetPlan) => {
+    if (isDemo) {
+      setPresetMessage("Demo 文档暂不支持预设导出，请打开真实文档后使用。");
+      return;
+    }
+
+    setPresetExportState("loading");
+    setPresetMessage("");
+    setExportError("");
+
+    try {
+      for (const file of preset.files) {
+        const response = await fetch(file.url, { cache: "no-store" });
+        if (!response.ok) {
+          const payload = await safeJson(response);
+          throw new Error(`${file.filename} 下载失败：${payload.error || response.statusText}`);
+        }
+        const blob = await response.blob();
+        const filename = filenameFromDisposition(response.headers.get("Content-Disposition")) ?? file.filename;
+        downloadBlob(blob, filename);
+        await wait(400);
+      }
+      setPresetMessage(`已开始下载 ${preset.files.length} 个文件。若浏览器阻止多文件下载，请允许此站点下载多个文件。`);
+      setPresetExportState("idle");
+    } catch (error) {
+      setPresetExportState("error");
+      setPresetMessage(error instanceof Error ? error.message : "导出预设失败。");
+    }
+  };
+
   return (
     <main className="flex h-screen min-h-[760px] flex-col bg-slate-50">
       <WorkspaceTopbar
@@ -191,8 +248,12 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         status={topbarStatus}
         onAnalyze={(mode) => void analyzeDocument(mode)}
         onExport={(format, only, pptxOptions) => void exportDocument(format, only, pptxOptions)}
+        onExportPreset={(preset) => void exportPreset(preset)}
+        presetPlans={presetPlans}
+        presetMessage={presetMessage}
         analyzing={analysisState === "loading"}
         exporting={exportState === "loading"}
+        presetExporting={presetExportState === "loading"}
         isDemo={isDemo}
         hasAnalysis={hasAnalysis}
         analysisFailed={analysisFailed}
@@ -306,6 +367,10 @@ function filenameFromDisposition(disposition: string | null) {
   const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/)?.[1];
   if (encoded) return decodeURIComponent(encoded);
   return disposition.match(/filename="([^"]+)"/)?.[1] ?? null;
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function demoExportFilename(format: "markdown" | "json", only?: "chat") {

@@ -104,6 +104,17 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm missing documents return JSON 404 from `/api/documents/{id}/export`.
 - [ ] Open `/documents/demo` and confirm demo export does not crash.
 
+## Export Presets
+
+- [ ] Open a real document workspace.
+- [ ] Click `导出预设`.
+- [ ] Confirm five presets are shown: 学习笔记包, 汇报材料包, 研究摘录包, 播客准备包, 完整归档包.
+- [ ] Export 学习笔记包 and confirm Markdown report plus Q&A Markdown downloads start.
+- [ ] Export 汇报材料包 and confirm PPTX plus Markdown downloads start.
+- [ ] Export 完整归档包 and confirm Markdown, JSON, PPTX, and Q&A Markdown downloads start.
+- [ ] Confirm existing single-file Markdown, JSON, PPTX, and Q&A exports still work.
+- [ ] Confirm preset files do not contain API keys, prompts, raw output, full original text, `data/settings`, `uploadPath`, or `analysisDiagnostics.rawPreview`.
+
 ## Failure Scenarios
 
 - [ ] No API Key: test connection returns a clear JSON error.

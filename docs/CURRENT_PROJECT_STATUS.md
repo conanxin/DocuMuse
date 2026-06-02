@@ -31,6 +31,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Current PPTX export status: basic deliverable usable.
 - Configure PPTX export theme color, cover style, and included content sections before download.
 - PPTX theme, cover, and section options have passed route-level validation and user-completed WPS / PowerPoint visual validation for the six requested Phase 3B.3 combinations.
+- Export preset packs for study notes, presentations, research digests, podcast preparation, and full archives.
 
 ## Current Architecture
 
@@ -67,6 +68,7 @@ data/settings/    Local LLM settings
 - `DELETE /api/documents/[id]/chat`: clear saved chat history.
 - `GET /api/documents/[id]/export`: export Markdown reports, JSON, or chat-only Markdown.
 - `GET /api/documents/[id]/export?format=pptx`: export a basic PPTX deck.
+- `GET /api/documents/[id]/export/presets`: list preset export plans for one document.
 - `GET /api/settings/llm`: read masked LLM settings.
 - `POST /api/settings/llm`: save local LLM settings.
 - `DELETE /api/settings/llm/key`: clear local API Key.
@@ -101,12 +103,14 @@ data/settings/    Local LLM settings
 - No streaming responses.
 - No generated images, audio generation, animations, or external PPTX template files.
 - No inserted images, speaker notes, brand-kit editor, animations, or complex PPTX template editor.
+- No ZIP export packaging or saved custom preset editor yet.
 - PDF source navigation is based on extracted text, not PDF coordinates.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 3B.4 optional speaker notes and richer report outline controls.
+1. Phase 3C.1 ZIP packaging for preset exports.
+2. Phase 3B.4 optional speaker notes and richer report outline controls.
 2. Add source history and original-text search.
 3. Add optional streaming responses.
 4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.

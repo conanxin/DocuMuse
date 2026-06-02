@@ -9,6 +9,7 @@ export type DocumentExportOptions = {
 
 export type PptxThemeName = "blue" | "green" | "purple" | "slate";
 export type PptxCoverStyle = "standard" | "minimal" | "report";
+export type ExportPresetId = "study-notes" | "presentation-pack" | "research-digest" | "podcast-prep" | "full-archive";
 
 export interface PptxExportOptions {
   theme: PptxThemeName;
@@ -87,3 +88,18 @@ export type SafeDocumentExport = {
 };
 
 export type ExportFormat = "markdown" | "json" | "pptx";
+
+export type PresetExportFileFormat = ExportFormat | "chat-markdown";
+
+export type PresetExportFile = {
+  format: PresetExportFileFormat;
+  filename: string;
+  url: string;
+};
+
+export type ExportPresetPlan = {
+  presetId: ExportPresetId;
+  label: string;
+  description: string;
+  files: PresetExportFile[];
+};
