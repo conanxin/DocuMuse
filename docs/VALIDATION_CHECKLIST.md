@@ -72,6 +72,9 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Export structured JSON from the top bar.
 - [ ] Confirm the JSON does not contain full `text`, API keys, prompts, raw model output, or `analysisDiagnostics.rawPreview`.
 - [ ] Export Q&A-only Markdown from the top bar.
+- [ ] Confirm empty analysis exports show `尚未生成分析结果`.
+- [ ] Confirm empty chat exports show `暂无问答记录`.
+- [ ] Confirm missing documents return JSON 404 from `/api/documents/{id}/export`.
 - [ ] Open `/documents/demo` and confirm demo export does not crash.
 
 ## Failure Scenarios

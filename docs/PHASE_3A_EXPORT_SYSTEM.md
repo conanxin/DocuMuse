@@ -81,6 +81,8 @@ Exports may include:
 - No cloud export or sync.
 - No full original text export by default.
 - Markdown output is report-oriented rather than layout-perfect.
+- If analysis is missing, Markdown shows `尚未生成分析结果`.
+- If chat history is empty, Q&A export shows `暂无问答记录`.
 
 ## Next Step
 

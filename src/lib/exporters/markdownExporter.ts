@@ -32,15 +32,19 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
     ""
   ];
 
+  if (exported.metadata.analysisStatus !== "completed") {
+    lines.push("## Analysis Status", "", "尚未生成分析结果", "");
+  }
+
   const analysis = exported.analysis;
   if (!analysis) {
-    lines.push("Analysis has not been generated.", "");
+    lines.push("尚未生成分析结果", "");
     appendChat(lines, exported.chatMessages);
     return lines.join("\n");
   }
 
-  lines.push("## 1. One-Sentence Summary", "", analysis.oneSentenceSummary || "Not generated.", "");
-  lines.push("## 2. Full Summary", "", analysis.summary || "Not generated.", "");
+  lines.push("## 1. One-Sentence Summary", "", analysis.oneSentenceSummary || "尚未生成分析结果", "");
+  lines.push("## 2. Full Summary", "", analysis.summary || "尚未生成分析结果", "");
   lines.push("## 3. Key Points", "");
   appendList(lines, analysis.keyPoints);
   lines.push("## 4. Keywords", "");
@@ -61,10 +65,10 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
       }
     });
   } else {
-    lines.push("Not generated.", "");
+    lines.push("尚未生成分析结果", "");
   }
 
-  lines.push("## 6. Chinese Translation / Rewrite", "", analysis.translationZh || "Not generated.", "");
+  lines.push("## 6. Chinese Translation / Rewrite", "", analysis.translationZh || "尚未生成分析结果", "");
 
   lines.push("## 7. PPT Outline", "");
   if (analysis.pptOutline?.length) {
@@ -73,27 +77,27 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
       appendList(lines, slide.bullets);
     });
   } else {
-    lines.push("Not generated.", "");
+    lines.push("尚未生成分析结果", "");
   }
 
-  lines.push("## 8. Podcast Script", "", analysis.podcastScript || "Not generated.", "");
+  lines.push("## 8. Podcast Script", "", analysis.podcastScript || "尚未生成分析结果", "");
 
   lines.push("## 9. Image Prompts", "");
   if (analysis.imagePrompts?.length) {
-    analysis.imagePrompts.forEach((item) => lines.push(`### ${item.title || "Prompt"}`, "", item.prompt || "Not generated.", ""));
+    analysis.imagePrompts.forEach((item) => lines.push(`### ${item.title || "Prompt"}`, "", item.prompt || "尚未生成分析结果", ""));
   } else {
-    lines.push("Not generated.", "");
+    lines.push("尚未生成分析结果", "");
   }
 
   if (exported.chunkAnalysis) {
     lines.push("## 10. Chunked Analysis", "", `Chunk count: ${exported.chunkAnalysis.chunkCount}`, "");
     if (exported.chunkAnalysis.chunkAnalyses.length) {
       exported.chunkAnalysis.chunkAnalyses.forEach((chunk, index) => {
-        lines.push(`### Chunk ${index + 1}: ${chunk.title || chunk.chunkId}`, "", chunk.summary || "Not generated.", "");
+        lines.push(`### Chunk ${index + 1}: ${chunk.title || chunk.chunkId}`, "", chunk.summary || "尚未生成分析结果", "");
         appendList(lines, chunk.keyPoints);
       });
     } else {
-      lines.push("Chunk analysis details were not generated.", "");
+      lines.push("尚未生成分析结果", "");
     }
   }
 
@@ -116,7 +120,7 @@ function buildChatOnlyMarkdown(exported: SafeDocumentExport) {
 function appendChat(lines: string[], messages?: SafeExportChatMessage[], heading = "##") {
   lines.push(`${heading} 10. Document Q&A Record`, "");
   if (!messages?.length) {
-    lines.push("No chat records.", "");
+    lines.push("暂无问答记录", "");
     return;
   }
 
@@ -142,7 +146,7 @@ function appendChat(lines: string[], messages?: SafeExportChatMessage[], heading
 
 function appendList(lines: string[], items: string[]) {
   if (!items.length) {
-    lines.push("- Not generated.", "");
+    lines.push("- 尚未生成分析结果", "");
     return;
   }
   items.forEach((item) => lines.push(`- ${item}`));
