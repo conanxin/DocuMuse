@@ -95,6 +95,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Export with `cover=standard`, `cover=minimal`, and `cover=report`.
 - [ ] Disable chat / creative / section pages and confirm the generated deck omits them.
 - [ ] Disable every content section and confirm the deck still contains cover and closing slides.
+- [x] Route-level validation passed for the six requested Phase 3B.3 combinations: default blue/report, green/report, purple/standard, slate/minimal, compact export, and cover-only export.
+- [ ] Manually open all Phase 3B.3 option combinations in WPS / PowerPoint.
 - [ ] Confirm PPTX does not show `undefined`, `null`, or `[object Object]`.
 - [ ] Confirm empty analysis exports show `尚未生成分析结果`.
 - [ ] Confirm empty chat exports show `暂无问答记录`.

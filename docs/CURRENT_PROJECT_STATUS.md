@@ -30,6 +30,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Export modernized PPTX decks from existing document analysis, with Chinese slide titles, cleaner metadata, shorter excerpts, and card-based report pages.
 - Current PPTX export status: basic deliverable usable.
 - Configure PPTX export theme color, cover style, and included content sections before download.
+- PPTX theme, cover, and section options have passed route-level validation for the six requested Phase 3B.3 combinations. Manual WPS / PowerPoint visual review for Phase 3B.3 remains recommended.
 
 ## Current Architecture
 
@@ -105,7 +106,8 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 3B.3 optional speaker notes and richer report outline controls.
+1. Complete manual WPS / PowerPoint visual review for Phase 3B.3 option combinations.
+2. Phase 3B.4 optional speaker notes and richer report outline controls.
 2. Add source history and original-text search.
 3. Add optional streaming responses.
 4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.
