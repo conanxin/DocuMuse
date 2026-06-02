@@ -1,5 +1,11 @@
 # Current Project Status
 
+## Status
+
+MVP Alpha / real model validated
+
+真实 MiniMax Token Plan 验收：已通过。
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -16,6 +22,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Show source citations and jump to paragraph anchors in the original text.
 - Clear and export chat history as Markdown.
 - Use `/settings/validation` for local real-model validation.
+- MiniMax Token Plan with `MiniMax-M2.7` has passed real local validation for connection test, quick analysis, full analysis, and document chat.
 
 ## Current Architecture
 
@@ -84,7 +91,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Real-key validation across OpenAI-compatible and MiniMax Token Plan providers.
+1. Phase 3A export system: export complete analysis reports as Markdown, export current workspace content, and keep chat record export reusable.
 2. Add source history and original-text search.
 3. Add optional streaming responses.
-4. Consider embeddings and vector storage only after the local baseline is stable.
+4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.

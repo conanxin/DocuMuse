@@ -67,7 +67,7 @@ OPENAI_MODEL=gpt-4o-mini
 
 ### Option 2: API Settings UI
 
-Open DocuMuse, click `API 设置`, and save:
+Open DocuMuse, click `API Settings` / `API 设置`, and save:
 
 - Provider
 - API Key
@@ -96,6 +96,19 @@ Temperature: 1.0
 ```
 
 MiniMax Token Plan Key is not interchangeable with MiniMax pay-as-you-go API Key. Get it from MiniMax subscription management / Token Plan.
+
+## Real Model Validation
+
+MiniMax Token Plan with `MiniMax-M2.7` has been validated locally with a real PDF.
+
+Validated paths:
+
+- LLM connection test.
+- Quick analysis.
+- Full chunked analysis.
+- Document chat with source citations.
+
+This validation does not expose or document the real API Key, and it does not imply that every OpenAI-compatible provider has been fully verified.
 
 ## Local Data
 
@@ -130,10 +143,9 @@ DocuMuse is currently a local single-user tool.
 
 ## Roadmap
 
-- Phase 2B.3: project documentation and validation cleanup.
-- Phase 2C: stronger local retrieval and source ranking.
-- Phase 3: optional embeddings and vector database RAG.
-- Phase 4: real Markdown / PPT export.
+- Phase 3A: export system for full analysis reports, workspace content, and chat records.
+- Phase 3B: optional PPT file generation from exported outlines.
+- Phase 4: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

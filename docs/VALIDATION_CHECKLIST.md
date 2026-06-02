@@ -10,6 +10,10 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Run `npm run build`.
 - [ ] Open `http://localhost:3000/settings/validation`.
 
+## Passed Real Model Validation
+
+- [x] MiniMax Token Plan / MiniMax-M2.7 / PDF analysis / document chat.
+
 ## Upload And Library
 
 - [ ] Upload a normal selectable-text PDF.
