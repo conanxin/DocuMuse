@@ -76,6 +76,9 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Export structured JSON from the top bar.
 - [ ] Confirm the JSON does not contain full `text`, API keys, prompts, raw model output, or `analysisDiagnostics.rawPreview`.
 - [ ] Export Q&A-only Markdown from the top bar.
+- [ ] Export PPTX from the top bar.
+- [ ] Open the PPTX in PowerPoint or WPS.
+- [ ] Confirm title, summary, key points, section analysis, PPT outline, Q&A, and closing slides render.
 - [ ] Confirm empty analysis exports show `尚未生成分析结果`.
 - [ ] Confirm empty chat exports show `暂无问答记录`.
 - [ ] Confirm missing documents return JSON 404 from `/api/documents/{id}/export`.

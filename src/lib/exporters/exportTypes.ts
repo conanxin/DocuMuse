@@ -71,4 +71,4 @@ export type SafeDocumentExport = {
   chatMessages?: SafeExportChatMessage[];
 };
 
-export type ExportFormat = "markdown" | "json";
+export type ExportFormat = "markdown" | "json" | "pptx";

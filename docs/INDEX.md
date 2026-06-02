@@ -17,6 +17,7 @@
 - [Phase 2C.1 Real Model Validation Report](./PHASE_2C_1_REAL_MODEL_VALIDATION_REPORT.md): real MiniMax Token Plan validation results, performance observations, and next-phase recommendation.
 - [Phase 3A Export System](./PHASE_3A_EXPORT_SYSTEM.md): Markdown, JSON, and chat-only exports with sensitive-field filtering.
 - [Phase 3A.1 Export Runtime Validation](./PHASE_3A_1_EXPORT_RUNTIME_VALIDATION.md): export API checks, browser download checks, empty states, and security filtering.
+- [Phase 3B PPTX Export](./PHASE_3B_PPTX_EXPORT.md): basic real PPTX generation from existing analysis without LLM calls.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

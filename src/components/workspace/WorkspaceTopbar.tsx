@@ -7,7 +7,7 @@ import { DocumentUploadPanel } from "../DocumentUploadPanel";
 import { StatusBadge } from "../StatusBadge";
 
 type AnalyzeMode = "quick" | "full";
-type ExportFormat = "markdown" | "json";
+type ExportFormat = "markdown" | "json" | "pptx";
 
 export function WorkspaceTopbar({
   title = "demo-interview.pdf",
@@ -81,6 +81,13 @@ export function WorkspaceTopbar({
               className="border-l border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
             >
               JSON
+            </button>
+            <button
+              onClick={() => onExport?.("pptx")}
+              disabled={exporting}
+              className="border-l border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              PPTX
             </button>
             <button
               onClick={() => onExport?.("markdown", "chat")}

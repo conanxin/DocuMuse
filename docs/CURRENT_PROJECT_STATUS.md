@@ -25,6 +25,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Use `/settings/validation` for local real-model validation.
 - MiniMax Token Plan with `MiniMax-M2.7` has passed real local validation for connection test, quick analysis, full analysis, and document chat.
 - Export Markdown reports, structured JSON, and Q&A records from the workspace.
+- Export basic PPTX decks from existing document analysis.
 
 ## Current Architecture
 
@@ -36,6 +37,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
+- PPTX export: `pptxgenjs` generated local files with simple 16:9 slides.
 
 ## Main Data Directories
 
@@ -59,6 +61,7 @@ data/settings/    Local LLM settings
 - `POST /api/documents/[id]/chat`: ask a grounded document question.
 - `DELETE /api/documents/[id]/chat`: clear saved chat history.
 - `GET /api/documents/[id]/export`: export Markdown reports, JSON, or chat-only Markdown.
+- `GET /api/documents/[id]/export?format=pptx`: export a basic PPTX deck.
 - `GET /api/settings/llm`: read masked LLM settings.
 - `POST /api/settings/llm`: save local LLM settings.
 - `DELETE /api/settings/llm/key`: clear local API Key.
@@ -91,13 +94,13 @@ data/settings/    Local LLM settings
 - No cloud sync.
 - No embeddings or vector database.
 - No streaming responses.
-- No true PPTX, image, or audio generation.
+- No complex PPTX templates, generated images, or audio generation.
 - PDF source navigation is based on extracted text, not PDF coordinates.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 3B PPTX export from analysis outlines.
+1. Phase 3B.1 PPTX template system and richer layouts.
 2. Add source history and original-text search.
 3. Add optional streaming responses.
 4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.

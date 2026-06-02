@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildDocumentJsonExport, buildSafeExportFilename, normalizeExportOptions } from "@/lib/exporters/jsonExporter";
 import { buildDocumentMarkdownExport } from "@/lib/exporters/markdownExporter";
+import { buildDocumentPptxExport } from "@/lib/exporters/pptxExporter";
 import { isValidDocumentId, readParsedDocument } from "@/lib/documentStorage";
 import type { DocumentExportOptions, ExportFormat } from "@/lib/exporters/exportTypes";
 
@@ -17,7 +18,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const url = new URL(request.url);
   const format = parseFormat(url.searchParams.get("format"));
   if (!format) {
-    return NextResponse.json({ ok: false, error: "Unsupported export format. Use markdown or json." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Unsupported export format. Use markdown, json, or pptx." }, { status: 400 });
   }
 
   const options = parseOptions(url.searchParams);
@@ -25,7 +26,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   try {
     const document = await readParsedDocument(id);
     const prefix = options.only === "chat" ? "documuse-chat" : "documuse";
-    const extension = format === "markdown" ? "md" : "json";
+    const extension = format === "markdown" ? "md" : format;
     const filename = buildSafeExportFilename(document, extension, prefix);
 
     if (format === "json") {
@@ -33,6 +34,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return new Response(JSON.stringify(payload, null, 2), {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
+          "Content-Disposition": contentDisposition(filename)
+        }
+      });
+    }
+
+    if (format === "pptx") {
+      const buffer = await buildDocumentPptxExport(document);
+      return new Response(new Uint8Array(buffer), {
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
           "Content-Disposition": contentDisposition(filename)
         }
       });
@@ -65,6 +76,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 function parseFormat(value: string | null): ExportFormat | null {
   if (!value || value === "markdown" || value === "md") return "markdown";
   if (value === "json") return "json";
+  if (value === "pptx") return "pptx";
   return null;
 }
 

@@ -140,12 +140,15 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
-  const exportDocument = async (format: "markdown" | "json", only?: "chat") => {
+  const exportDocument = async (format: "markdown" | "json" | "pptx", only?: "chat") => {
     setExportState("loading");
     setExportError("");
 
     try {
       if (isDemo) {
+        if (format === "pptx") {
+          throw new Error("Demo 文档暂不支持 PPTX 导出，请打开真实文档导出。");
+        }
         downloadText(buildDemoExport(format, only), demoExportFilename(format, only), format === "json" ? "application/json;charset=utf-8" : "text/markdown;charset=utf-8");
         setExportState("idle");
         return;
@@ -160,7 +163,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
       }
 
       const blob = await response.blob();
-      const filename = filenameFromDisposition(response.headers.get("Content-Disposition")) ?? `documuse-${documentId}.${format === "json" ? "json" : "md"}`;
+      const filename = filenameFromDisposition(response.headers.get("Content-Disposition")) ?? `documuse-${documentId}.${format === "markdown" ? "md" : format}`;
       downloadBlob(blob, filename);
       setExportState("idle");
     } catch (error) {
