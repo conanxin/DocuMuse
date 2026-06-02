@@ -25,7 +25,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Use `/settings/validation` for local real-model validation.
 - MiniMax Token Plan with `MiniMax-M2.7` has passed real local validation for connection test, quick analysis, full analysis, and document chat.
 - Export Markdown reports, structured JSON, and Q&A records from the workspace.
-- Export basic PPTX decks from existing document analysis.
+- Export modernized PPTX decks from existing document analysis.
 
 ## Current Architecture
 
@@ -37,7 +37,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
-- PPTX export: `pptxgenjs` generated local files with simple 16:9 slides.
+- PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template.
 
 ## Main Data Directories
 
@@ -94,13 +94,13 @@ data/settings/    Local LLM settings
 - No cloud sync.
 - No embeddings or vector database.
 - No streaming responses.
-- No complex PPTX templates, generated images, or audio generation.
+- No generated images, audio generation, animations, or external PPTX template files.
 - PDF source navigation is based on extracted text, not PDF coordinates.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 3B.1 PPTX template system and richer layouts.
+1. Phase 3B.2 brand themes and user-selected PPTX export sections.
 2. Add source history and original-text search.
 3. Add optional streaming responses.
 4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.

@@ -48,11 +48,15 @@ The basic PPTX export includes:
 - 16:9 widescreen.
 - White background.
 - Blue section titles.
-- Simple, bright layout.
+- Modern reading-report layout with card-based sections.
+- Consistent footer and page numbering.
+- Larger headings and more comfortable spacing.
 - No external fonts.
 - No external images.
 - No animations.
 - Long text is truncated to avoid overfilled slides.
+
+Phase 3B.1 adds a reusable in-code template layer for cover, summary, key points, keywords, section analysis, outline, creative output, Q&A, and closing slides.
 
 ## Security Filtering
 
@@ -89,4 +93,4 @@ The PPTX may include:
 
 ## Future Work
 
-Phase 3B.1 can add a template system, brand themes, richer slide layouts, and optional user-selected sections.
+Future work can add brand themes, richer slide layouts, user-selected sections, and optional speaker notes.
