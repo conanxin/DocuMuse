@@ -13,7 +13,7 @@ No new export feature was added in this phase.
 - Build command: `npm.cmd run build`
 - Validation method available in this environment: built Next.js route handler equivalent validation plus HTTP availability check.
 
-The browser control session failed to attach in this environment, so WPS / PowerPoint visual opening was not completed by Codex in this phase. Manual WPS / PowerPoint visual review should still be performed locally.
+The browser control session failed to attach in the Codex environment, so Codex completed route-level validation first. The user then completed local WPS / PowerPoint visual validation for all six requested combinations.
 
 ## Test Document
 
@@ -46,6 +46,29 @@ Confirmed by route handler validation:
 - No `undefined`, `null`, or `[object Object]` markers detected.
 - No sensitive field markers detected in generated PPTX binary scan.
 
+## WPS / PowerPoint Visual Validation
+
+The user completed local visual validation in WPS / PowerPoint.
+
+| Case | Visual Result |
+| --- | --- |
+| Default `blue/report/full` | Passed. |
+| `green/report` | Passed. |
+| `purple/standard` | Passed. |
+| `slate/minimal` | Passed. |
+| Compact export | Passed. |
+| All include flags false, cover + closing only | Passed. |
+
+Confirmed:
+
+- WPS and PowerPoint open each generated PPTX normally.
+- Theme color differences are visible.
+- Cover layouts render correctly.
+- Include switches are effective.
+- No unexpected blank pages were found.
+- No `undefined`, `null`, or `[object Object]` was found.
+- No API Key, prompt, raw output, or full original text leakage was found.
+
 ## Security Checks
 
 No leakage detected for:
@@ -61,16 +84,13 @@ No leakage detected for:
 ## Issues Found
 
 - No code-level bug was found during route handler validation.
-- Browser automation failed to attach in the Codex environment, so manual WPS / PowerPoint visual inspection remains pending for this phase.
+- Browser automation failed to attach in the Codex environment, but the user completed local WPS / PowerPoint visual inspection successfully.
 - No exporter bug was found in the six requested route-level combinations.
 
 ## Current Conclusion
 
-PPTX export options are route-validated and build-stable for the six requested combinations. The implementation is ready for local visual inspection across PowerPoint / WPS.
+PPTX export options are route-validated, build-stable, and visually validated in WPS / PowerPoint for the six requested combinations.
 
-## Remaining Manual Visual Checks
+## Current Export Status
 
-- Theme colors are visually distinct in WPS / PowerPoint.
-- Standard, minimal, and report covers all render correctly.
-- Disabled sections are absent in opened decks.
-- No unexpected blank pages appear.
+PPTX themes and export options are basic-usable for local deliverable decks.
