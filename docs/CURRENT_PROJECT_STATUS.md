@@ -2,7 +2,7 @@
 
 ## Status
 
-MVP Alpha / real model validated / export baseline
+MVP Alpha / real model validated / export baseline / PPTX visual polish
 
 Real MiniMax Token Plan validation: passed.
 
@@ -25,7 +25,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Use `/settings/validation` for local real-model validation.
 - MiniMax Token Plan with `MiniMax-M2.7` has passed real local validation for connection test, quick analysis, full analysis, and document chat.
 - Export Markdown reports, structured JSON, and Q&A records from the workspace.
-- Export modernized PPTX decks from existing document analysis.
+- Export modernized PPTX decks from existing document analysis, with Chinese slide titles, cleaner metadata, shorter excerpts, and card-based report pages.
 
 ## Current Architecture
 
@@ -37,7 +37,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
-- PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template.
+- PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, and conservative truncation.
 
 ## Main Data Directories
 

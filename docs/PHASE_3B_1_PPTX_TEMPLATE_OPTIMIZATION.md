@@ -55,15 +55,27 @@ Long collections are split into multiple slides:
 
 Text is truncated before being placed into slides to avoid overfilled pages:
 
-- Key points: about 135 characters.
-- Section summaries: about 245 characters.
-- PPT outline bullets: about 90 characters.
-- Podcast excerpt: about 800 characters.
-- Image prompts: about 220 characters.
-- Q&A answers: about 235 characters.
-- Source quotes: about 95 characters.
+- Key points: about 110 characters.
+- Section summaries: about 160 characters.
+- Section key points: about 80 characters.
+- PPT outline bullets: about 70 characters.
+- Podcast excerpt: about 600 characters.
+- Image prompts: about 150 characters.
+- Q&A questions: about 80 characters.
+- Q&A answers: about 220 characters.
+- Source quotes: about 80 characters.
 
 Truncated text uses `…`.
+
+## Phase 3B.1.1 Feedback Fixes
+
+After opening real exports in WPS / PowerPoint, the template received another refinement pass:
+
+- Main slide titles now use Chinese by default.
+- Cover metadata is rendered as separate rows instead of a dense text block.
+- Markdown markers and source noise are cleaned before text enters PPTX.
+- Summary, Section Analysis, Podcast Script, and Q&A pages use shorter excerpts.
+- Q&A answers and sources are visually separated.
 
 ## Security
 

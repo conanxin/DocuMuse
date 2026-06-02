@@ -80,6 +80,10 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Open the PPTX in PowerPoint or WPS.
 - [ ] Confirm title, summary, key points, section analysis, PPT outline, Q&A, and closing slides render.
 - [ ] Confirm PPTX layout uses readable card spacing, clear titles, tags, and pagination.
+- [ ] Confirm slide titles are Chinese-first: 摘要, 核心观点, 关键词, 分段分析, PPT 大纲, 播客脚本, 图片提示词, 文档问答.
+- [ ] Confirm cover metadata is shown in separate rows and does not squeeze into one dense line.
+- [ ] Confirm Summary, Section Analysis, Podcast Script, and Q&A slides do not feel overfilled.
+- [ ] Confirm Q&A answers and sources are visually separated.
 - [ ] Confirm PPTX does not show `undefined`, `null`, or `[object Object]`.
 - [ ] Confirm empty analysis exports show `尚未生成分析结果`.
 - [ ] Confirm empty chat exports show `暂无问答记录`.

@@ -19,6 +19,7 @@
 - [Phase 3A.1 Export Runtime Validation](./PHASE_3A_1_EXPORT_RUNTIME_VALIDATION.md): export API checks, browser download checks, empty states, and security filtering.
 - [Phase 3B PPTX Export](./PHASE_3B_PPTX_EXPORT.md): basic real PPTX generation from existing analysis without LLM calls.
 - [Phase 3B.1 PPTX Template Optimization](./PHASE_3B_1_PPTX_TEMPLATE_OPTIMIZATION.md): card-based report template, pagination, truncation, and visual cleanup.
+- [Phase 3B.1.1 PPTX Visual Fixes](./PHASE_3B_1_1_PPTX_VISUAL_FIXES.md): Chinese slide titles, cover metadata rows, text cleanup, and denser-slide fixes from real exported PPTX feedback.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.
