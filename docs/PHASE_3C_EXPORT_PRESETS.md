@@ -2,7 +2,9 @@
 
 ## Goal
 
-Phase 3C adds reusable export presets for common DocuMuse workflows. Presets combine existing export endpoints into a small local download plan. The first version uses browser multi-file download and does not create ZIP files.
+Phase 3C adds reusable export presets for common DocuMuse workflows. Presets combine existing export endpoints into local export packages.
+
+Phase 3C initially used browser multi-file download. Phase 3C.1 upgrades presets to server-generated ZIP download.
 
 This phase does not call an LLM, generate images, create audio, use RAG, use embeddings, add cloud sync, or change API key storage.
 
@@ -62,36 +64,33 @@ Files:
 
 Use case: full local archival export.
 
-## API
+## APIs
 
-New route:
+Preset list:
 
 ```text
 GET /api/documents/[id]/export/presets
 ```
 
-Response:
+Preset ZIP:
 
-```json
-{
-  "ok": true,
-  "presets": []
-}
+```text
+GET /api/documents/[id]/export/preset?preset={presetId}
 ```
 
-The response includes preset labels, descriptions, and a list of safe file URLs. It does not return full document text, API keys, prompts, raw model output, or local absolute paths.
+The preset list response includes labels, descriptions, and safe file URLs. It does not return full document text, API keys, prompts, raw model output, or local absolute paths.
 
 ## Frontend Behavior
 
-The workspace top bar now includes `导出预设`.
+The workspace top bar includes `导出预设`.
 
-Clicking it opens a dialog with five preset cards. When the user exports a preset, the frontend downloads each file through existing export routes with a short delay between files.
+Clicking it opens a dialog with five preset cards. Since Phase 3C.1, each preset downloads one ZIP file through `/api/documents/[id]/export/preset`.
 
-If the browser blocks multiple downloads, the UI asks the user to allow multiple downloads for the site.
+Existing single-file Markdown, JSON, PPTX, and chat exports remain available as fallback actions.
 
 ## Security
 
-Preset files reuse existing safe export endpoints. They do not include:
+Preset exports reuse existing safe exporters. They do not include:
 
 - API keys.
 - Prompts.
@@ -103,8 +102,8 @@ Preset files reuse existing safe export endpoints. They do not include:
 
 ## Current Limits
 
-- No ZIP packaging.
 - No cloud sync.
 - No saved custom user presets.
+- No user-selected ZIP file list.
 - No preset-specific podcast Markdown yet.
 - Demo documents do not use real preset exports.

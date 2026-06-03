@@ -23,7 +23,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
   const [analysisError, setAnalysisError] = useState("");
   const [exportError, setExportError] = useState("");
   const [presetPlans, setPresetPlans] = useState<ExportPresetPlan[]>([]);
-  const [presetExportState, setPresetExportState] = useState<"idle" | "loading" | "error">("idle");
+  const [exportingPresetId, setExportingPresetId] = useState<string | null>(null);
   const [presetMessage, setPresetMessage] = useState("");
   const [selectedSourceRange, setSelectedSourceRange] = useState<ChatSource | null>(null);
   const pollRef = useRef<number | null>(null);
@@ -217,27 +217,24 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
       return;
     }
 
-    setPresetExportState("loading");
+    setExportingPresetId(preset.presetId);
     setPresetMessage("");
     setExportError("");
 
     try {
-      for (const file of preset.files) {
-        const response = await fetch(file.url, { cache: "no-store" });
-        if (!response.ok) {
-          const payload = await safeJson(response);
-          throw new Error(`${file.filename} 下载失败：${payload.error || response.statusText}`);
-        }
-        const blob = await response.blob();
-        const filename = filenameFromDisposition(response.headers.get("Content-Disposition")) ?? file.filename;
-        downloadBlob(blob, filename);
-        await wait(400);
+      const response = await fetch(`/api/documents/${documentId}/export/preset?preset=${preset.presetId}`, { cache: "no-store" });
+      if (!response.ok) {
+        const payload = await safeJson(response);
+        throw new Error(payload.error || "ZIP 下载失败。");
       }
-      setPresetMessage(`已开始下载 ${preset.files.length} 个文件。若浏览器阻止多文件下载，请允许此站点下载多个文件。`);
-      setPresetExportState("idle");
+      const blob = await response.blob();
+      const filename = filenameFromDisposition(response.headers.get("Content-Disposition")) ?? `documuse-${preset.presetId}.zip`;
+      downloadBlob(blob, filename);
+      setPresetMessage(`已开始下载 ${preset.label} ZIP。`);
+      setExportingPresetId(null);
     } catch (error) {
-      setPresetExportState("error");
-      setPresetMessage(error instanceof Error ? error.message : "导出预设失败。");
+      setExportingPresetId(null);
+      setPresetMessage(error instanceof Error ? `${error.message} 可改用单项导出按钮。` : "导出预设失败，可改用单项导出按钮。");
     }
   };
 
@@ -251,9 +248,9 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         onExportPreset={(preset) => void exportPreset(preset)}
         presetPlans={presetPlans}
         presetMessage={presetMessage}
+        exportingPresetId={exportingPresetId}
         analyzing={analysisState === "loading"}
         exporting={exportState === "loading"}
-        presetExporting={presetExportState === "loading"}
         isDemo={isDemo}
         hasAnalysis={hasAnalysis}
         analysisFailed={analysisFailed}
@@ -367,10 +364,6 @@ function filenameFromDisposition(disposition: string | null) {
   const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/)?.[1];
   if (encoded) return decodeURIComponent(encoded);
   return disposition.match(/filename="([^"]+)"/)?.[1] ?? null;
-}
-
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function demoExportFilename(format: "markdown" | "json", only?: "chat") {

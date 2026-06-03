@@ -53,9 +53,9 @@ export function WorkspaceTopbar({
   onExportPreset,
   presetPlans = [],
   presetMessage = "",
+  exportingPresetId = null,
   analyzing = false,
   exporting = false,
-  presetExporting = false,
   isDemo = true,
   hasAnalysis = false,
   analysisFailed = false
@@ -67,9 +67,9 @@ export function WorkspaceTopbar({
   onExportPreset?: (preset: ExportPresetPlan) => void;
   presetPlans?: ExportPresetPlan[];
   presetMessage?: string;
+  exportingPresetId?: string | null;
   analyzing?: boolean;
   exporting?: boolean;
-  presetExporting?: boolean;
   isDemo?: boolean;
   hasAnalysis?: boolean;
   analysisFailed?: boolean;
@@ -124,10 +124,10 @@ export function WorkspaceTopbar({
           </button>
           <button
             onClick={() => setPresetOpen(true)}
-            disabled={exporting || presetExporting}
+            disabled={exporting || Boolean(exportingPresetId)}
             className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {presetExporting ? <Loader2 className="animate-spin" size={16} /> : <PackageOpen size={16} />}
+            <PackageOpen size={16} />
             导出预设
           </button>
           <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -159,7 +159,7 @@ export function WorkspaceTopbar({
       {presetOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
           <div className="max-h-[88vh] w-full max-w-3xl overflow-auto rounded-2xl bg-white p-5 shadow-2xl">
-            <DialogHeader title="导出预设" description="选择一个用途，DocuMuse 会逐个下载对应文件。" onClose={() => setPresetOpen(false)} />
+            <DialogHeader title="导出预设" description="选择一个用途，DocuMuse 会打包下载一个 ZIP。" onClose={() => setPresetOpen(false)} />
             {isDemo ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">Demo 文档暂不支持预设导出，请打开真实文档后使用。</div>
             ) : (
@@ -178,11 +178,11 @@ export function WorkspaceTopbar({
                       </div>
                       <button
                         onClick={() => onExportPreset?.(preset)}
-                        disabled={presetExporting}
+                        disabled={Boolean(exportingPresetId)}
                         className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
                       >
-                        {presetExporting && <Loader2 className="animate-spin" size={16} />}
-                        导出
+                        {exportingPresetId === preset.presetId && <Loader2 className="animate-spin" size={16} />}
+                        {exportingPresetId === preset.presetId ? "正在下载..." : "下载 ZIP"}
                       </button>
                     </div>
                   ))}
