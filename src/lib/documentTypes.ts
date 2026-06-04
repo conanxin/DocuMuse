@@ -101,6 +101,22 @@ export interface ParseDiagnostics {
   suspectedScannedPdf?: boolean;
   hasVeryShortText?: boolean;
   warnings: string[];
+  qualityScore?: number;
+  qualityLabel?: "good" | "fair" | "poor" | "unknown";
+  pageDiagnostics?: Array<{
+    pageNumber: number;
+    textLength: number;
+    paragraphCount: number;
+    empty?: boolean;
+    lowTextDensity?: boolean;
+    repeatedHeaderFooterCandidates?: string[];
+  }>;
+  repeatedLineCandidates?: string[];
+  suspectedHeaderFooterLines?: string[];
+  suspectedReferenceSection?: boolean;
+  suspectedFootnoteCount?: number;
+  headingCandidateCount?: number;
+  languageGuess?: "zh" | "en" | "mixed" | "unknown";
 }
 
 export type ChunkAnalysis = {

@@ -8,6 +8,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 
 - Local PDF upload and text extraction.
 - Structured PDF parsing for selectable-text PDFs: pages, paragraphs, sections, parse diagnostics, and paragraph-level source anchors.
+- Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Local document library from `data/documents/`.
 - Reopen and delete parsed local documents.
 - Workspace upload entry for adding a new document without returning home.
@@ -30,6 +31,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Export presets can be downloaded as server-generated ZIP packages.
 - Original text reading now prefers structured paragraphs and shows page / paragraph / section metadata.
 - Structured PDF parsing has passed API-level runtime validation for selectable-text PDF upload, structured JSON persistence, export compatibility, old-document fallback, and upload error paths.
+- Parse diagnostics are shown in the original text reader and safely included in JSON export metadata.
 
 ## Install
 
@@ -172,8 +174,9 @@ DocuMuse is currently a local single-user tool.
 - Phase 3C.1: export presets as ZIP packages is implemented.
 - Phase 4A: structured selectable-text PDF parsing is implemented.
 - Phase 4A.1: structured PDF parsing runtime validation is recorded.
-- Phase 4B: PDF coordinate-aware source positioning and stronger parser diagnostics.
-- Phase 4C: optional embeddings and vector database RAG.
+- Phase 4B: PDF parse diagnostics quality scoring is implemented.
+- Phase 4C: PDF coordinate-aware source positioning.
+- Phase 4D: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

@@ -26,6 +26,7 @@
 - [Phase 3C.1 ZIP Export Presets](./PHASE_3C_1_ZIP_EXPORT_PRESETS.md): server-side in-memory ZIP packaging for preset exports.
 - [Phase 4A Structured PDF Parsing](./PHASE_4A_STRUCTURED_PDF_PARSING.md): pages, paragraphs, sections, parse diagnostics, source anchors, and old-document fallback.
 - [Phase 4A.1 Structured PDF Runtime Validation](./PHASE_4A_1_STRUCTURED_PDF_RUNTIME_VALIDATION.md): selectable-text PDF upload, structured JSON, export compatibility, error paths, and old-document fallback checks.
+- [Phase 4B Parse Diagnostics](./PHASE_4B_PARSE_DIAGNOSTICS.md): parse quality score, scanned-PDF suspicion, page diagnostics, repeated header/footer candidates, references, footnotes, and language guess.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

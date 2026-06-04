@@ -1,4 +1,4 @@
-import type { ChunkAnalysis, DocumentChatMessage, ParsedDocument } from "../documentTypes";
+import type { ChunkAnalysis, DocumentChatMessage, ParsedDocument, ParseDiagnostics } from "../documentTypes";
 
 export type DocumentExportOptions = {
   includeChat: boolean;
@@ -53,6 +53,31 @@ export type SafeDocumentExport = {
     analysisProvider?: string;
     analysisModel?: string;
     analyzedAt?: string;
+    parseDiagnostics?: Pick<
+      ParseDiagnostics,
+      | "parser"
+      | "parsedAt"
+      | "pageCount"
+      | "textLength"
+      | "paragraphCount"
+      | "sectionCount"
+      | "averageCharsPerPage"
+      | "emptyPageCount"
+      | "suspectedScannedPdf"
+      | "hasVeryShortText"
+      | "warnings"
+      | "qualityScore"
+      | "qualityLabel"
+      | "repeatedLineCandidates"
+      | "suspectedHeaderFooterLines"
+      | "suspectedReferenceSection"
+      | "suspectedFootnoteCount"
+      | "headingCandidateCount"
+      | "languageGuess"
+    > & {
+      lowTextDensityPageCount?: number;
+      pageDiagnostics?: NonNullable<ParseDiagnostics["pageDiagnostics"]>;
+    };
   };
   analysis?: {
     oneSentenceSummary: string;

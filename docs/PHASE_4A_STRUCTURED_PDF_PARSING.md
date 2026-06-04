@@ -107,3 +107,9 @@ Validated:
 - Non-PDF and blank PDF upload errors still return JSON.
 
 Browser-level source-click and real-key chat/full-analysis checks should still be repeated manually on the user's machine.
+
+## Phase 4B Diagnostics Follow-Up
+
+Phase 4B extends the original `parseDiagnostics` object with quality scoring, page diagnostics, repeated header/footer candidates, reference and footnote hints, and language guess.
+
+The structured parsing model remains backward compatible: all Phase 4B diagnostics fields are optional, and old document JSON files can still use runtime fallback diagnostics.

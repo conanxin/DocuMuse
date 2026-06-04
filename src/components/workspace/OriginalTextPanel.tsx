@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { mockOriginalText } from "@/lib/mockData";
-import type { ChatSource, ParsedDocument } from "@/lib/documentTypes";
+import type { ChatSource, ParsedDocument, ParseDiagnostics } from "@/lib/documentTypes";
 import { buildParagraphAnchors, buildParagraphAnchorsFromDocument, type ParagraphAnchor } from "@/lib/sourceAnchors";
 
 type SelectedSource = ChatSource | null;
@@ -59,13 +60,15 @@ export function OriginalTextPanel({
           <p className="mt-1 text-sm text-slate-500">按段落生成可定位锚点，聊天来源可跳转到对应段落。</p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-          <span className="rounded-full bg-slate-100 px-3 py-1">{resolvedPageCount} 页</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1">{anchors.length.toLocaleString()} 段</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1">{(document?.sections?.length ?? 0).toLocaleString()} 节</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1">{fullText.length.toLocaleString()} 字符</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1">{parsedAt}</span>
+          <StatPill>{resolvedPageCount} 页</StatPill>
+          <StatPill>{anchors.length.toLocaleString()} 段</StatPill>
+          <StatPill>{(document?.sections?.length ?? 0).toLocaleString()} 节</StatPill>
+          <StatPill>{fullText.length.toLocaleString()} 字符</StatPill>
+          <StatPill>{parsedAt}</StatPill>
         </div>
       </div>
+
+      <ParseDiagnosticsPanel diagnostics={diagnostics} />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {pageOptions.length > 1 && (
@@ -81,12 +84,6 @@ export function OriginalTextPanel({
             </select>
           </label>
         )}
-        {diagnostics?.warnings?.map((warning) => (
-          <span key={warning} className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-700">
-            {warning}
-          </span>
-        ))}
-        {diagnostics?.suspectedScannedPdf && <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs text-rose-700">疑似扫描或文本过少</span>}
       </div>
 
       {highlight && (
@@ -119,6 +116,99 @@ export function OriginalTextPanel({
       </div>
     </section>
   );
+}
+
+function ParseDiagnosticsPanel({ diagnostics }: { diagnostics?: ParseDiagnostics }) {
+  if (!diagnostics) {
+    return <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-500">暂无解析诊断信息。</div>;
+  }
+
+  const lowTextPages = diagnostics.pageDiagnostics?.filter((page) => page.lowTextDensity).length ?? 0;
+  const repeatedLines = diagnostics.suspectedHeaderFooterLines ?? diagnostics.repeatedLineCandidates ?? [];
+
+  return (
+    <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+      <div className="flex flex-wrap gap-2 text-xs">
+        <QualityPill diagnostics={diagnostics} />
+        <StatPill>质量分数：{typeof diagnostics.qualityScore === "number" ? `${diagnostics.qualityScore} / 100` : "未知"}</StatPill>
+        <StatPill>语言：{languageLabel(diagnostics.languageGuess)}</StatPill>
+        <StatPill>空页：{diagnostics.emptyPageCount ?? 0}</StatPill>
+        <StatPill>低文本页：{lowTextPages}</StatPill>
+        {repeatedLines.length > 0 && <StatPill>疑似页眉页脚：{repeatedLines.length}</StatPill>}
+      </div>
+
+      {diagnostics.suspectedScannedPdf && (
+        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">该 PDF 可能是扫描版，当前版本暂不支持 OCR。</div>
+      )}
+
+      <details className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm">
+        <summary className="cursor-pointer font-medium text-slate-700">查看解析诊断详情</summary>
+        <div className="mt-3 grid gap-3 text-slate-600">
+          <DiagnosticList title="Warnings" items={diagnostics.warnings ?? []} />
+          <DiagnosticList title="疑似页眉/页脚" items={repeatedLines} />
+          <div className="grid gap-2 rounded-lg bg-slate-50 p-3 text-xs">
+            <span>总页数：{diagnostics.pageCount ?? 0}</span>
+            <span>平均每页字符：{diagnostics.averageCharsPerPage ?? 0}</span>
+            <span>参考文献区域：{diagnostics.suspectedReferenceSection ? "疑似存在" : "未检测到"}</span>
+            <span>脚注候选：{diagnostics.suspectedFootnoteCount ?? 0}</span>
+            <span>标题候选：{diagnostics.headingCandidateCount ?? 0}</span>
+          </div>
+          {diagnostics.pageDiagnostics?.length ? (
+            <div className="max-h-48 overflow-auto rounded-lg border border-slate-100">
+              {diagnostics.pageDiagnostics.slice(0, 40).map((page) => (
+                <div key={page.pageNumber} className="grid grid-cols-4 gap-2 border-b border-slate-100 px-3 py-2 text-xs last:border-b-0">
+                  <span>第 {page.pageNumber} 页</span>
+                  <span>{page.textLength} 字符</span>
+                  <span>{page.paragraphCount} 段</span>
+                  <span>{page.empty ? "空页" : page.lowTextDensity ? "文本较少" : "正常"}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function DiagnosticList({ title, items }: { title: string; items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <div>
+      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
+      <ul className="space-y-1">
+        {items.slice(0, 8).map((item) => (
+          <li key={item} className="rounded-lg bg-slate-50 px-3 py-2 text-xs">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function StatPill({ children }: { children: ReactNode }) {
+  return <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">{children}</span>;
+}
+
+function QualityPill({ diagnostics }: { diagnostics: ParseDiagnostics }) {
+  const label = diagnostics.qualityLabel ?? "unknown";
+  const classes = label === "good" ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : label === "fair" ? "bg-amber-50 text-amber-700 ring-amber-200" : label === "poor" ? "bg-rose-50 text-rose-700 ring-rose-200" : "bg-slate-100 text-slate-600 ring-slate-200";
+  return <span className={`rounded-full px-3 py-1 ring-1 ${classes}`}>解析质量：{qualityLabel(label)}</span>;
+}
+
+function qualityLabel(label: ParseDiagnostics["qualityLabel"]) {
+  if (label === "good") return "良好";
+  if (label === "fair") return "一般";
+  if (label === "poor") return "较差";
+  return "未知";
+}
+
+function languageLabel(label: ParseDiagnostics["languageGuess"]) {
+  if (label === "zh") return "中文";
+  if (label === "en") return "英文";
+  if (label === "mixed") return "中英混合";
+  return "未知";
 }
 
 function resolveSelectedAnchor(anchors: ParagraphAnchor[], source?: SelectedSource) {

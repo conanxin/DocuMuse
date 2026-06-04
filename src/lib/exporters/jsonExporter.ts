@@ -34,7 +34,8 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
       analysisMode: document.analysisMode,
       analysisProvider: document.analysisProvider,
       analysisModel: document.analysisModel,
-      analyzedAt: document.analyzedAt
+      analyzedAt: document.analyzedAt,
+      parseDiagnostics: safeParseDiagnostics(document.parseDiagnostics)
     }
   };
 
@@ -138,4 +139,38 @@ function asOptionalString(value: unknown) {
 
 function asStringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function safeParseDiagnostics(diagnostics: ParsedDocument["parseDiagnostics"]) {
+  if (!diagnostics) return undefined;
+  return {
+    parser: asString(diagnostics.parser),
+    parsedAt: asString(diagnostics.parsedAt),
+    pageCount: diagnostics.pageCount,
+    textLength: diagnostics.textLength,
+    paragraphCount: diagnostics.paragraphCount,
+    sectionCount: diagnostics.sectionCount,
+    averageCharsPerPage: diagnostics.averageCharsPerPage,
+    emptyPageCount: diagnostics.emptyPageCount,
+    suspectedScannedPdf: diagnostics.suspectedScannedPdf,
+    hasVeryShortText: diagnostics.hasVeryShortText,
+    warnings: asStringArray(diagnostics.warnings).map((warning) => truncate(warning, 240)),
+    qualityScore: diagnostics.qualityScore,
+    qualityLabel: diagnostics.qualityLabel,
+    repeatedLineCandidates: asStringArray(diagnostics.repeatedLineCandidates).slice(0, 20).map((line) => truncate(line, 160)),
+    suspectedHeaderFooterLines: asStringArray(diagnostics.suspectedHeaderFooterLines).slice(0, 20).map((line) => truncate(line, 160)),
+    suspectedReferenceSection: diagnostics.suspectedReferenceSection,
+    suspectedFootnoteCount: diagnostics.suspectedFootnoteCount,
+    headingCandidateCount: diagnostics.headingCandidateCount,
+    languageGuess: diagnostics.languageGuess,
+    lowTextDensityPageCount: diagnostics.pageDiagnostics?.filter((page) => page.lowTextDensity).length,
+    pageDiagnostics: diagnostics.pageDiagnostics?.slice(0, 80).map((page) => ({
+      pageNumber: page.pageNumber,
+      textLength: page.textLength,
+      paragraphCount: page.paragraphCount,
+      empty: page.empty,
+      lowTextDensity: page.lowTextDensity,
+      repeatedHeaderFooterCandidates: asStringArray(page.repeatedHeaderFooterCandidates).slice(0, 6).map((line) => truncate(line, 120))
+    }))
+  };
 }

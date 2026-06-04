@@ -287,11 +287,38 @@ function buildDiagnostics({
   const emptyPageCount = Math.max(0, resolvedPageCount - pages.filter((page) => page.text.trim().length > 0).length);
   const averageCharsPerPage = resolvedPageCount ? Math.round(text.length / resolvedPageCount) : undefined;
   const hasVeryShortText = text.trim().length < 30;
-  const suspectedScannedPdf = hasVeryShortText || (resolvedPageCount > 1 && (averageCharsPerPage ?? 0) < 60);
+  const pageDiagnostics = buildPageDiagnostics(pages, paragraphs);
+  const repeatedLineCandidates = detectRepeatedBoundaryLines(pages);
+  const suspectedHeaderFooterLines = repeatedLineCandidates.slice(0, 12);
+  const headingCandidateCount = paragraphs.filter((paragraph) => looksLikeHeading(paragraph.text)).length;
+  const suspectedReferenceSection = /\b(references|bibliography)\b/i.test(text) || /参考文献/.test(text);
+  const suspectedFootnoteCount = countFootnoteCandidates(text);
+  const languageGuess = guessDocumentLanguage(text);
+  const lowDensityPageCount = pageDiagnostics.filter((page) => page.lowTextDensity).length;
+  const suspectedScannedPdf =
+    hasVeryShortText ||
+    (resolvedPageCount > 1 && (averageCharsPerPage ?? 0) < 80) ||
+    (resolvedPageCount > 0 && emptyPageCount / resolvedPageCount > 0.45) ||
+    (resolvedPageCount >= 3 && paragraphs.length <= Math.max(2, resolvedPageCount / 2));
 
-  if (hasVeryShortText) warnings.push("Extracted text is very short. The PDF may be scanned or image-only.");
-  if (emptyPageCount > 0) warnings.push(`${emptyPageCount} page(s) appear empty after text extraction.`);
+  if (suspectedScannedPdf) warnings.push("疑似扫描版 PDF：当前版本暂不支持 OCR。");
+  if (hasVeryShortText || (averageCharsPerPage ?? 0) < 120) warnings.push("文本层较少，解析结果可能不完整。");
+  if (emptyPageCount > 0) warnings.push("部分页面没有提取到可复制文本。");
+  if (repeatedLineCandidates.length) warnings.push("检测到可能的重复页眉/页脚，可能影响段落切分。");
+  if (headingCandidateCount > sections.length + 4) warnings.push("检测到多个疑似标题，但章节识别较少，可后续优化标题规则。");
   if (!sections.length) warnings.push("No clear section headings were detected.");
+
+  const qualityScore = computeQualityScore({
+    textLength: text.length,
+    resolvedPageCount,
+    averageCharsPerPage,
+    emptyPageCount,
+    paragraphCount: paragraphs.length,
+    repeatedLineCount: repeatedLineCandidates.length,
+    suspectedScannedPdf,
+    lowDensityPageCount
+  });
+  const qualityLabel = qualityLabelForScore(qualityScore, text.length);
 
   return {
     parser,
@@ -304,6 +331,134 @@ function buildDiagnostics({
     emptyPageCount,
     suspectedScannedPdf,
     hasVeryShortText,
-    warnings
+    warnings,
+    qualityScore,
+    qualityLabel,
+    pageDiagnostics,
+    repeatedLineCandidates,
+    suspectedHeaderFooterLines,
+    suspectedReferenceSection,
+    suspectedFootnoteCount,
+    headingCandidateCount,
+    languageGuess
   };
+}
+
+function buildPageDiagnostics(pages: ParsedPage[], paragraphs: ParsedParagraph[]) {
+  const paragraphCountByPage = new Map<number, number>();
+  for (const paragraph of paragraphs) {
+    if (paragraph.pageNumber) {
+      paragraphCountByPage.set(paragraph.pageNumber, (paragraphCountByPage.get(paragraph.pageNumber) ?? 0) + 1);
+    }
+  }
+  const repeated = detectRepeatedBoundaryLines(pages);
+  return pages.map((page) => {
+    const pageRepeated = boundaryLines(page.text).filter((line) => repeated.includes(line));
+    const textLength = page.text.trim().length;
+    return {
+      pageNumber: page.pageNumber,
+      textLength,
+      paragraphCount: paragraphCountByPage.get(page.pageNumber) ?? page.paragraphIds.length,
+      empty: textLength === 0,
+      lowTextDensity: textLength > 0 && textLength < 120,
+      repeatedHeaderFooterCandidates: pageRepeated
+    };
+  });
+}
+
+function detectRepeatedBoundaryLines(pages: ParsedPage[]) {
+  if (pages.length < 2) return [];
+  const counts = new Map<string, number>();
+  for (const page of pages) {
+    for (const line of Array.from(new Set(boundaryLines(page.text)))) {
+      counts.set(line, (counts.get(line) ?? 0) + 1);
+    }
+  }
+  const threshold = Math.max(2, Math.ceil(pages.length * 0.4));
+  return Array.from(counts.entries())
+    .filter(([line, count]) => count >= threshold && line.length <= 90)
+    .sort((a, b) => b[1] - a[1])
+    .map(([line]) => line)
+    .slice(0, 20);
+}
+
+function boundaryLines(text: string) {
+  const lines = text
+    .split(/\n/)
+    .map((line) => normalizeDiagnosticLine(line))
+    .filter((line) => line.length >= 2 && line.length <= 120);
+  return [...lines.slice(0, 3), ...lines.slice(-3)];
+}
+
+function normalizeDiagnosticLine(line: string) {
+  return line.replace(/\s+/g, " ").trim();
+}
+
+function countFootnoteCandidates(text: string) {
+  return text
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter((line) => /^(\d{1,3}[\).、]\s+|\*\s+).{6,160}$/.test(line))
+    .length;
+}
+
+export function guessDocumentLanguage(text: string): "zh" | "en" | "mixed" | "unknown" {
+  const sample = text.slice(0, 20000);
+  const zhCount = (sample.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  const enCount = (sample.match(/[A-Za-z]{2,}/g) ?? []).join("").length;
+  const total = zhCount + enCount;
+  if (total < 20) return "unknown";
+  const zhRatio = zhCount / total;
+  const enRatio = enCount / total;
+  if (zhRatio > 0.55 && enRatio > 0.15) return "mixed";
+  if (enRatio > 0.55 && zhRatio > 0.15) return "mixed";
+  if (zhRatio >= 0.35 && enRatio >= 0.25) return "mixed";
+  if (zhRatio > enRatio) return "zh";
+  return "en";
+}
+
+function computeQualityScore({
+  textLength,
+  resolvedPageCount,
+  averageCharsPerPage,
+  emptyPageCount,
+  paragraphCount,
+  repeatedLineCount,
+  suspectedScannedPdf,
+  lowDensityPageCount
+}: {
+  textLength: number;
+  resolvedPageCount: number;
+  averageCharsPerPage?: number;
+  emptyPageCount: number;
+  paragraphCount: number;
+  repeatedLineCount: number;
+  suspectedScannedPdf: boolean;
+  lowDensityPageCount: number;
+}) {
+  if (!textLength && !resolvedPageCount) return undefined;
+  let score = 100;
+  if (textLength < 30) score -= 70;
+  else if (textLength < 100) score -= 45;
+  else if (textLength < 500) score -= 15;
+
+  if ((averageCharsPerPage ?? 0) < 60 && resolvedPageCount > 1) score -= 35;
+  else if ((averageCharsPerPage ?? 0) < 160 && resolvedPageCount > 1) score -= 15;
+
+  if (resolvedPageCount > 0) {
+    score -= Math.min(30, Math.round((emptyPageCount / resolvedPageCount) * 45));
+    score -= Math.min(18, Math.round((lowDensityPageCount / resolvedPageCount) * 24));
+  }
+  if (textLength > 3000 && paragraphCount < 3) score -= 18;
+  if (repeatedLineCount > 8) score -= 8;
+  if (repeatedLineCount > 16) score -= 8;
+  if (suspectedScannedPdf) score = Math.min(score, 45);
+  return Math.max(0, Math.min(100, score));
+}
+
+function qualityLabelForScore(score: number | undefined, textLength: number): ParseDiagnostics["qualityLabel"] {
+  if (typeof score !== "number" || !textLength) return "unknown";
+  if (score >= 80) return "good";
+  if (score >= 50) return "fair";
+  return "poor";
 }

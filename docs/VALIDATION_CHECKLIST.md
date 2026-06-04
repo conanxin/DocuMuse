@@ -26,6 +26,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4A.1 Markdown, JSON, PPTX, chat-only Markdown, and preset ZIP exports returned 200 for a newly uploaded structured document.
 - [x] Phase 4A.1 old pre-structured document JSON opened and exported through fallback paths.
 - [x] Phase 4A.1 non-PDF and blank PDF uploads returned JSON errors.
+- [x] Phase 4B selectable-text PDF upload wrote `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
+- [x] Phase 4B JSON export includes safe parse diagnostics and does not include full document text.
 
 ## Upload And Library
 
@@ -33,7 +35,9 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm redirect to `/documents/{id}`.
 - [ ] Confirm original extracted text appears.
 - [ ] Confirm new document JSON includes `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
+- [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
 - [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
+- [ ] Confirm original text reader shows parse quality, score, language guess, and collapsible diagnostics.
 - [ ] Confirm old document JSON files without structured fields still open through runtime fallback.
 - [ ] Return home and confirm the document appears in Recent Documents.
 - [ ] Reopen the document from the local library.
