@@ -74,6 +74,9 @@ export type SafeDocumentExport = {
       | "suspectedFootnoteCount"
       | "headingCandidateCount"
       | "languageGuess"
+      | "lowValueParagraphCount"
+      | "repeatedHeaderFooterParagraphCount"
+      | "pageNumberParagraphCount"
     > & {
       lowTextDensityPageCount?: number;
       pageDiagnostics?: NonNullable<ParseDiagnostics["pageDiagnostics"]>;

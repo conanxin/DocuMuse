@@ -57,6 +57,7 @@ export type TextChunkMetadata = {
   paragraphIds?: string[];
   startPage?: number;
   endPage?: number;
+  skippedLowValueParagraphCount?: number;
 };
 
 export interface ParsedPage {
@@ -75,6 +76,15 @@ export interface ParsedParagraph {
   startChar: number;
   endChar: number;
   sourceHint: string;
+  quality?: {
+    isRepeatedHeaderFooter?: boolean;
+    isPageNumberOnly?: boolean;
+    isVeryShort?: boolean;
+    isLikelyFootnote?: boolean;
+    isLikelyReference?: boolean;
+    isLowValue?: boolean;
+    reasons?: string[];
+  };
 }
 
 export interface ParsedSection {
@@ -117,6 +127,9 @@ export interface ParseDiagnostics {
   suspectedFootnoteCount?: number;
   headingCandidateCount?: number;
   languageGuess?: "zh" | "en" | "mixed" | "unknown";
+  lowValueParagraphCount?: number;
+  repeatedHeaderFooterParagraphCount?: number;
+  pageNumberParagraphCount?: number;
 }
 
 export type ChunkAnalysis = {
@@ -136,6 +149,8 @@ export type ChatSource = {
   pageNumber?: number;
   sectionId?: string;
   sectionTitle?: string;
+  qualityFlags?: string[];
+  isLowValue?: boolean;
   sourceHint: string;
   quote: string;
   startChar: number;

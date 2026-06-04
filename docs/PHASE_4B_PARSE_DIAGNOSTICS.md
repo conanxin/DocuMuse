@@ -107,3 +107,9 @@ Diagnostics do not store:
 - Section and heading detection are heuristic.
 - Footnote detection is approximate.
 - Page boundaries may be approximate when the PDF parser does not expose reliable page text.
+
+## Phase 4C Follow-Up
+
+Phase 4C uses these diagnostics to mark paragraph-level quality and reduce the impact of obvious page headers, footers, page numbers, and very short low-value text in retrieval and full-analysis chunking.
+
+The original extracted text remains unchanged for traceability.

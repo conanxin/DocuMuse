@@ -25,6 +25,7 @@ export function OriginalTextPanel({
 }) {
   const [pageJump, setPageJump] = useState("");
   const [locateFailed, setLocateFailed] = useState(false);
+  const [hideLowValue, setHideLowValue] = useState(false);
   const fullText = document?.text || text || mockOriginalText.join("\n\n");
   const anchors = useMemo(() => (document ? buildParagraphAnchorsFromDocument(document) : buildParagraphAnchors(fullText)), [document, fullText]);
   const selectedAnchor = useMemo(() => resolveSelectedAnchor(anchors, highlight), [anchors, highlight]);
@@ -71,6 +72,10 @@ export function OriginalTextPanel({
       <ParseDiagnosticsPanel diagnostics={diagnostics} />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600">
+          <input type="checkbox" checked={hideLowValue} onChange={(event) => setHideLowValue(event.target.checked)} />
+          隐藏低价值段落
+        </label>
         {pageOptions.length > 1 && (
           <label className="flex items-center gap-2 text-sm text-slate-600">
             跳转页
@@ -101,7 +106,7 @@ export function OriginalTextPanel({
 
       <div className="mt-5 max-h-[62vh] space-y-3 overflow-auto rounded-2xl border border-slate-100 bg-slate-50 p-4 thin-scrollbar">
         {!anchors.length && <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">暂无可显示的原文内容。</div>}
-        {anchors.map((anchor) => {
+        {anchors.filter((anchor) => !(hideLowValue && anchor.isLowValue)).map((anchor) => {
           const active = selectedAnchor?.id === anchor.id;
           return (
             <article id={`source-${anchor.id}`} key={anchor.id} className={`rounded-xl border p-4 text-sm leading-7 transition ${active ? "border-blue-300 bg-yellow-50 shadow-sm" : "border-slate-100 bg-white"}`}>
@@ -109,6 +114,7 @@ export function OriginalTextPanel({
                 <span className={`font-semibold ${active ? "text-blue-700" : "text-slate-500"}`}>{anchor.sourceHint}</span>
                 <span className="text-slate-400">{anchor.sectionTitle ? `章节：${anchor.sectionTitle}` : `${anchor.startChar + 1}-${anchor.endChar}`}</span>
               </div>
+              <ParagraphQualityTags anchor={anchor} />
               <p className={`${active ? "border-l-4 border-blue-500 pl-3 text-slate-900" : "text-slate-700"}`}>{anchor.text}</p>
             </article>
           );
@@ -134,8 +140,15 @@ function ParseDiagnosticsPanel({ diagnostics }: { diagnostics?: ParseDiagnostics
         <StatPill>语言：{languageLabel(diagnostics.languageGuess)}</StatPill>
         <StatPill>空页：{diagnostics.emptyPageCount ?? 0}</StatPill>
         <StatPill>低文本页：{lowTextPages}</StatPill>
+        <StatPill>低价值段落：{diagnostics.lowValueParagraphCount ?? 0}</StatPill>
+        <StatPill>页眉/页脚段落：{diagnostics.repeatedHeaderFooterParagraphCount ?? 0}</StatPill>
+        <StatPill>页码段落：{diagnostics.pageNumberParagraphCount ?? 0}</StatPill>
         {repeatedLines.length > 0 && <StatPill>疑似页眉页脚：{repeatedLines.length}</StatPill>}
       </div>
+
+      {(diagnostics.lowValueParagraphCount ?? 0) > 0 && (
+        <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">检测到可能的页眉、页脚或页码段落。DocuMuse 会在问答检索和全文分析中自动降低这些内容的权重。</div>
+      )}
 
       {diagnostics.suspectedScannedPdf && (
         <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">该 PDF 可能是扫描版，当前版本暂不支持 OCR。</div>
@@ -183,6 +196,31 @@ function DiagnosticList({ title, items }: { title: string; items: string[] }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function ParagraphQualityTags({ anchor }: { anchor: ParagraphAnchor }) {
+  const flags = anchor.qualityFlags ?? [];
+  if (!flags.length) return null;
+  const labels = flags
+    .map((flag) => {
+      if (flag === "repeated_header_footer") return "页眉/页脚候选";
+      if (flag === "page_number") return "页码";
+      if (flag === "likely_footnote") return "脚注候选";
+      if (flag === "likely_reference") return "参考文献候选";
+      if (flag === "very_short_or_symbol_only") return "低价值";
+      return "";
+    })
+    .filter(Boolean);
+  if (!labels.length) return null;
+  return (
+    <div className="mb-2 flex flex-wrap gap-1">
+      {labels.slice(0, 4).map((label) => (
+        <span key={label} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
+          {label}
+        </span>
+      ))}
     </div>
   );
 }

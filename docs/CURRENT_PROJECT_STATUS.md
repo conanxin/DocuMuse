@@ -12,6 +12,8 @@ Structured PDF runtime validation: API-level upload, structured JSON, export com
 
 PDF parse diagnostics: quality scoring, language guess, page-level diagnostics, repeated header/footer candidates, reference hints, and footnote hints are implemented.
 
+Header/footer cleanup and source quality: paragraph quality tagging, low-value paragraph deweighting, and chunking skips are implemented.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -21,6 +23,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Store structured parse data for new PDFs: pages, paragraphs, sections, and parse diagnostics.
 - Runtime-generate structure for older plain-text document JSON files.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
+- Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
 - Save original PDFs and parsed document JSON locally.
 - List, reopen, and delete local documents.
 - Configure OpenAI-compatible or MiniMax Token Plan LLM settings.
@@ -54,6 +57,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
+- Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
 - PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
@@ -120,11 +124,12 @@ data/settings/    Local LLM settings
 - PDF source navigation is based on extracted text, not PDF coordinates.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
+- Low-value paragraph labels are heuristic and do not modify the original extracted text.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 4C PDF coordinate-aware source positioning.
+1. Phase 4D PDF coordinate-aware source positioning.
 2. Phase 3C.2 saved custom export presets.
 3. Phase 3B.4 optional speaker notes and richer report outline controls.
 4. Add source history and original-text search.

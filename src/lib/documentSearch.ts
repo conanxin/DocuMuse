@@ -8,6 +8,8 @@ export type SearchChunk = {
   pageNumber?: number;
   sectionId?: string;
   sectionTitle?: string;
+  qualityFlags?: string[];
+  isLowValue?: boolean;
   index: number;
   text: string;
   startChar: number;
@@ -73,6 +75,8 @@ export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[]
     pageNumber: anchor.pageNumber,
     sectionId: anchor.sectionId,
     sectionTitle: anchor.sectionTitle,
+    qualityFlags: anchor.qualityFlags,
+    isLowValue: anchor.isLowValue,
     index: anchor.index,
     text: normalizeText(anchor.text),
     startChar: anchor.startChar,
@@ -86,7 +90,9 @@ export function searchRelevantChunks(question: string, chunks: SearchChunk[], to
   const questionPhrase = normalizeText(question).toLowerCase();
   if (!chunks.length) return [];
 
-  const scored = chunks.map((chunk) => scoreChunk(chunk, tokens, questionPhrase));
+  const searchableChunks = chunks.filter((chunk) => !chunk.isLowValue);
+  const scoringBase = searchableChunks.length ? searchableChunks : chunks;
+  const scored = scoringBase.map((chunk) => scoreChunk(chunk, tokens, questionPhrase));
   const deduped = dedupeByText(scored)
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
@@ -94,7 +100,8 @@ export function searchRelevantChunks(question: string, chunks: SearchChunk[], to
   if (top.length >= 3) return top;
 
   const fallback = [...top];
-  for (const chunk of chunks.slice(0, 4)) {
+  const fallbackBase = searchableChunks.length ? searchableChunks : chunks;
+  for (const chunk of fallbackBase.slice(0, 4)) {
     if (!fallback.some((item) => item.id === chunk.id)) {
       fallback.push({ ...chunk, score: chunk.score ?? 0, matchedTerms: [], retrievalReason: "fallback_start" });
     }
@@ -130,6 +137,9 @@ function scoreChunk(chunk: SearchChunk, tokens: string[], questionPhrase: string
   score += proximityBonus(text, unique(matchedTerms));
   score += densityBonus(score, chunk.text.length);
   if (chunk.text.length > 1400) score -= 2;
+  if (chunk.isLowValue) score -= 50;
+  if (chunk.qualityFlags?.includes("likely_footnote")) score -= 4;
+  if (chunk.qualityFlags?.includes("likely_reference")) score -= 3;
 
   return {
     ...chunk,

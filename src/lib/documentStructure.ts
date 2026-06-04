@@ -15,9 +15,9 @@ const TARGET_PARAGRAPH_CHARS = 1300;
 export function buildDocumentStructure(text: string, pageCount = 0, parser = "text-heuristic"): DocumentStructure {
   const normalized = normalizeDocumentText(text);
   const pages = buildPages(normalized, pageCount);
-  const paragraphs = buildParagraphs(normalized, pages);
+  let paragraphs = buildParagraphs(normalized, pages);
   const sections = buildSections(paragraphs);
-  const diagnostics = buildDiagnostics({
+  let diagnostics = buildDiagnostics({
     parser,
     text: normalized,
     pages,
@@ -25,6 +25,13 @@ export function buildDocumentStructure(text: string, pageCount = 0, parser = "te
     sections,
     pageCount
   });
+  paragraphs = annotateParagraphQuality(paragraphs, diagnostics);
+  diagnostics = {
+    ...diagnostics,
+    lowValueParagraphCount: paragraphs.filter((paragraph) => paragraph.quality?.isLowValue).length,
+    repeatedHeaderFooterParagraphCount: paragraphs.filter((paragraph) => paragraph.quality?.isRepeatedHeaderFooter).length,
+    pageNumberParagraphCount: paragraphs.filter((paragraph) => paragraph.quality?.isPageNumberOnly).length
+  };
 
   return {
     text: normalized,
@@ -34,6 +41,50 @@ export function buildDocumentStructure(text: string, pageCount = 0, parser = "te
     sections,
     parseDiagnostics: diagnostics
   };
+}
+
+export function annotateParagraphQuality(paragraphs: ParsedParagraph[], diagnostics?: ParseDiagnostics): ParsedParagraph[] {
+  const repeatedLines = new Set([...(diagnostics?.suspectedHeaderFooterLines ?? []), ...(diagnostics?.repeatedLineCandidates ?? [])].map(normalizeDiagnosticLine));
+  const referenceStartIndex = findReferenceStartIndex(paragraphs);
+  const shortTextCounts = new Map<string, number>();
+
+  for (const paragraph of paragraphs) {
+    const key = normalizeDiagnosticLine(paragraph.text);
+    if (key.length > 0 && key.length <= 80) {
+      shortTextCounts.set(key, (shortTextCounts.get(key) ?? 0) + 1);
+    }
+  }
+
+  return paragraphs.map((paragraph) => {
+    const text = paragraph.text.trim();
+    const normalized = normalizeDiagnosticLine(text);
+    const reasons: string[] = [];
+    const isPageNumberOnly = isPageNumberParagraph(normalized);
+    const isVeryShort = normalized.length < 8 || isSymbolOnly(normalized) || isShortCopyrightMark(normalized);
+    const isRepeatedHeaderFooter = repeatedLines.has(normalized) || (normalized.length <= 80 && (shortTextCounts.get(normalized) ?? 0) >= 2 && paragraphs.length > 4);
+    const isLikelyFootnote = /^(\d{1,3}[\).、]\s+|\*\s+).{6,160}$/.test(normalized);
+    const isLikelyReference = referenceStartIndex >= 0 && paragraph.index >= referenceStartIndex;
+
+    if (isRepeatedHeaderFooter) reasons.push("repeated_header_footer");
+    if (isPageNumberOnly) reasons.push("page_number");
+    if (isVeryShort) reasons.push("very_short_or_symbol_only");
+    if (isLikelyFootnote) reasons.push("likely_footnote");
+    if (isLikelyReference) reasons.push("likely_reference");
+
+    const isLowValue = isRepeatedHeaderFooter || isPageNumberOnly || isVeryShort;
+    return {
+      ...paragraph,
+      quality: {
+        isRepeatedHeaderFooter,
+        isPageNumberOnly,
+        isVeryShort,
+        isLikelyFootnote,
+        isLikelyReference,
+        isLowValue,
+        reasons
+      }
+    };
+  });
 }
 
 export function ensureDocumentStructure(document: ParsedDocument): ParsedDocument & Required<Pick<ParsedDocument, "pages" | "paragraphs" | "sections" | "parseDiagnostics">> {
@@ -400,6 +451,23 @@ function countFootnoteCandidates(text: string) {
     .map((line) => line.trim())
     .filter((line) => /^(\d{1,3}[\).、]\s+|\*\s+).{6,160}$/.test(line))
     .length;
+}
+
+function findReferenceStartIndex(paragraphs: ParsedParagraph[]) {
+  const found = paragraphs.find((paragraph) => /\b(references|bibliography)\b/i.test(paragraph.text.trim()) || /参考文献/.test(paragraph.text));
+  return found?.index ?? -1;
+}
+
+function isPageNumberParagraph(text: string) {
+  return /^(\d{1,4}|-\s*\d{1,4}\s*-|page\s+\d{1,4}|第\s*\d{1,4}\s*页)$/i.test(text.trim());
+}
+
+function isSymbolOnly(text: string) {
+  return /^[\W_]+$/.test(text.replace(/\s+/g, ""));
+}
+
+function isShortCopyrightMark(text: string) {
+  return /^(copyright|all rights reserved|©)/i.test(text) && text.length < 80;
 }
 
 export function guessDocumentLanguage(text: string): "zh" | "en" | "mixed" | "unknown" {

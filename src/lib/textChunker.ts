@@ -11,6 +11,7 @@ export type TextChunk = {
   paragraphIds?: string[];
   startPage?: number;
   endPage?: number;
+  skippedLowValueParagraphCount?: number;
 };
 
 type ChunkOptions = {
@@ -87,15 +88,18 @@ export function chunkText(input: string | ParsedDocument, options: ChunkOptions 
 
 function chunkParagraphs(paragraphs: ParsedParagraph[], options: Required<Pick<ChunkOptions, "targetSize" | "maxSize">>): TextChunk[] {
   if (!paragraphs.length) return [];
+  const skippedLowValueParagraphCount = paragraphs.filter((paragraph) => shouldSkipParagraphForChunking(paragraph)).length;
+  const sourceParagraphs = paragraphs.filter((paragraph) => !shouldSkipParagraphForChunking(paragraph));
+  const chunkableParagraphs = sourceParagraphs.length ? sourceParagraphs : paragraphs;
 
   const chunks: TextChunk[] = [];
   let current: ParsedParagraph[] = [];
   let currentLength = 0;
 
-  for (const paragraph of paragraphs) {
+  for (const paragraph of chunkableParagraphs) {
     const nextLength = currentLength + paragraph.text.length + 2;
     if (current.length && nextLength > options.targetSize) {
-      chunks.push(buildParagraphChunk(current, chunks.length + 1));
+      chunks.push(buildParagraphChunk(current, chunks.length + 1, skippedLowValueParagraphCount));
       current = [];
       currentLength = 0;
     }
@@ -104,20 +108,20 @@ function chunkParagraphs(paragraphs: ParsedParagraph[], options: Required<Pick<C
     currentLength += paragraph.text.length + 2;
 
     if (currentLength >= options.maxSize) {
-      chunks.push(buildParagraphChunk(current, chunks.length + 1));
+      chunks.push(buildParagraphChunk(current, chunks.length + 1, skippedLowValueParagraphCount));
       current = [];
       currentLength = 0;
     }
   }
 
   if (current.length) {
-    chunks.push(buildParagraphChunk(current, chunks.length + 1));
+    chunks.push(buildParagraphChunk(current, chunks.length + 1, skippedLowValueParagraphCount));
   }
 
   return chunks;
 }
 
-function buildParagraphChunk(paragraphs: ParsedParagraph[], index: number): TextChunk {
+function buildParagraphChunk(paragraphs: ParsedParagraph[], index: number, skippedLowValueParagraphCount = 0): TextChunk {
   const first = paragraphs[0];
   const last = paragraphs[paragraphs.length - 1];
   const startPage = first.pageNumber;
@@ -138,6 +142,12 @@ function buildParagraphChunk(paragraphs: ParsedParagraph[], index: number): Text
     sourceHint,
     paragraphIds: paragraphs.map((paragraph) => paragraph.id),
     startPage,
-    endPage
+    endPage,
+    skippedLowValueParagraphCount
   };
+}
+
+function shouldSkipParagraphForChunking(paragraph: ParsedParagraph) {
+  const quality = paragraph.quality;
+  return Boolean(quality?.isPageNumberOnly || quality?.isRepeatedHeaderFooter || (quality?.isVeryShort && quality.isLowValue));
 }

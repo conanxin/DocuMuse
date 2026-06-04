@@ -163,6 +163,9 @@ function safeParseDiagnostics(diagnostics: ParsedDocument["parseDiagnostics"]) {
     suspectedFootnoteCount: diagnostics.suspectedFootnoteCount,
     headingCandidateCount: diagnostics.headingCandidateCount,
     languageGuess: diagnostics.languageGuess,
+    lowValueParagraphCount: diagnostics.lowValueParagraphCount,
+    repeatedHeaderFooterParagraphCount: diagnostics.repeatedHeaderFooterParagraphCount,
+    pageNumberParagraphCount: diagnostics.pageNumberParagraphCount,
     lowTextDensityPageCount: diagnostics.pageDiagnostics?.filter((page) => page.lowTextDensity).length,
     pageDiagnostics: diagnostics.pageDiagnostics?.slice(0, 80).map((page) => ({
       pageNumber: page.pageNumber,

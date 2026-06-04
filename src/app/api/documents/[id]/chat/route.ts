@@ -97,6 +97,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
       pageNumber: chunk.pageNumber,
       sectionId: chunk.sectionId,
       sectionTitle: chunk.sectionTitle,
+      qualityFlags: chunk.qualityFlags,
+      isLowValue: chunk.isLowValue,
       sourceHint: chunk.sourceHint,
       quote: sourceQuote(chunk.text, 180, chunk.matchedTerms ?? []),
       startChar: chunk.startChar,

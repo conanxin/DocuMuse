@@ -12,6 +12,8 @@ export type ParagraphAnchor = {
   pageNumber?: number;
   sectionId?: string;
   sectionTitle?: string;
+  qualityFlags?: string[];
+  isLowValue?: boolean;
 };
 
 const MAX_ANCHOR_CHARS = 1600;
@@ -74,7 +76,9 @@ export function buildParagraphAnchorsFromDocument(document: ParsedDocument): Par
       sourceHint: paragraph.sourceHint,
       pageNumber: paragraph.pageNumber,
       sectionId: section?.id,
-      sectionTitle: section?.title
+      sectionTitle: section?.title,
+      qualityFlags: paragraph.quality?.reasons,
+      isLowValue: paragraph.quality?.isLowValue
     };
   });
 }
