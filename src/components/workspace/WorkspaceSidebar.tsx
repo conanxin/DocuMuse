@@ -1,5 +1,7 @@
 import { BarChart3, FileText, Languages, Lightbulb, Network, ScrollText } from "lucide-react";
+import { ensureDocumentStructure } from "@/lib/documentStructure";
 import { mockDocumentOutline } from "@/lib/mockData";
+import type { ChatSource, ParsedDocument, ParsedSection } from "@/lib/documentTypes";
 
 export type WorkspaceTab = "overview" | "original" | "translation" | "analysis" | "graph" | "creative";
 
@@ -12,7 +14,19 @@ const navItems = [
   { id: "creative" as const, label: "创意输出", icon: Lightbulb }
 ];
 
-export function WorkspaceSidebar({ activeTab, onChange }: { activeTab: WorkspaceTab; onChange: (tab: WorkspaceTab) => void }) {
+export function WorkspaceSidebar({
+  activeTab,
+  onChange,
+  document,
+  onSectionClick
+}: {
+  activeTab: WorkspaceTab;
+  onChange: (tab: WorkspaceTab) => void;
+  document?: ParsedDocument | null;
+  onSectionClick?: (source: ChatSource) => void;
+}) {
+  const sections = document ? ensureDocumentStructure(document).sections : [];
+
   return (
     <aside className="flex min-h-0 flex-col border-r border-slate-200 bg-white">
       <div className="border-b border-slate-200 p-4">
@@ -37,14 +51,41 @@ export function WorkspaceSidebar({ activeTab, onChange }: { activeTab: Workspace
       <div className="min-h-0 flex-1 overflow-auto p-4 thin-scrollbar">
         <h2 className="text-sm font-semibold text-slate-950">文档大纲</h2>
         <div className="mt-3 space-y-2">
-          {mockDocumentOutline.map((item, index) => (
-            <button key={item} className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-200 hover:bg-blue-50">
-              <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-blue-600 ring-1 ring-slate-200">{index + 1}</span>
-              {item}
-            </button>
-          ))}
+          {sections.length
+            ? sections.slice(0, 24).map((section) => <SectionButton key={section.id} section={section} onSectionClick={onSectionClick} />)
+            : mockDocumentOutline.map((item, index) => (
+                <button key={item} className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-200 hover:bg-blue-50">
+                  <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-blue-600 ring-1 ring-slate-200">{index + 1}</span>
+                  {item}
+                </button>
+              ))}
         </div>
       </div>
     </aside>
+  );
+}
+
+function SectionButton({ section, onSectionClick }: { section: ParsedSection; onSectionClick?: (source: ChatSource) => void }) {
+  return (
+    <button
+      className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+      onClick={() =>
+        onSectionClick?.({
+          paragraphId: section.startParagraphId,
+          anchorId: section.startParagraphId.replace(/^para-/, "p-"),
+          sectionId: section.id,
+          sectionTitle: section.title,
+          pageNumber: section.pageNumber,
+          sourceHint: section.pageNumber ? `第 ${section.pageNumber} 页 · ${section.title}` : section.title,
+          quote: section.title,
+          startChar: section.startChar,
+          endChar: section.endChar ?? section.startChar + section.title.length
+        })
+      }
+    >
+      <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-semibold text-blue-600 ring-1 ring-slate-200">{section.index}</span>
+      <span className="align-middle">{section.title}</span>
+      {section.pageNumber && <span className="mt-1 block pl-7 text-xs text-slate-400">第 {section.pageNumber} 页</span>}
+    </button>
   );
 }

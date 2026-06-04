@@ -54,7 +54,54 @@ export type TextChunkMetadata = {
   startChar: number;
   endChar: number;
   sourceHint: string;
+  paragraphIds?: string[];
+  startPage?: number;
+  endPage?: number;
 };
+
+export interface ParsedPage {
+  pageNumber: number;
+  text: string;
+  startChar: number;
+  endChar: number;
+  paragraphIds: string[];
+}
+
+export interface ParsedParagraph {
+  id: string;
+  index: number;
+  pageNumber?: number;
+  text: string;
+  startChar: number;
+  endChar: number;
+  sourceHint: string;
+}
+
+export interface ParsedSection {
+  id: string;
+  index: number;
+  title: string;
+  level: number;
+  startParagraphId: string;
+  endParagraphId?: string;
+  startChar: number;
+  endChar?: number;
+  pageNumber?: number;
+}
+
+export interface ParseDiagnostics {
+  parser: string;
+  parsedAt: string;
+  pageCount?: number;
+  textLength: number;
+  paragraphCount: number;
+  sectionCount: number;
+  averageCharsPerPage?: number;
+  emptyPageCount?: number;
+  suspectedScannedPdf?: boolean;
+  hasVeryShortText?: boolean;
+  warnings: string[];
+}
 
 export type ChunkAnalysis = {
   chunkId: string;
@@ -69,6 +116,10 @@ export type ChunkAnalysis = {
 
 export type ChatSource = {
   anchorId?: string;
+  paragraphId?: string;
+  pageNumber?: number;
+  sectionId?: string;
+  sectionTitle?: string;
   sourceHint: string;
   quote: string;
   startChar: number;
@@ -105,6 +156,10 @@ export type ParsedDocument = {
   analysisDiagnostics?: AnalysisDiagnostics;
   text: string;
   pageCount: number;
+  pages?: ParsedPage[];
+  paragraphs?: ParsedParagraph[];
+  sections?: ParsedSection[];
+  parseDiagnostics?: ParseDiagnostics;
   uploadPath?: string;
   metadata: Record<string, unknown>;
   analysis: DocumentAnalysis;

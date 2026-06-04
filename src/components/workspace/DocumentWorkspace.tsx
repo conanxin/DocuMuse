@@ -168,6 +168,11 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
+  const handleSectionClick = (source: ChatSource) => {
+    setSelectedSourceRange(source);
+    setActiveTab("original");
+  };
+
   const exportDocument = async (format: "markdown" | "json" | "pptx", only?: "chat", pptxOptions?: PptxExportOptions) => {
     setExportState("loading");
     setExportError("");
@@ -256,7 +261,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         analysisFailed={analysisFailed}
       />
       <div className="grid min-h-0 flex-1 lg:grid-cols-[250px_minmax(0,1fr)_400px]">
-        <WorkspaceSidebar activeTab={activeTab} onChange={setActiveTab} />
+        <WorkspaceSidebar activeTab={activeTab} onChange={setActiveTab} document={document} onSectionClick={handleSectionClick} />
         <section className="min-h-0 overflow-auto p-5 thin-scrollbar">
           {loadState === "loading" && <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">正在读取文档...</div>}
           {loadState === "error" && <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">{errorMessage}</div>}
@@ -266,7 +271,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
           {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
-          {loadState === "idle" && activeTab === "original" && <OriginalTextPanel text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} />}
+          {loadState === "idle" && activeTab === "original" && <OriginalTextPanel document={document} text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "translation" && <TranslationPanel translation={document?.analysis?.translationZh} />}
           {loadState === "idle" && activeTab === "analysis" && <SectionAnalysisPanel analysis={document?.analysis} />}

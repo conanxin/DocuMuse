@@ -1,8 +1,13 @@
-import { buildParagraphAnchors } from "./sourceAnchors";
+import type { ParsedDocument } from "./documentTypes";
+import { buildParagraphAnchors, buildParagraphAnchorsFromDocument } from "./sourceAnchors";
 
 export type SearchChunk = {
   id: string;
   anchorId?: string;
+  paragraphId?: string;
+  pageNumber?: number;
+  sectionId?: string;
+  sectionTitle?: string;
   index: number;
   text: string;
   startChar: number;
@@ -59,10 +64,15 @@ function tokenize(input: string) {
   return tokens.filter((token) => !stopWords.has(token) && token.trim().length > 0);
 }
 
-export function buildSearchChunks(text: string): SearchChunk[] {
-  return buildParagraphAnchors(text).map((anchor) => ({
+export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[] {
+  const anchors = typeof input === "string" ? buildParagraphAnchors(input) : buildParagraphAnchorsFromDocument(input);
+  return anchors.map((anchor) => ({
     id: `search_${anchor.id}`,
     anchorId: anchor.id,
+    paragraphId: anchor.paragraphId,
+    pageNumber: anchor.pageNumber,
+    sectionId: anchor.sectionId,
+    sectionTitle: anchor.sectionTitle,
     index: anchor.index,
     text: normalizeText(anchor.text),
     startChar: anchor.startChar,
@@ -96,7 +106,7 @@ export function searchRelevantChunks(question: string, chunks: SearchChunk[], to
 
 function scoreChunk(chunk: SearchChunk, tokens: string[], questionPhrase: string): SearchChunk {
   const text = chunk.text.toLowerCase();
-  const sourceHint = chunk.sourceHint.toLowerCase();
+  const sourceHint = `${chunk.sourceHint} ${chunk.sectionTitle ?? ""}`.toLowerCase();
   const matchedTerms: string[] = [];
   let score = 0;
 

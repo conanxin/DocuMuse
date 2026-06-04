@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { generateSimpleAnalysis } from "@/lib/simpleAnalysis";
 import { sanitizePdfFilename, saveParsedDocument, saveUploadedPdf, toProjectRelativePath } from "@/lib/documentStorage";
-import { extractPdfText } from "@/lib/pdfExtractor";
+import { extractPdfDocument } from "@/lib/pdfExtractor";
 import type { ParsedDocument } from "@/lib/documentTypes";
 
 export const runtime = "nodejs";
@@ -52,12 +52,12 @@ export async function POST(request: Request) {
 
     let parsed;
     try {
-      parsed = await extractPdfText(buffer);
+      parsed = await extractPdfDocument(buffer);
     } catch (error) {
       return errorResponse("PDF 解析失败，请确认文件未加密且格式有效。", 422, error);
     }
 
-    if (!parsed.text) {
+    if (!parsed.text || parsed.parseDiagnostics.hasVeryShortText) {
       return errorResponse("当前版本暂不支持 OCR，请上传包含可复制文本的 PDF。", 422);
     }
 
@@ -71,6 +71,10 @@ export async function POST(request: Request) {
       analysisStatus: "idle",
       text: parsed.text,
       pageCount: parsed.pageCount,
+      pages: parsed.pages,
+      paragraphs: parsed.paragraphs,
+      sections: parsed.sections,
+      parseDiagnostics: parsed.parseDiagnostics,
       uploadPath: toProjectRelativePath(uploadPath),
       metadata: parsed.metadata ? { pdfParse: parsed.metadata } : {},
       analysis: generateSimpleAnalysis(parsed.text)

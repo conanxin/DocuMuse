@@ -327,8 +327,9 @@ function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatS
             >
               <span className="flex items-center gap-1 font-medium">
                 <ExternalLink size={12} />
-                {source.sourceHint}
+                {formatSourceLabel(source)}
               </span>
+              {source.sectionTitle && <span className="mt-1 block text-[11px] text-slate-400">{source.sectionTitle}</span>}
               <span className="mt-1 block leading-5">{shortQuote(source.quote, 120)}</span>
             </button>
           );
@@ -375,8 +376,15 @@ function ChatAnswerModal({ message, selectedSource, onCopy, onClose, onSourceCli
 
 function isSameSource(source: ChatSource, selected?: ChatSource | null) {
   if (!selected) return false;
+  if (source.paragraphId && selected.paragraphId) return source.paragraphId === selected.paragraphId;
   if (source.anchorId && selected.anchorId) return source.anchorId === selected.anchorId;
   return source.startChar === selected.startChar && source.endChar === selected.endChar && source.sourceHint === selected.sourceHint;
+}
+
+function formatSourceLabel(source: ChatSource) {
+  if (source.pageNumber && source.sourceHint.includes("页")) return source.sourceHint;
+  if (source.pageNumber) return `第 ${source.pageNumber} 页 · ${source.sourceHint}`;
+  return source.sourceHint;
 }
 
 function buildChatMarkdown(documentTitle: string, messages: ChatMessage[]) {

@@ -1,3 +1,6 @@
+import { ensureDocumentStructure } from "./documentStructure";
+import type { ParsedDocument, ParsedParagraph } from "./documentTypes";
+
 export type TextChunk = {
   id: string;
   index: number;
@@ -5,6 +8,9 @@ export type TextChunk = {
   startChar: number;
   endChar: number;
   sourceHint: string;
+  paragraphIds?: string[];
+  startPage?: number;
+  endPage?: number;
 };
 
 type ChunkOptions = {
@@ -13,10 +19,16 @@ type ChunkOptions = {
   overlap?: number;
 };
 
-export function chunkText(text: string, options: ChunkOptions = {}): TextChunk[] {
+export function chunkText(input: string | ParsedDocument, options: ChunkOptions = {}): TextChunk[] {
   const targetSize = options.targetSize ?? 7000;
   const maxSize = options.maxSize ?? 9000;
   const overlap = options.overlap ?? 400;
+  if (typeof input !== "string") {
+    const structured = ensureDocumentStructure(input);
+    return chunkParagraphs(structured.paragraphs, { targetSize, maxSize });
+  }
+
+  const text = input;
   const normalized = text.replace(/\r\n/g, "\n").trim();
 
   if (!normalized) return [];
@@ -71,4 +83,61 @@ export function chunkText(text: string, options: ChunkOptions = {}): TextChunk[]
   }
 
   return chunks;
+}
+
+function chunkParagraphs(paragraphs: ParsedParagraph[], options: Required<Pick<ChunkOptions, "targetSize" | "maxSize">>): TextChunk[] {
+  if (!paragraphs.length) return [];
+
+  const chunks: TextChunk[] = [];
+  let current: ParsedParagraph[] = [];
+  let currentLength = 0;
+
+  for (const paragraph of paragraphs) {
+    const nextLength = currentLength + paragraph.text.length + 2;
+    if (current.length && nextLength > options.targetSize) {
+      chunks.push(buildParagraphChunk(current, chunks.length + 1));
+      current = [];
+      currentLength = 0;
+    }
+
+    current.push(paragraph);
+    currentLength += paragraph.text.length + 2;
+
+    if (currentLength >= options.maxSize) {
+      chunks.push(buildParagraphChunk(current, chunks.length + 1));
+      current = [];
+      currentLength = 0;
+    }
+  }
+
+  if (current.length) {
+    chunks.push(buildParagraphChunk(current, chunks.length + 1));
+  }
+
+  return chunks;
+}
+
+function buildParagraphChunk(paragraphs: ParsedParagraph[], index: number): TextChunk {
+  const first = paragraphs[0];
+  const last = paragraphs[paragraphs.length - 1];
+  const startPage = first.pageNumber;
+  const endPage = last.pageNumber;
+  const sourceHint =
+    startPage && endPage
+      ? startPage === endPage
+        ? `第 ${startPage} 页 · 第 ${first.index}-${last.index} 段`
+        : `第 ${startPage}-${endPage} 页 · 第 ${first.index}-${last.index} 段`
+      : `第 ${first.index}-${last.index} 段`;
+
+  return {
+    id: `chunk_${index}`,
+    index,
+    text: paragraphs.map((paragraph) => paragraph.text).join("\n\n"),
+    startChar: first.startChar,
+    endChar: last.endChar,
+    sourceHint,
+    paragraphIds: paragraphs.map((paragraph) => paragraph.id),
+    startPage,
+    endPage
+  };
 }

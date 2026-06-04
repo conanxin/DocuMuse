@@ -23,7 +23,7 @@ async function readMode(request: Request): Promise<AnalysisMode> {
 }
 
 function chunkMetadata(chunks: ReturnType<typeof chunkText>) {
-  return chunks.map(({ id, index, startChar, endChar, sourceHint }) => ({ id, index, startChar, endChar, sourceHint }));
+  return chunks.map(({ id, index, startChar, endChar, sourceHint, paragraphIds, startPage, endPage }) => ({ id, index, startChar, endChar, sourceHint, paragraphIds, startPage, endPage }));
 }
 
 async function saveProgress(document: ParsedDocument, progress: ParsedDocument["analysisProgress"], extra: Partial<ParsedDocument> = {}) {
@@ -57,7 +57,7 @@ async function runQuickAnalysis(document: ParsedDocument) {
 }
 
 async function runFullAnalysis(document: ParsedDocument) {
-  const chunks = chunkText(document.text);
+  const chunks = chunkText(document);
   await saveProgress(
     document,
     {

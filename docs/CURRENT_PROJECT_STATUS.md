@@ -2,7 +2,7 @@
 
 ## Status
 
-MVP Alpha / real model validated / export baseline / PPTX visual polish
+MVP Alpha / real model validated / export baseline / structured PDF parsing
 
 Real MiniMax Token Plan validation: passed.
 
@@ -14,6 +14,8 @@ DocuMuse currently supports a local PDF reading workflow:
 
 - Upload local PDFs.
 - Extract selectable PDF text.
+- Store structured parse data for new PDFs: pages, paragraphs, sections, and parse diagnostics.
+- Runtime-generate structure for older plain-text document JSON files.
 - Save original PDFs and parsed document JSON locally.
 - List, reopen, and delete local documents.
 - Configure OpenAI-compatible or MiniMax Token Plan LLM settings.
@@ -22,6 +24,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Track analysis status and diagnostics.
 - Ask grounded questions against document text.
 - Show source citations and jump to paragraph anchors in the original text.
+- Show page, paragraph, section, and parser diagnostics in the original text reader.
 - Render assistant answers as safe Markdown with copy and expanded reading actions.
 - Clear and export chat history as Markdown.
 - Use `/settings/validation` for local real-model validation.
@@ -43,6 +46,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - LLM: OpenAI-compatible Chat Completions via `fetch`.
 - Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
+- Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
 - PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
@@ -107,12 +111,14 @@ data/settings/    Local LLM settings
 - No inserted images, speaker notes, brand-kit editor, animations, or complex PPTX template editor.
 - No saved custom preset editor yet.
 - PDF source navigation is based on extracted text, not PDF coordinates.
+- Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 3C.2 saved custom export presets.
-2. Phase 3B.4 optional speaker notes and richer report outline controls.
-2. Add source history and original-text search.
-3. Add optional streaming responses.
-4. Consider embeddings and vector storage only after the local baseline and export workflow are stable.
+1. Phase 4B PDF coordinate-aware source positioning and parser diagnostics refinement.
+2. Phase 3C.2 saved custom export presets.
+3. Phase 3B.4 optional speaker notes and richer report outline controls.
+4. Add source history and original-text search.
+5. Add optional streaming responses.
+6. Consider embeddings and vector storage only after the local baseline and export workflow are stable.

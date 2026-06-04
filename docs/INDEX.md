@@ -24,6 +24,7 @@
 - [Phase 3B.3 PPTX Options Validation](./PHASE_3B_3_PPTX_OPTIONS_VALIDATION.md): route-level and WPS / PowerPoint validation for PPTX themes, cover styles, section include flags, and security checks.
 - [Phase 3C Export Presets](./PHASE_3C_EXPORT_PRESETS.md): preset export packs, preset APIs, and local ZIP download behavior.
 - [Phase 3C.1 ZIP Export Presets](./PHASE_3C_1_ZIP_EXPORT_PRESETS.md): server-side in-memory ZIP packaging for preset exports.
+- [Phase 4A Structured PDF Parsing](./PHASE_4A_STRUCTURED_PDF_PARSING.md): pages, paragraphs, sections, parse diagnostics, source anchors, and old-document fallback.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

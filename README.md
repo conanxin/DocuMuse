@@ -7,6 +7,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 ## Current Features
 
 - Local PDF upload and text extraction.
+- Structured PDF parsing for selectable-text PDFs: pages, paragraphs, sections, parse diagnostics, and paragraph-level source anchors.
 - Local document library from `data/documents/`.
 - Reopen and delete parsed local documents.
 - Workspace upload entry for adding a new document without returning home.
@@ -27,6 +28,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - PPTX export options have passed route-level validation and user-completed WPS / PowerPoint visual validation.
 - Export presets for study notes, presentation packs, research digests, podcast preparation, and full archives.
 - Export presets can be downloaded as server-generated ZIP packages.
+- Original text reading now prefers structured paragraphs and shows page / paragraph / section metadata.
 
 ## Install
 
@@ -128,6 +130,7 @@ data/settings/    Local LLM settings
 ## Not Supported Yet
 
 - OCR for scanned PDFs.
+- PDF coordinate-level citation positioning.
 - EPUB and Word parsing.
 - Vector RAG.
 - Embeddings.
@@ -166,7 +169,9 @@ DocuMuse is currently a local single-user tool.
 - Phase 3B.3: PPTX option route-level and WPS / PowerPoint visual validation are recorded.
 - Phase 3C: export presets and local multi-file downloads are implemented.
 - Phase 3C.1: export presets as ZIP packages is implemented.
-- Phase 4: optional embeddings and vector database RAG.
+- Phase 4A: structured selectable-text PDF parsing is implemented.
+- Phase 4B: PDF coordinate-aware source positioning and stronger parser diagnostics.
+- Phase 4C: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

@@ -1,10 +1,17 @@
+import { ensureDocumentStructure } from "./documentStructure";
+import type { ParsedDocument } from "./documentTypes";
+
 export type ParagraphAnchor = {
   id: string;
+  paragraphId?: string;
   index: number;
   text: string;
   startChar: number;
   endChar: number;
   sourceHint: string;
+  pageNumber?: number;
+  sectionId?: string;
+  sectionTitle?: string;
 };
 
 const MAX_ANCHOR_CHARS = 1600;
@@ -51,6 +58,30 @@ export function buildParagraphAnchors(text: string): ParagraphAnchor[] {
   }
 
   return anchors;
+}
+
+export function buildParagraphAnchorsFromDocument(document: ParsedDocument): ParagraphAnchor[] {
+  const structured = ensureDocumentStructure(document);
+  return structured.paragraphs.map((paragraph) => {
+    const section = structured.sections.find((item) => paragraph.index >= paragraphIndex(item.startParagraphId) && paragraph.index <= paragraphIndex(item.endParagraphId ?? item.startParagraphId));
+    return {
+      id: paragraph.id.replace(/^para-/, "p-"),
+      paragraphId: paragraph.id,
+      index: paragraph.index,
+      text: paragraph.text,
+      startChar: paragraph.startChar,
+      endChar: paragraph.endChar,
+      sourceHint: paragraph.sourceHint,
+      pageNumber: paragraph.pageNumber,
+      sectionId: section?.id,
+      sectionTitle: section?.title
+    };
+  });
+}
+
+function paragraphIndex(id: string) {
+  const match = id.match(/(\d+)$/);
+  return match ? Number(match[1]) : 1;
 }
 
 function splitLongParagraph(paragraph: string) {

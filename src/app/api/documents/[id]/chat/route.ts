@@ -74,7 +74,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       return NextResponse.json({ ok: false, error: "文档文本为空，无法问答。" }, { status: 422 });
     }
 
-    const searchChunks = buildSearchChunks(document.text);
+    const searchChunks = buildSearchChunks(document);
     const relevantChunks = searchRelevantChunks(question, searchChunks);
     if (!relevantChunks.length) {
       return NextResponse.json({ ok: false, error: "未找到可用于回答的文档片段。" }, { status: 422 });
@@ -93,6 +93,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     const sources: ChatSource[] = relevantChunks.map((chunk) => ({
       anchorId: chunk.anchorId,
+      paragraphId: chunk.paragraphId,
+      pageNumber: chunk.pageNumber,
+      sectionId: chunk.sectionId,
+      sectionTitle: chunk.sectionTitle,
       sourceHint: chunk.sourceHint,
       quote: sourceQuote(chunk.text, 180, chunk.matchedTerms ?? []),
       startChar: chunk.startChar,

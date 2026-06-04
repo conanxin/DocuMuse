@@ -25,6 +25,9 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Upload a normal selectable-text PDF.
 - [ ] Confirm redirect to `/documents/{id}`.
 - [ ] Confirm original extracted text appears.
+- [ ] Confirm new document JSON includes `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
+- [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
+- [ ] Confirm old document JSON files without structured fields still open through runtime fallback.
 - [ ] Return home and confirm the document appears in Recent Documents.
 - [ ] Reopen the document from the local library.
 - [ ] Delete a document and confirm it disappears.
@@ -62,12 +65,14 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm an LLM answer is returned.
 - [ ] Confirm sources are shown.
 - [ ] Confirm source quotes are short and relevant to the question.
+- [ ] Confirm source cards show page / paragraph hints when available.
 - [ ] Confirm assistant answers render Markdown headings, bold text, lists, blockquotes, and inline code.
 - [ ] Confirm raw Markdown markers such as `**bold**` are not shown for supported syntax.
 - [ ] Copy an assistant answer.
 - [ ] Open expanded reading for an assistant answer.
 - [ ] Click a source and confirm the original text tab opens.
 - [ ] Confirm the matching paragraph is highlighted.
+- [ ] Confirm workspace sidebar outline shows detected sections for structured documents.
 - [ ] Clear highlight.
 - [ ] Clear chat history.
 - [ ] Refresh and confirm chat history remains empty.
