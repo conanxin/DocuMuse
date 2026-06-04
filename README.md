@@ -29,6 +29,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Export presets for study notes, presentation packs, research digests, podcast preparation, and full archives.
 - Export presets can be downloaded as server-generated ZIP packages.
 - Original text reading now prefers structured paragraphs and shows page / paragraph / section metadata.
+- Structured PDF parsing has passed API-level runtime validation for selectable-text PDF upload, structured JSON persistence, export compatibility, old-document fallback, and upload error paths.
 
 ## Install
 
@@ -170,6 +171,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 3C: export presets and local multi-file downloads are implemented.
 - Phase 3C.1: export presets as ZIP packages is implemented.
 - Phase 4A: structured selectable-text PDF parsing is implemented.
+- Phase 4A.1: structured PDF parsing runtime validation is recorded.
 - Phase 4B: PDF coordinate-aware source positioning and stronger parser diagnostics.
 - Phase 4C: optional embeddings and vector database RAG.
 - Phase 5: audio generation.

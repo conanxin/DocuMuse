@@ -92,3 +92,18 @@ Manual checks:
 - Click a source and confirm the original text panel highlights the paragraph.
 - Run quick/full analysis and confirm chunking still works.
 - Confirm Markdown / JSON / PPTX / ZIP exports still build from the existing safe export layer.
+
+## Phase 4A.1 Runtime Validation
+
+Phase 4A.1 API/runtime validation was completed on 2026-06-04.
+
+Validated:
+
+- Selectable-text PDF upload writes `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
+- Existing `text` remains present.
+- Short PDFs with no section headings are handled without errors.
+- Markdown, JSON, PPTX, chat-only Markdown, and preset ZIP export endpoints remain compatible.
+- Old pre-Phase-4A document JSON files can still be opened and exported.
+- Non-PDF and blank PDF upload errors still return JSON.
+
+Browser-level source-click and real-key chat/full-analysis checks should still be repeated manually on the user's machine.

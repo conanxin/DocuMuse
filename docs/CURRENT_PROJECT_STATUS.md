@@ -8,6 +8,8 @@ Real MiniMax Token Plan validation: passed.
 
 PPTX WPS / PowerPoint visual validation: passed.
 
+Structured PDF runtime validation: API-level upload, structured JSON, export compatibility, old-document fallback, and upload error paths passed.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -36,6 +38,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - PPTX theme, cover, and section options have passed route-level validation and user-completed WPS / PowerPoint visual validation for the six requested Phase 3B.3 combinations.
 - Export preset packs for study notes, presentations, research digests, podcast preparation, and full archives.
 - Download export presets as single server-generated ZIP packages.
+- Phase 4A.1 runtime validation confirmed structured PDF upload and export compatibility at API level.
 
 ## Current Architecture
 

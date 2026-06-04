@@ -20,6 +20,13 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Chinese slide titles, row-based cover metadata, readable Summary, card-based Key Points, Keywords, Section Analysis, PPT Outline, Podcast Script, Image Prompts, and Document Q&A pages were visually checked.
 - [x] No `undefined`, `null`, `[object Object]`, API key, prompt, raw output, or full original text leakage was observed.
 
+## Passed Structured PDF Runtime Validation
+
+- [x] Phase 4A.1 selectable-text PDF upload wrote `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
+- [x] Phase 4A.1 Markdown, JSON, PPTX, chat-only Markdown, and preset ZIP exports returned 200 for a newly uploaded structured document.
+- [x] Phase 4A.1 old pre-structured document JSON opened and exported through fallback paths.
+- [x] Phase 4A.1 non-PDF and blank PDF uploads returned JSON errors.
+
 ## Upload And Library
 
 - [ ] Upload a normal selectable-text PDF.
