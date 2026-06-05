@@ -133,6 +133,10 @@ function ParseDiagnosticsPanel({ diagnostics, coordinateDiagnostics }: { diagnos
   const lowTextPages = diagnostics?.pageDiagnostics?.filter((page) => page.lowTextDensity).length ?? 0;
   const repeatedLines = diagnostics?.suspectedHeaderFooterLines ?? diagnostics?.repeatedLineCandidates ?? [];
   const coordinateAvailable = coordinateDiagnostics?.coordinateAvailable ?? false;
+  const positionedParagraphCount = coordinateDiagnostics?.positionedParagraphCount ?? 0;
+  const unpositionedParagraphCount = coordinateDiagnostics?.unpositionedParagraphCount ?? 0;
+  const coordinateTotal = positionedParagraphCount + unpositionedParagraphCount;
+  const coordinateRate = coordinateTotal > 0 ? Math.round((positionedParagraphCount / coordinateTotal) * 100) : null;
 
   return (
     <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
@@ -147,10 +151,15 @@ function ParseDiagnosticsPanel({ diagnostics, coordinateDiagnostics }: { diagnos
         <StatPill>页码段落：{diagnostics?.pageNumberParagraphCount ?? 0}</StatPill>
         <StatPill>PDF 坐标层：{coordinateAvailable ? "可用" : "不可用"}</StatPill>
         <StatPill>文本块：{coordinateDiagnostics?.textItemCount ?? 0}</StatPill>
-        <StatPill>已定位段落：{coordinateDiagnostics?.positionedParagraphCount ?? 0}</StatPill>
-        <StatPill>未定位段落：{coordinateDiagnostics?.unpositionedParagraphCount ?? 0}</StatPill>
+        <StatPill>已定位段落：{positionedParagraphCount}</StatPill>
+        <StatPill>未定位段落：{unpositionedParagraphCount}</StatPill>
+        <StatPill>坐标定位率：{coordinateRate === null ? "未知" : `${coordinateRate}%`}</StatPill>
         {repeatedLines.length > 0 && <StatPill>疑似页眉页脚：{repeatedLines.length}</StatPill>}
       </div>
+
+      {coordinateDiagnostics && !coordinateAvailable && (
+        <div className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">该 PDF 暂未提取到可用坐标层，来源仍可按段落定位。</div>
+      )}
 
       {(diagnostics?.lowValueParagraphCount ?? 0) > 0 && (
         <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">检测到可能的页眉、页脚或页码段落。DocuMuse 会在问答检索和全文分析中自动降低这些内容的权重。</div>
@@ -239,8 +248,24 @@ function ParagraphCoordinateTag({ anchor }: { anchor: ParagraphAnchor }) {
       <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700">
         {anchor.coordinateConfidence === "low" ? "近似定位" : "坐标已定位"}
       </span>
+      {anchor.boundingBox && (
+        <details className="mt-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+          <summary className="cursor-pointer font-medium text-slate-600">查看坐标详情</summary>
+          <div className="mt-2 grid gap-1">
+            <span>pageNumber: {anchor.pageNumber ?? "未知"}</span>
+            <span>confidence: {anchor.coordinateConfidence ?? "unknown"}</span>
+            <span>
+              x={formatCoordinateNumber(anchor.boundingBox.x)}, y={formatCoordinateNumber(anchor.boundingBox.y)}, width={formatCoordinateNumber(anchor.boundingBox.width)}, height={formatCoordinateNumber(anchor.boundingBox.height)}
+            </span>
+          </div>
+        </details>
+      )}
     </div>
   );
+}
+
+function formatCoordinateNumber(value: number) {
+  return Number.isFinite(value) ? value.toFixed(1) : "0.0";
 }
 
 function StatPill({ children }: { children: ReactNode }) {

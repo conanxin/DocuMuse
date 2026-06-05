@@ -32,6 +32,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4C low-value paragraph counts are included in safe parse diagnostics.
 - [x] Phase 4D.0 fixture upload wrote `coordinateDiagnostics`, `pdfTextItems`, and `paragraphPositions`.
 - [x] Phase 4D.0 JSON export includes safe coordinate diagnostics and does not export full `pdfTextItems`.
+- [x] Phase 4D.1 source cards and original text paragraphs can display coordinate status when coordinate metadata is available.
 
 ## Upload And Library
 
@@ -46,6 +47,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm `隐藏低价值段落` hides low-value paragraph cards without deleting original text.
 - [ ] Confirm new document JSON can include `coordinateDiagnostics`, `pdfTextItems`, and `paragraphPositions`.
 - [ ] Confirm original text reader shows PDF coordinate layer availability and positioned/unpositioned paragraph counts.
+- [ ] Confirm original text reader shows coordinate positioning rate.
+- [ ] Expand a paragraph coordinate detail and confirm page number, confidence, and bounding box are shown.
 - [ ] Confirm old document JSON files without structured fields still open through runtime fallback.
 - [ ] Return home and confirm the document appears in Recent Documents.
 - [ ] Reopen the document from the local library.
@@ -88,6 +91,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm source cards show page / paragraph hints when available.
 - [ ] Confirm source cards avoid obvious page numbers and repeated headers/footers where possible.
 - [ ] Confirm source cards can show coordinate availability or approximate coordinate confidence when available.
+- [ ] Expand source coordinate details and confirm page number, confidence, and bounding box are shown.
+- [ ] Use `复制定位信息` and confirm it copies page / paragraph / bounding-box metadata.
 - [ ] Confirm assistant answers render Markdown headings, bold text, lists, blockquotes, and inline code.
 - [ ] Confirm raw Markdown markers such as `**bold**` are not shown for supported syntax.
 - [ ] Copy an assistant answer.

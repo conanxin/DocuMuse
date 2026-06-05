@@ -29,6 +29,7 @@
 - [Phase 4B Parse Diagnostics](./PHASE_4B_PARSE_DIAGNOSTICS.md): parse quality score, scanned-PDF suspicion, page diagnostics, repeated header/footer candidates, references, footnotes, and language guess.
 - [Phase 4C Header/Footer Cleanup](./PHASE_4C_HEADER_FOOTER_CLEANUP.md): paragraph quality flags, low-value source deweighting, chunking skips, and original-text UI tags.
 - [Phase 4D.0 PDF Coordinate Extraction](./PHASE_4D_0_PDF_COORDINATE_EXTRACTION.md): pdfjs text-layer coordinates, paragraph position mapping, coordinate diagnostics, and safe JSON export.
+- [Phase 4D.1 Coordinate Source UI](./PHASE_4D_1_COORDINATE_SOURCE_UI.md): coordinate-aware source cards, copyable location data, paragraph coordinate details, and coordinate diagnostics UI.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

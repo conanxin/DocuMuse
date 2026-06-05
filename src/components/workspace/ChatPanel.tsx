@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import type { FormEvent, MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy, Download, ExternalLink, Loader2, Maximize2, Send, Trash2, X } from "lucide-react";
 import { mockChatMessages } from "@/lib/mockData";
 import type { ChatSource, DocumentChatMessage } from "@/lib/documentTypes";
@@ -319,26 +320,70 @@ function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatS
         {sources.slice(0, 5).map((source, index) => {
           const active = isSameSource(source, selectedSource);
           return (
-            <button
+            <div
               key={`${source.sourceHint}-${index}`}
               title={process.env.NODE_ENV === "development" ? `score=${source.score ?? "n/a"} terms=${source.matchedTerms?.join(", ") || "n/a"} reason=${source.retrievalReason || "n/a"}` : undefined}
-              onClick={() => onSourceClick?.(source)}
               className={`rounded-lg border px-3 py-2 text-left transition ${active ? "border-blue-300 bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}`}
             >
-              <span className="flex items-center gap-1 font-medium">
-                <ExternalLink size={12} />
-                {formatSourceLabel(source)}
-              </span>
-              {source.sectionTitle && <span className="mt-1 block text-[11px] text-slate-400">{source.sectionTitle}</span>}
-              {source.coordinateAvailable && <span className="mt-1 inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700">{source.coordinateConfidence === "low" ? "位置为近似匹配" : "已定位到页面区域"}</span>}
-              {source.isLowValue && <span className="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700">来源质量较低</span>}
-              <span className="mt-1 block leading-5">{shortQuote(source.quote, 120)}</span>
-            </button>
+              <button type="button" onClick={() => onSourceClick?.(source)} className="block w-full text-left">
+                <span className="flex items-center gap-1 font-medium">
+                  <ExternalLink size={12} />
+                  {formatSourceLabel(source)}
+                </span>
+                {source.sectionTitle && <span className="mt-1 block text-[11px] text-slate-400">{source.sectionTitle}</span>}
+                {source.isLowValue && <span className="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700">来源质量较低</span>}
+                <span className="mt-1 block leading-5">{shortQuote(source.quote, 120)}</span>
+                <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] ${source.coordinateAvailable ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{coordinateStatusLabel(source)}</span>
+              </button>
+              <CoordinateSourceDetails source={source} />
+            </div>
           );
         })}
       </div>
     </div>
   );
+}
+
+function coordinateStatusLabel(source: ChatSource) {
+  if (!source.coordinateAvailable) return "暂无页面坐标";
+  if (source.coordinateConfidence === "low") return "页面区域近似定位";
+  return "页面区域已定位";
+}
+
+function CoordinateSourceDetails({ source }: { source: ChatSource }) {
+  if (!source.boundingBox) return null;
+  const copyText = buildLocationText(source);
+  const copyLocation = async (event: MouseEvent) => {
+    event.stopPropagation();
+    await navigator.clipboard?.writeText(copyText);
+  };
+
+  return (
+    <details className="mt-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-500">
+      <summary className="cursor-pointer font-medium text-slate-600">坐标详情</summary>
+      <div className="mt-2 grid gap-1">
+        <span>pageNumber: {source.pageNumber ?? "未知"}</span>
+        <span>confidence: {source.coordinateConfidence ?? "unknown"}</span>
+        <span>
+          x={formatCoordinateNumber(source.boundingBox.x)}, y={formatCoordinateNumber(source.boundingBox.y)}, width={formatCoordinateNumber(source.boundingBox.width)}, height={formatCoordinateNumber(source.boundingBox.height)}
+        </span>
+        <button type="button" onClick={copyLocation} className="mt-2 w-fit rounded-md border border-slate-200 px-2 py-1 font-medium text-slate-600 hover:bg-slate-50">
+          复制定位信息
+        </button>
+      </div>
+    </details>
+  );
+}
+
+function buildLocationText(source: ChatSource) {
+  const box = source.boundingBox;
+  const location = [source.pageNumber ? `第 ${source.pageNumber} 页` : "", source.sourceHint || source.paragraphId || ""].filter(Boolean).join(" · ");
+  if (!box) return `${location || "来源位置"}\n暂无页面坐标\nconfidence=${source.coordinateConfidence ?? "unknown"}`;
+  return `${location || "来源位置"}\n坐标：x=${formatCoordinateNumber(box.x)}, y=${formatCoordinateNumber(box.y)}, width=${formatCoordinateNumber(box.width)}, height=${formatCoordinateNumber(box.height)}\nconfidence=${source.coordinateConfidence ?? "unknown"}`;
+}
+
+function formatCoordinateNumber(value: number) {
+  return Number.isFinite(value) ? value.toFixed(1) : "0.0";
 }
 
 function ChatAnswerModal({ message, selectedSource, onCopy, onClose, onSourceClick }: { message: ChatMessage; selectedSource?: ChatSource | null; onCopy: () => void; onClose: () => void; onSourceClick?: (source: ChatSource) => void }) {

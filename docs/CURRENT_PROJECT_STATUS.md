@@ -14,7 +14,7 @@ PDF parse diagnostics: quality scoring, language guess, page-level diagnostics, 
 
 Header/footer cleanup and source quality: paragraph quality tagging, low-value paragraph deweighting, and chunking skips are implemented.
 
-PDF text-layer coordinates: best-effort text item extraction and paragraph-to-page-region mapping are implemented for new uploads.
+PDF text-layer coordinates: best-effort text item extraction, paragraph-to-page-region mapping, and coordinate-aware source UI are implemented for new uploads.
 
 ## Current Version Capabilities
 
@@ -27,6 +27,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
 - Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
 - Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
+- Show coordinate-aware source status, copyable location data, and paragraph bounding-box details when available.
 - Save original PDFs and parsed document JSON locally.
 - List, reopen, and delete local documents.
 - Configure OpenAI-compatible or MiniMax Token Plan LLM settings.
@@ -61,7 +62,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
 - Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
-- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics and approximate paragraph mapping.
+- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, and original-text coordinate details.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
 - PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
@@ -126,7 +127,7 @@ data/settings/    Local LLM settings
 - No generated images, audio generation, animations, or external PPTX template files.
 - No inserted images, speaker notes, brand-kit editor, animations, or complex PPTX template editor.
 - No saved custom preset editor yet.
-- PDF source navigation is based on extracted text, not PDF coordinates.
+- PDF source navigation still uses extracted-text paragraph anchors; coordinates are displayed as metadata and future viewer preparation.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
@@ -134,7 +135,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4D.1 coordinate-aware source positioning UI.
+1. Phase 4D.2 PDF viewer feasibility spike for page rendering and coordinate overlay.
 2. Phase 3C.2 saved custom export presets.
 3. Phase 3B.4 optional speaker notes and richer report outline controls.
 4. Add source history and original-text search.

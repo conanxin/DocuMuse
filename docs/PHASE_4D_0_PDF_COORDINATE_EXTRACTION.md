@@ -85,6 +85,17 @@ JSON export validation:
 
 Coordinate extraction is an enhancement step. If it fails, upload still succeeds and `coordinateDiagnostics` records `coordinateAvailable: false` plus warnings.
 
+## Follow-Up UI
+
+Phase 4D.1 exposes this coordinate metadata in the product UI:
+
+- Chat source cards show coordinate availability and confidence.
+- Source cards can copy page-region location information.
+- Original text paragraph cards can expand bounding-box details.
+- Original text diagnostics show coordinate positioning rate.
+
+`pdfjs-dist@5.4.296` is pinned as a direct dependency.
+
 ## Current Limitations
 
 - Coordinates are approximate and best-effort.
