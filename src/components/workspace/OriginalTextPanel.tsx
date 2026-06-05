@@ -69,7 +69,7 @@ export function OriginalTextPanel({
         </div>
       </div>
 
-      <ParseDiagnosticsPanel diagnostics={diagnostics} />
+      <ParseDiagnosticsPanel diagnostics={diagnostics} coordinateDiagnostics={document?.coordinateDiagnostics} />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600">
@@ -115,6 +115,7 @@ export function OriginalTextPanel({
                 <span className="text-slate-400">{anchor.sectionTitle ? `章节：${anchor.sectionTitle}` : `${anchor.startChar + 1}-${anchor.endChar}`}</span>
               </div>
               <ParagraphQualityTags anchor={anchor} />
+              <ParagraphCoordinateTag anchor={anchor} />
               <p className={`${active ? "border-l-4 border-blue-500 pl-3 text-slate-900" : "text-slate-700"}`}>{anchor.text}</p>
             </article>
           );
@@ -124,49 +125,55 @@ export function OriginalTextPanel({
   );
 }
 
-function ParseDiagnosticsPanel({ diagnostics }: { diagnostics?: ParseDiagnostics }) {
-  if (!diagnostics) {
+function ParseDiagnosticsPanel({ diagnostics, coordinateDiagnostics }: { diagnostics?: ParseDiagnostics; coordinateDiagnostics?: ParsedDocument["coordinateDiagnostics"] }) {
+  if (!diagnostics && !coordinateDiagnostics) {
     return <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-500">暂无解析诊断信息。</div>;
   }
 
-  const lowTextPages = diagnostics.pageDiagnostics?.filter((page) => page.lowTextDensity).length ?? 0;
-  const repeatedLines = diagnostics.suspectedHeaderFooterLines ?? diagnostics.repeatedLineCandidates ?? [];
+  const lowTextPages = diagnostics?.pageDiagnostics?.filter((page) => page.lowTextDensity).length ?? 0;
+  const repeatedLines = diagnostics?.suspectedHeaderFooterLines ?? diagnostics?.repeatedLineCandidates ?? [];
+  const coordinateAvailable = coordinateDiagnostics?.coordinateAvailable ?? false;
 
   return (
     <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
       <div className="flex flex-wrap gap-2 text-xs">
-        <QualityPill diagnostics={diagnostics} />
-        <StatPill>质量分数：{typeof diagnostics.qualityScore === "number" ? `${diagnostics.qualityScore} / 100` : "未知"}</StatPill>
-        <StatPill>语言：{languageLabel(diagnostics.languageGuess)}</StatPill>
-        <StatPill>空页：{diagnostics.emptyPageCount ?? 0}</StatPill>
+        {diagnostics && <QualityPill diagnostics={diagnostics} />}
+        <StatPill>质量分数：{typeof diagnostics?.qualityScore === "number" ? `${diagnostics.qualityScore} / 100` : "未知"}</StatPill>
+        <StatPill>语言：{languageLabel(diagnostics?.languageGuess)}</StatPill>
+        <StatPill>空页：{diagnostics?.emptyPageCount ?? 0}</StatPill>
         <StatPill>低文本页：{lowTextPages}</StatPill>
-        <StatPill>低价值段落：{diagnostics.lowValueParagraphCount ?? 0}</StatPill>
-        <StatPill>页眉/页脚段落：{diagnostics.repeatedHeaderFooterParagraphCount ?? 0}</StatPill>
-        <StatPill>页码段落：{diagnostics.pageNumberParagraphCount ?? 0}</StatPill>
+        <StatPill>低价值段落：{diagnostics?.lowValueParagraphCount ?? 0}</StatPill>
+        <StatPill>页眉/页脚段落：{diagnostics?.repeatedHeaderFooterParagraphCount ?? 0}</StatPill>
+        <StatPill>页码段落：{diagnostics?.pageNumberParagraphCount ?? 0}</StatPill>
+        <StatPill>PDF 坐标层：{coordinateAvailable ? "可用" : "不可用"}</StatPill>
+        <StatPill>文本块：{coordinateDiagnostics?.textItemCount ?? 0}</StatPill>
+        <StatPill>已定位段落：{coordinateDiagnostics?.positionedParagraphCount ?? 0}</StatPill>
+        <StatPill>未定位段落：{coordinateDiagnostics?.unpositionedParagraphCount ?? 0}</StatPill>
         {repeatedLines.length > 0 && <StatPill>疑似页眉页脚：{repeatedLines.length}</StatPill>}
       </div>
 
-      {(diagnostics.lowValueParagraphCount ?? 0) > 0 && (
+      {(diagnostics?.lowValueParagraphCount ?? 0) > 0 && (
         <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">检测到可能的页眉、页脚或页码段落。DocuMuse 会在问答检索和全文分析中自动降低这些内容的权重。</div>
       )}
 
-      {diagnostics.suspectedScannedPdf && (
+      {diagnostics?.suspectedScannedPdf && (
         <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">该 PDF 可能是扫描版，当前版本暂不支持 OCR。</div>
       )}
 
       <details className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm">
         <summary className="cursor-pointer font-medium text-slate-700">查看解析诊断详情</summary>
         <div className="mt-3 grid gap-3 text-slate-600">
-          <DiagnosticList title="Warnings" items={diagnostics.warnings ?? []} />
+          <DiagnosticList title="Warnings" items={[...(diagnostics?.warnings ?? []), ...(coordinateDiagnostics?.warnings ?? [])]} />
           <DiagnosticList title="疑似页眉/页脚" items={repeatedLines} />
           <div className="grid gap-2 rounded-lg bg-slate-50 p-3 text-xs">
-            <span>总页数：{diagnostics.pageCount ?? 0}</span>
-            <span>平均每页字符：{diagnostics.averageCharsPerPage ?? 0}</span>
-            <span>参考文献区域：{diagnostics.suspectedReferenceSection ? "疑似存在" : "未检测到"}</span>
-            <span>脚注候选：{diagnostics.suspectedFootnoteCount ?? 0}</span>
-            <span>标题候选：{diagnostics.headingCandidateCount ?? 0}</span>
+            <span>总页数：{diagnostics?.pageCount ?? coordinateDiagnostics?.pageCount ?? 0}</span>
+            <span>平均每页字符：{diagnostics?.averageCharsPerPage ?? 0}</span>
+            <span>参考文献区域：{diagnostics?.suspectedReferenceSection ? "疑似存在" : "未检测到"}</span>
+            <span>脚注候选：{diagnostics?.suspectedFootnoteCount ?? 0}</span>
+            <span>标题候选：{diagnostics?.headingCandidateCount ?? 0}</span>
+            <span>坐标提取器：{coordinateDiagnostics?.extractor ?? "未提取"}</span>
           </div>
-          {diagnostics.pageDiagnostics?.length ? (
+          {diagnostics?.pageDiagnostics?.length ? (
             <div className="max-h-48 overflow-auto rounded-lg border border-slate-100">
               {diagnostics.pageDiagnostics.slice(0, 40).map((page) => (
                 <div key={page.pageNumber} className="grid grid-cols-4 gap-2 border-b border-slate-100 px-3 py-2 text-xs last:border-b-0">
@@ -221,6 +228,17 @@ function ParagraphQualityTags({ anchor }: { anchor: ParagraphAnchor }) {
           {label}
         </span>
       ))}
+    </div>
+  );
+}
+
+function ParagraphCoordinateTag({ anchor }: { anchor: ParagraphAnchor }) {
+  if (!anchor.coordinateAvailable) return null;
+  return (
+    <div className="mb-2">
+      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700">
+        {anchor.coordinateConfidence === "low" ? "近似定位" : "坐标已定位"}
+      </span>
     </div>
   );
 }

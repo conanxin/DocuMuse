@@ -81,7 +81,19 @@ export type SafeDocumentExport = {
       lowTextDensityPageCount?: number;
       pageDiagnostics?: NonNullable<ParseDiagnostics["pageDiagnostics"]>;
     };
+    coordinateDiagnostics?: ParsedDocument["coordinateDiagnostics"];
   };
+  paragraphPositions?: Array<{
+    paragraphId: string;
+    pageNumber: number;
+    boundingBox?: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    confidence: "high" | "medium" | "low";
+  }>;
   analysis?: {
     oneSentenceSummary: string;
     summary: string;

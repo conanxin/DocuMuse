@@ -10,6 +10,9 @@ export type SearchChunk = {
   sectionTitle?: string;
   qualityFlags?: string[];
   isLowValue?: boolean;
+  coordinateAvailable?: boolean;
+  boundingBox?: SearchChunkBoundingBox;
+  coordinateConfidence?: "high" | "medium" | "low";
   index: number;
   text: string;
   startChar: number;
@@ -18,6 +21,13 @@ export type SearchChunk = {
   score?: number;
   matchedTerms?: string[];
   retrievalReason?: string;
+};
+
+type SearchChunkBoundingBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };
 
 const stopWords = new Set([
@@ -77,6 +87,9 @@ export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[]
     sectionTitle: anchor.sectionTitle,
     qualityFlags: anchor.qualityFlags,
     isLowValue: anchor.isLowValue,
+    coordinateAvailable: anchor.coordinateAvailable,
+    boundingBox: anchor.boundingBox,
+    coordinateConfidence: anchor.coordinateConfidence,
     index: anchor.index,
     text: normalizeText(anchor.text),
     startChar: anchor.startChar,

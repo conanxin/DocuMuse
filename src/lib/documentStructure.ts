@@ -1,4 +1,4 @@
-import type { ParsedDocument, ParsedPage, ParsedParagraph, ParsedSection, ParseDiagnostics } from "./documentTypes";
+import type { ParsedDocument, ParsedPage, ParsedParagraph, ParsedSection, ParseDiagnostics, PdfParagraphPosition, PdfTextItemBox } from "./documentTypes";
 
 export type DocumentStructure = {
   text: string;
@@ -83,6 +83,31 @@ export function annotateParagraphQuality(paragraphs: ParsedParagraph[], diagnost
         isLowValue,
         reasons
       }
+    };
+  });
+}
+
+export function mapParagraphsToPdfCoordinates(paragraphs: ParsedParagraph[], textItems: PdfTextItemBox[]): PdfParagraphPosition[] {
+  if (!paragraphs.length || !textItems.length) return [];
+  const itemsByPage = new Map<number, PdfTextItemBox[]>();
+  for (const item of textItems) {
+    const items = itemsByPage.get(item.pageNumber) ?? [];
+    items.push(item);
+    itemsByPage.set(item.pageNumber, items);
+  }
+
+  return paragraphs.map((paragraph) => {
+    const pageItems = itemsByPage.get(paragraph.pageNumber ?? 0) ?? textItems;
+    const matchedBoxes = matchParagraphItems(paragraph.text, pageItems);
+    const boxes = matchedBoxes.length ? matchedBoxes : approximateParagraphItems(paragraph, pageItems);
+    const confidence = matchedBoxes.length >= 2 ? "high" : matchedBoxes.length === 1 ? "medium" : boxes.length ? "low" : "low";
+    return {
+      paragraphId: paragraph.id,
+      pageNumber: paragraph.pageNumber ?? boxes[0]?.pageNumber ?? 1,
+      boxes,
+      boundingBox: boxes.length ? boundingBox(boxes) : undefined,
+      confidence,
+      reason: matchedBoxes.length ? "matched_text_items" : boxes.length ? "approximate_page_or_overlap_match" : "no_coordinate_match"
     };
   });
 }
@@ -468,6 +493,72 @@ function isSymbolOnly(text: string) {
 
 function isShortCopyrightMark(text: string) {
   return /^(copyright|all rights reserved|©)/i.test(text) && text.length < 80;
+}
+
+function matchParagraphItems(paragraphText: string, items: PdfTextItemBox[]) {
+  const target = coordinateMatchText(paragraphText);
+  if (!target || !items.length) return [];
+  const itemTexts = items.map((item) => coordinateMatchText(item.text));
+  const joined = itemTexts.join("");
+  const targetSlice = target.slice(0, Math.min(target.length, 500));
+  const foundAt = joined.indexOf(targetSlice.length >= 20 ? targetSlice : target);
+  if (foundAt < 0) {
+    return tokenOverlapItems(target, items);
+  }
+
+  const selected: PdfTextItemBox[] = [];
+  let cursor = 0;
+  const endAt = foundAt + targetSlice.length;
+  for (let index = 0; index < items.length; index += 1) {
+    const itemStart = cursor;
+    const itemEnd = cursor + itemTexts[index].length;
+    if (itemEnd >= foundAt && itemStart <= endAt) {
+      selected.push(items[index]);
+    }
+    cursor = itemEnd;
+  }
+  return selected.slice(0, 80);
+}
+
+function tokenOverlapItems(target: string, items: PdfTextItemBox[]) {
+  const tokens = Array.from(new Set(target.match(/[\u4e00-\u9fff]{2,}|[a-z0-9]{3,}/gi)?.map((token) => token.toLowerCase()).slice(0, 24) ?? []));
+  if (!tokens.length) return [];
+  return items
+    .filter((item) => {
+      const text = item.text.toLowerCase();
+      for (const token of tokens) {
+        if (text.includes(token)) return true;
+      }
+      return false;
+    })
+    .slice(0, 40);
+}
+
+function approximateParagraphItems(paragraph: ParsedParagraph, items: PdfTextItemBox[]) {
+  if (!items.length) return [];
+  const pageItems = paragraph.pageNumber ? items.filter((item) => item.pageNumber === paragraph.pageNumber) : items;
+  return pageItems.slice(0, Math.min(8, pageItems.length));
+}
+
+function coordinateMatchText(text: string) {
+  return text.replace(/\s+/g, "").toLowerCase();
+}
+
+function boundingBox(boxes: PdfTextItemBox[]) {
+  const minX = Math.min(...boxes.map((box) => box.x));
+  const minY = Math.min(...boxes.map((box) => box.y));
+  const maxX = Math.max(...boxes.map((box) => box.x + box.width));
+  const maxY = Math.max(...boxes.map((box) => box.y + box.height));
+  return {
+    x: roundCoordinate(minX),
+    y: roundCoordinate(minY),
+    width: roundCoordinate(maxX - minX),
+    height: roundCoordinate(maxY - minY)
+  };
+}
+
+function roundCoordinate(value: number) {
+  return Number(value.toFixed(2));
 }
 
 export function guessDocumentLanguage(text: string): "zh" | "en" | "mixed" | "unknown" {

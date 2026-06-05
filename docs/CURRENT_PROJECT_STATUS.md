@@ -14,6 +14,8 @@ PDF parse diagnostics: quality scoring, language guess, page-level diagnostics, 
 
 Header/footer cleanup and source quality: paragraph quality tagging, low-value paragraph deweighting, and chunking skips are implemented.
 
+PDF text-layer coordinates: best-effort text item extraction and paragraph-to-page-region mapping are implemented for new uploads.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -24,6 +26,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Runtime-generate structure for older plain-text document JSON files.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
 - Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
+- Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
 - Save original PDFs and parsed document JSON locally.
 - List, reopen, and delete local documents.
 - Configure OpenAI-compatible or MiniMax Token Plan LLM settings.
@@ -58,6 +61,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
 - Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
+- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics and approximate paragraph mapping.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
 - PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
@@ -112,6 +116,7 @@ data/settings/    Local LLM settings
 ## Current Limits
 
 - No OCR.
+- No full PDF viewer or coordinate-region overlay yet.
 - No EPUB or Word parsing.
 - No database.
 - No login or multi-user permissions.
@@ -129,7 +134,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4D PDF coordinate-aware source positioning.
+1. Phase 4D.1 coordinate-aware source positioning UI.
 2. Phase 3C.2 saved custom export presets.
 3. Phase 3B.4 optional speaker notes and richer report outline controls.
 4. Add source history and original-text search.

@@ -10,6 +10,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Structured PDF parsing for selectable-text PDFs: pages, paragraphs, sections, parse diagnostics, and paragraph-level source anchors.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
+- Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
 - Local document library from `data/documents/`.
 - Reopen and delete parsed local documents.
 - Workspace upload entry for adding a new document without returning home.
@@ -34,6 +35,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Structured PDF parsing has passed API-level runtime validation for selectable-text PDF upload, structured JSON persistence, export compatibility, old-document fallback, and upload error paths.
 - Parse diagnostics are shown in the original text reader and safely included in JSON export metadata.
 - Document chat retrieval and full-analysis chunking now deweight or skip obvious low-value paragraphs while preserving the original text.
+- JSON export can include safe coordinate diagnostics and paragraph position summaries without exporting full PDF text items.
 
 ## Install
 
@@ -178,7 +180,8 @@ DocuMuse is currently a local single-user tool.
 - Phase 4A.1: structured PDF parsing runtime validation is recorded.
 - Phase 4B: PDF parse diagnostics quality scoring is implemented.
 - Phase 4C: header/footer cleanup and source quality improvements are implemented.
-- Phase 4D: PDF coordinate-aware source positioning.
+- Phase 4D.0: PDF text-layer coordinate extraction and paragraph mapping is implemented.
+- Phase 4D.1: coordinate-aware source positioning UI.
 - Phase 4E: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.

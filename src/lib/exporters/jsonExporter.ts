@@ -35,8 +35,10 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
       analysisProvider: document.analysisProvider,
       analysisModel: document.analysisModel,
       analyzedAt: document.analyzedAt,
-      parseDiagnostics: safeParseDiagnostics(document.parseDiagnostics)
-    }
+      parseDiagnostics: safeParseDiagnostics(document.parseDiagnostics),
+      coordinateDiagnostics: safeCoordinateDiagnostics(document.coordinateDiagnostics)
+    },
+    paragraphPositions: safeParagraphPositions(document.paragraphPositions)
   };
 
   if (options.only === "chat") {
@@ -176,4 +178,28 @@ function safeParseDiagnostics(diagnostics: ParsedDocument["parseDiagnostics"]) {
       repeatedHeaderFooterCandidates: asStringArray(page.repeatedHeaderFooterCandidates).slice(0, 6).map((line) => truncate(line, 120))
     }))
   };
+}
+
+function safeCoordinateDiagnostics(diagnostics: ParsedDocument["coordinateDiagnostics"]) {
+  if (!diagnostics) return undefined;
+  return {
+    extractor: asString(diagnostics.extractor),
+    extractedAt: asString(diagnostics.extractedAt),
+    pageCount: diagnostics.pageCount,
+    textItemCount: diagnostics.textItemCount,
+    positionedParagraphCount: diagnostics.positionedParagraphCount,
+    unpositionedParagraphCount: diagnostics.unpositionedParagraphCount,
+    coordinateAvailable: diagnostics.coordinateAvailable,
+    warnings: asStringArray(diagnostics.warnings).map((warning) => truncate(warning, 240))
+  };
+}
+
+function safeParagraphPositions(positions: ParsedDocument["paragraphPositions"]) {
+  if (!positions?.length) return undefined;
+  return positions.slice(0, 500).map((position) => ({
+    paragraphId: asString(position.paragraphId),
+    pageNumber: position.pageNumber,
+    boundingBox: position.boundingBox,
+    confidence: position.confidence
+  }));
 }

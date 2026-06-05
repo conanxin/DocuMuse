@@ -30,6 +30,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4B JSON export includes safe parse diagnostics and does not include full document text.
 - [x] Phase 4C paragraph quality metadata is added for new uploads and runtime fallback.
 - [x] Phase 4C low-value paragraph counts are included in safe parse diagnostics.
+- [x] Phase 4D.0 fixture upload wrote `coordinateDiagnostics`, `pdfTextItems`, and `paragraphPositions`.
+- [x] Phase 4D.0 JSON export includes safe coordinate diagnostics and does not export full `pdfTextItems`.
 
 ## Upload And Library
 
@@ -42,6 +44,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm original text reader shows parse quality, score, language guess, and collapsible diagnostics.
 - [ ] Confirm paragraphs can show low-value tags such as page number, header/footer candidate, footnote candidate, or reference candidate.
 - [ ] Confirm `隐藏低价值段落` hides low-value paragraph cards without deleting original text.
+- [ ] Confirm new document JSON can include `coordinateDiagnostics`, `pdfTextItems`, and `paragraphPositions`.
+- [ ] Confirm original text reader shows PDF coordinate layer availability and positioned/unpositioned paragraph counts.
 - [ ] Confirm old document JSON files without structured fields still open through runtime fallback.
 - [ ] Return home and confirm the document appears in Recent Documents.
 - [ ] Reopen the document from the local library.
@@ -83,6 +87,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm source quotes are short and relevant to the question.
 - [ ] Confirm source cards show page / paragraph hints when available.
 - [ ] Confirm source cards avoid obvious page numbers and repeated headers/footers where possible.
+- [ ] Confirm source cards can show coordinate availability or approximate coordinate confidence when available.
 - [ ] Confirm assistant answers render Markdown headings, bold text, lists, blockquotes, and inline code.
 - [ ] Confirm raw Markdown markers such as `**bold**` are not shown for supported syntax.
 - [ ] Copy an assistant answer.

@@ -14,6 +14,9 @@ export type ParagraphAnchor = {
   sectionTitle?: string;
   qualityFlags?: string[];
   isLowValue?: boolean;
+  coordinateAvailable?: boolean;
+  boundingBox?: NonNullable<ParsedDocument["paragraphPositions"]>[number]["boundingBox"];
+  coordinateConfidence?: NonNullable<ParsedDocument["paragraphPositions"]>[number]["confidence"];
 };
 
 const MAX_ANCHOR_CHARS = 1600;
@@ -64,8 +67,10 @@ export function buildParagraphAnchors(text: string): ParagraphAnchor[] {
 
 export function buildParagraphAnchorsFromDocument(document: ParsedDocument): ParagraphAnchor[] {
   const structured = ensureDocumentStructure(document);
+  const positions = new Map((document.paragraphPositions ?? []).map((position) => [position.paragraphId, position]));
   return structured.paragraphs.map((paragraph) => {
     const section = structured.sections.find((item) => paragraph.index >= paragraphIndex(item.startParagraphId) && paragraph.index <= paragraphIndex(item.endParagraphId ?? item.startParagraphId));
+    const position = positions.get(paragraph.id);
     return {
       id: paragraph.id.replace(/^para-/, "p-"),
       paragraphId: paragraph.id,
@@ -78,7 +83,10 @@ export function buildParagraphAnchorsFromDocument(document: ParsedDocument): Par
       sectionId: section?.id,
       sectionTitle: section?.title,
       qualityFlags: paragraph.quality?.reasons,
-      isLowValue: paragraph.quality?.isLowValue
+      isLowValue: paragraph.quality?.isLowValue,
+      coordinateAvailable: Boolean(position?.boundingBox),
+      boundingBox: position?.boundingBox,
+      coordinateConfidence: position?.confidence
     };
   });
 }

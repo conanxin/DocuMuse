@@ -99,6 +99,43 @@ export interface ParsedSection {
   pageNumber?: number;
 }
 
+export interface PdfTextItemBox {
+  id: string;
+  pageNumber: number;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontName?: string;
+  fontSize?: number;
+}
+
+export interface PdfParagraphPosition {
+  paragraphId: string;
+  pageNumber: number;
+  boxes: PdfTextItemBox[];
+  boundingBox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  confidence: "high" | "medium" | "low";
+  reason?: string;
+}
+
+export interface PdfCoordinateDiagnostics {
+  extractor: string;
+  extractedAt: string;
+  pageCount?: number;
+  textItemCount: number;
+  positionedParagraphCount: number;
+  unpositionedParagraphCount: number;
+  coordinateAvailable: boolean;
+  warnings: string[];
+}
+
 export interface ParseDiagnostics {
   parser: string;
   parsedAt: string;
@@ -151,6 +188,9 @@ export type ChatSource = {
   sectionTitle?: string;
   qualityFlags?: string[];
   isLowValue?: boolean;
+  coordinateAvailable?: boolean;
+  boundingBox?: PdfParagraphPosition["boundingBox"];
+  coordinateConfidence?: PdfParagraphPosition["confidence"];
   sourceHint: string;
   quote: string;
   startChar: number;
@@ -191,6 +231,9 @@ export type ParsedDocument = {
   paragraphs?: ParsedParagraph[];
   sections?: ParsedSection[];
   parseDiagnostics?: ParseDiagnostics;
+  pdfTextItems?: PdfTextItemBox[];
+  paragraphPositions?: PdfParagraphPosition[];
+  coordinateDiagnostics?: PdfCoordinateDiagnostics;
   uploadPath?: string;
   metadata: Record<string, unknown>;
   analysis: DocumentAnalysis;

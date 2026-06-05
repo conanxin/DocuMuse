@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { generateSimpleAnalysis } from "@/lib/simpleAnalysis";
 import { sanitizePdfFilename, saveParsedDocument, saveUploadedPdf, toProjectRelativePath } from "@/lib/documentStorage";
+import { mapParagraphsToPdfCoordinates } from "@/lib/documentStructure";
+import { extractPdfTextCoordinates } from "@/lib/pdfCoordinateExtractor";
 import { extractPdfDocument } from "@/lib/pdfExtractor";
 import type { ParsedDocument } from "@/lib/documentTypes";
 
@@ -61,6 +63,16 @@ export async function POST(request: Request) {
       return errorResponse("当前版本暂不支持 OCR，请上传包含可复制文本的 PDF。", 422);
     }
 
+    const coordinateResult = await extractPdfTextCoordinates(buffer);
+    const paragraphPositions = coordinateResult.textItems.length ? mapParagraphsToPdfCoordinates(parsed.paragraphs, coordinateResult.textItems) : [];
+    const positionedParagraphCount = paragraphPositions.filter((position) => position.boundingBox).length;
+    const coordinateDiagnostics = {
+      ...coordinateResult.diagnostics,
+      positionedParagraphCount,
+      unpositionedParagraphCount: Math.max(0, parsed.paragraphs.length - positionedParagraphCount),
+      coordinateAvailable: coordinateResult.diagnostics.coordinateAvailable && positionedParagraphCount > 0
+    };
+
     const document: ParsedDocument = {
       id,
       title: safeFilename,
@@ -75,6 +87,9 @@ export async function POST(request: Request) {
       paragraphs: parsed.paragraphs,
       sections: parsed.sections,
       parseDiagnostics: parsed.parseDiagnostics,
+      pdfTextItems: coordinateResult.textItems,
+      paragraphPositions,
+      coordinateDiagnostics,
       uploadPath: toProjectRelativePath(uploadPath),
       metadata: parsed.metadata ? { pdfParse: parsed.metadata } : {},
       analysis: generateSimpleAnalysis(parsed.text)
