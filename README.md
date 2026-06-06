@@ -8,6 +8,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 
 - Local PDF upload and text extraction.
 - Structured PDF parsing for selectable-text PDFs: pages, paragraphs, sections, parse diagnostics, and paragraph-level source anchors.
+- Heuristic document outline extraction for common Chinese / English headings, with sidebar navigation and original-text heading highlights.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
@@ -22,10 +23,12 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - MiniMax Token Plan provider support through `https://api.minimaxi.com/v1`.
 - Quick analysis for fast front-of-document preview.
 - Full chunked analysis with map-reduce style chunk summaries and global synthesis.
+- Full chunked analysis can prefer detected outline boundaries before falling back to paragraph chunks.
 - LLM JSON parsing hardening with `<think>` cleanup, code block extraction, brace extraction, and one JSON repair pass.
 - Analysis progress visualization and local status metadata.
 - Lightweight document chat using paragraph keyword retrieval plus LLM answers.
 - Source citations with paragraph anchor navigation in the original text view.
+- Source citations can include outline title metadata when available.
 - Chat history clearing and Markdown export.
 - Workspace export for Markdown reports, structured JSON, and Q&A records.
 - Modernized PPTX export generated from existing document analysis, with Chinese report titles and cleaner card-based layouts.
@@ -39,6 +42,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Parse diagnostics are shown in the original text reader and safely included in JSON export metadata.
 - Document chat retrieval and full-analysis chunking now deweight or skip obvious low-value paragraphs while preserving the original text.
 - JSON export can include safe coordinate diagnostics and paragraph position summaries without exporting full PDF text items.
+- JSON and Markdown exports can include safe outline structure and outline diagnostics without exporting full original text.
 
 ## Install
 

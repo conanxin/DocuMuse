@@ -1,4 +1,5 @@
 import type { ParsedDocument, ParsedPage, ParsedParagraph, ParsedSection, ParseDiagnostics, PdfParagraphPosition, PdfTextItemBox } from "./documentTypes";
+import { extractDocumentOutline } from "./outlineExtractor";
 
 export type DocumentStructure = {
   text: string;
@@ -113,18 +114,25 @@ export function mapParagraphsToPdfCoordinates(paragraphs: ParsedParagraph[], tex
 }
 
 export function ensureDocumentStructure(document: ParsedDocument): ParsedDocument & Required<Pick<ParsedDocument, "pages" | "paragraphs" | "sections" | "parseDiagnostics">> {
-  if (document.paragraphs?.length && document.pages?.length && document.parseDiagnostics) {
+  if (document.paragraphs?.length && document.pages?.length && document.parseDiagnostics && document.outline && document.outlineDiagnostics) {
     return document as ParsedDocument & Required<Pick<ParsedDocument, "pages" | "paragraphs" | "sections" | "parseDiagnostics">>;
   }
 
   const structure = buildDocumentStructure(document.text ?? "", document.pageCount ?? 0, "runtime-fallback");
+  const pages = document.pages?.length ? document.pages : structure.pages;
+  const paragraphs = document.paragraphs?.length ? document.paragraphs : structure.paragraphs;
+  const sections = document.sections?.length ? document.sections : structure.sections;
+  const parseDiagnostics = document.parseDiagnostics ?? structure.parseDiagnostics;
+  const outlineResult = document.outline && document.outlineDiagnostics ? null : extractDocumentOutline(paragraphs, pages, parseDiagnostics);
   return {
     ...document,
     pageCount: document.pageCount || structure.pageCount,
-    pages: document.pages?.length ? document.pages : structure.pages,
-    paragraphs: document.paragraphs?.length ? document.paragraphs : structure.paragraphs,
-    sections: document.sections?.length ? document.sections : structure.sections,
-    parseDiagnostics: document.parseDiagnostics ?? structure.parseDiagnostics
+    pages,
+    paragraphs,
+    sections,
+    outline: document.outline ?? outlineResult?.outline,
+    outlineDiagnostics: document.outlineDiagnostics ?? outlineResult?.outlineDiagnostics,
+    parseDiagnostics
   };
 }
 

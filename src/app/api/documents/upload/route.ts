@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { generateSimpleAnalysis } from "@/lib/simpleAnalysis";
 import { sanitizePdfFilename, saveParsedDocument, saveUploadedPdf, toProjectRelativePath } from "@/lib/documentStorage";
 import { mapParagraphsToPdfCoordinates } from "@/lib/documentStructure";
+import { extractDocumentOutline } from "@/lib/outlineExtractor";
 import { extractPdfTextCoordinates } from "@/lib/pdfCoordinateExtractor";
 import { extractPdfDocument } from "@/lib/pdfExtractor";
 import type { ParsedDocument } from "@/lib/documentTypes";
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
       unpositionedParagraphCount: Math.max(0, parsed.paragraphs.length - positionedParagraphCount),
       coordinateAvailable: coordinateResult.diagnostics.coordinateAvailable && positionedParagraphCount > 0
     };
+    const outlineResult = extractDocumentOutline(parsed.paragraphs, parsed.pages, parsed.parseDiagnostics);
 
     const document: ParsedDocument = {
       id,
@@ -86,6 +88,8 @@ export async function POST(request: Request) {
       pages: parsed.pages,
       paragraphs: parsed.paragraphs,
       sections: parsed.sections,
+      outline: outlineResult.outline,
+      outlineDiagnostics: outlineResult.outlineDiagnostics,
       parseDiagnostics: parsed.parseDiagnostics,
       pdfTextItems: coordinateResult.textItems,
       paragraphPositions,

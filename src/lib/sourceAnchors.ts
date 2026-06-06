@@ -1,5 +1,6 @@
 import { ensureDocumentStructure } from "./documentStructure";
-import type { ParsedDocument } from "./documentTypes";
+import { flattenOutline } from "./outlineExtractor";
+import type { DocumentOutlineNode, ParsedDocument } from "./documentTypes";
 
 export type ParagraphAnchor = {
   id: string;
@@ -12,6 +13,9 @@ export type ParagraphAnchor = {
   pageNumber?: number;
   sectionId?: string;
   sectionTitle?: string;
+  outlineNodeId?: string;
+  outlineTitle?: string;
+  outlineType?: DocumentOutlineNode["type"];
   qualityFlags?: string[];
   isLowValue?: boolean;
   coordinateAvailable?: boolean;
@@ -68,8 +72,13 @@ export function buildParagraphAnchors(text: string): ParagraphAnchor[] {
 export function buildParagraphAnchorsFromDocument(document: ParsedDocument): ParagraphAnchor[] {
   const structured = ensureDocumentStructure(document);
   const positions = new Map((document.paragraphPositions ?? []).map((position) => [position.paragraphId, position]));
+  const outlineNodes = flattenOutline(structured.outline ?? []);
   return structured.paragraphs.map((paragraph) => {
     const section = structured.sections.find((item) => paragraph.index >= paragraphIndex(item.startParagraphId) && paragraph.index <= paragraphIndex(item.endParagraphId ?? item.startParagraphId));
+    const outline = outlineNodes.find((item) => {
+      if (!item.startParagraphId) return false;
+      return paragraph.index >= paragraphIndex(item.startParagraphId) && paragraph.index <= paragraphIndex(item.endParagraphId ?? item.startParagraphId);
+    });
     const position = positions.get(paragraph.id);
     return {
       id: paragraph.id.replace(/^para-/, "p-"),
@@ -82,6 +91,9 @@ export function buildParagraphAnchorsFromDocument(document: ParsedDocument): Par
       pageNumber: paragraph.pageNumber,
       sectionId: section?.id,
       sectionTitle: section?.title,
+      outlineNodeId: outline?.id,
+      outlineTitle: outline?.title,
+      outlineType: outline?.type,
       qualityFlags: paragraph.quality?.reasons,
       isLowValue: paragraph.quality?.isLowValue,
       coordinateAvailable: Boolean(position?.boundingBox),

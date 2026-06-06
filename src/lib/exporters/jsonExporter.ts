@@ -1,5 +1,5 @@
 import type { DocumentChatMessage, ParsedDocument } from "../documentTypes";
-import type { DocumentExportOptions, SafeDocumentExport, SafeExportChatMessage } from "./exportTypes";
+import type { DocumentExportOptions, SafeDocumentExport, SafeExportChatMessage, SafeExportOutlineNode } from "./exportTypes";
 
 const DEFAULT_OPTIONS: DocumentExportOptions = {
   includeChat: true,
@@ -36,9 +36,11 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
       analysisModel: document.analysisModel,
       analyzedAt: document.analyzedAt,
       parseDiagnostics: safeParseDiagnostics(document.parseDiagnostics),
-      coordinateDiagnostics: safeCoordinateDiagnostics(document.coordinateDiagnostics)
+      coordinateDiagnostics: safeCoordinateDiagnostics(document.coordinateDiagnostics),
+      outlineDiagnostics: safeOutlineDiagnostics(document.outlineDiagnostics)
     },
-    paragraphPositions: safeParagraphPositions(document.paragraphPositions)
+    paragraphPositions: safeParagraphPositions(document.paragraphPositions),
+    outline: safeOutline(document.outline)
   };
 
   if (options.only === "chat") {
@@ -121,7 +123,9 @@ export function safeChatMessages(messages: DocumentChatMessage[]): SafeExportCha
       sources: (message.sources ?? []).slice(0, 8).map((source) => ({
         sourceHint: asString(source.sourceHint),
         quote: truncate(asString(source.quote), 300),
-        anchorId: asOptionalString(source.anchorId)
+        anchorId: asOptionalString(source.anchorId),
+        outlineTitle: asOptionalString(source.outlineTitle),
+        outlineType: source.outlineType
       }))
     }));
 }
@@ -192,6 +196,40 @@ function safeCoordinateDiagnostics(diagnostics: ParsedDocument["coordinateDiagno
     coordinateAvailable: diagnostics.coordinateAvailable,
     warnings: asStringArray(diagnostics.warnings).map((warning) => truncate(warning, 240))
   };
+}
+
+function safeOutlineDiagnostics(diagnostics: ParsedDocument["outlineDiagnostics"]) {
+  if (!diagnostics) return undefined;
+  return {
+    extractor: asString(diagnostics.extractor),
+    extractedAt: asString(diagnostics.extractedAt),
+    outlineNodeCount: diagnostics.outlineNodeCount,
+    maxDepth: diagnostics.maxDepth,
+    detectedAbstract: diagnostics.detectedAbstract,
+    detectedIntroduction: diagnostics.detectedIntroduction,
+    detectedConclusion: diagnostics.detectedConclusion,
+    detectedReferences: diagnostics.detectedReferences,
+    warnings: asStringArray(diagnostics.warnings).map((warning) => truncate(warning, 240))
+  };
+}
+
+function safeOutline(outline: ParsedDocument["outline"]): SafeExportOutlineNode[] | undefined {
+  if (!outline?.length) return undefined;
+  return outline.slice(0, 120).map((node) => ({
+    id: asString(node.id),
+    title: truncate(asString(node.title), 180),
+    level: node.level,
+    index: node.index,
+    pageNumber: node.pageNumber,
+    startParagraphId: node.startParagraphId,
+    endParagraphId: node.endParagraphId,
+    startChar: node.startChar,
+    endChar: node.endChar,
+    parentId: node.parentId,
+    confidence: node.confidence,
+    type: node.type,
+    children: safeOutline(node.children)
+  }));
 }
 
 function safeParagraphPositions(positions: ParsedDocument["paragraphPositions"]) {

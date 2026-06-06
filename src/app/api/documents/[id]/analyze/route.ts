@@ -23,7 +23,19 @@ async function readMode(request: Request): Promise<AnalysisMode> {
 }
 
 function chunkMetadata(chunks: ReturnType<typeof chunkText>) {
-  return chunks.map(({ id, index, startChar, endChar, sourceHint, paragraphIds, startPage, endPage, skippedLowValueParagraphCount }) => ({ id, index, startChar, endChar, sourceHint, paragraphIds, startPage, endPage, skippedLowValueParagraphCount }));
+  return chunks.map(({ id, index, startChar, endChar, sourceHint, paragraphIds, startPage, endPage, outlineNodeId, outlineTitle, skippedLowValueParagraphCount }) => ({
+    id,
+    index,
+    startChar,
+    endChar,
+    sourceHint,
+    paragraphIds,
+    startPage,
+    endPage,
+    outlineNodeId,
+    outlineTitle,
+    skippedLowValueParagraphCount
+  }));
 }
 
 async function saveProgress(document: ParsedDocument, progress: ParsedDocument["analysisProgress"], extra: Partial<ParsedDocument> = {}) {

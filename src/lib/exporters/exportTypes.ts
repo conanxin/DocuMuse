@@ -1,4 +1,4 @@
-import type { ChunkAnalysis, DocumentChatMessage, ParsedDocument, ParseDiagnostics } from "../documentTypes";
+import type { ChunkAnalysis, DocumentChatMessage, DocumentOutlineNode, OutlineDiagnostics, ParsedDocument, ParseDiagnostics } from "../documentTypes";
 
 export type DocumentExportOptions = {
   includeChat: boolean;
@@ -27,6 +27,8 @@ export type SafeExportSource = {
   sourceHint: string;
   quote: string;
   anchorId?: string;
+  outlineTitle?: string;
+  outlineType?: DocumentOutlineNode["type"];
 };
 
 export type SafeExportChatMessage = {
@@ -37,6 +39,10 @@ export type SafeExportChatMessage = {
 };
 
 export type SafeExportChunkAnalysis = Pick<ChunkAnalysis, "chunkId" | "title" | "summary" | "keyPoints" | "keywords" | "quotes" | "sourceHint">;
+
+export type SafeExportOutlineNode = Omit<DocumentOutlineNode, "children"> & {
+  children?: SafeExportOutlineNode[];
+};
 
 export type SafeDocumentExport = {
   exportedAt: string;
@@ -82,7 +88,9 @@ export type SafeDocumentExport = {
       pageDiagnostics?: NonNullable<ParseDiagnostics["pageDiagnostics"]>;
     };
     coordinateDiagnostics?: ParsedDocument["coordinateDiagnostics"];
+    outlineDiagnostics?: OutlineDiagnostics;
   };
+  outline?: SafeExportOutlineNode[];
   paragraphPositions?: Array<{
     paragraphId: string;
     pageNumber: number;

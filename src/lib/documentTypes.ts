@@ -57,6 +57,8 @@ export type TextChunkMetadata = {
   paragraphIds?: string[];
   startPage?: number;
   endPage?: number;
+  outlineNodeId?: string;
+  outlineTitle?: string;
   skippedLowValueParagraphCount?: number;
 };
 
@@ -97,6 +99,43 @@ export interface ParsedSection {
   startChar: number;
   endChar?: number;
   pageNumber?: number;
+}
+
+export interface DocumentOutlineNode {
+  id: string;
+  title: string;
+  level: number;
+  index: number;
+  pageNumber?: number;
+  startParagraphId?: string;
+  endParagraphId?: string;
+  startChar?: number;
+  endChar?: number;
+  parentId?: string;
+  children?: DocumentOutlineNode[];
+  confidence: "high" | "medium" | "low";
+  type?:
+    | "title"
+    | "abstract"
+    | "introduction"
+    | "section"
+    | "subsection"
+    | "conclusion"
+    | "references"
+    | "appendix"
+    | "unknown";
+}
+
+export interface OutlineDiagnostics {
+  extractor: string;
+  extractedAt: string;
+  outlineNodeCount: number;
+  maxDepth: number;
+  detectedAbstract?: boolean;
+  detectedIntroduction?: boolean;
+  detectedConclusion?: boolean;
+  detectedReferences?: boolean;
+  warnings: string[];
 }
 
 export interface PdfTextItemBox {
@@ -186,6 +225,9 @@ export type ChatSource = {
   pageNumber?: number;
   sectionId?: string;
   sectionTitle?: string;
+  outlineNodeId?: string;
+  outlineTitle?: string;
+  outlineType?: DocumentOutlineNode["type"];
   qualityFlags?: string[];
   isLowValue?: boolean;
   coordinateAvailable?: boolean;
@@ -230,6 +272,8 @@ export type ParsedDocument = {
   pages?: ParsedPage[];
   paragraphs?: ParsedParagraph[];
   sections?: ParsedSection[];
+  outline?: DocumentOutlineNode[];
+  outlineDiagnostics?: OutlineDiagnostics;
   parseDiagnostics?: ParseDiagnostics;
   pdfTextItems?: PdfTextItemBox[];
   paragraphPositions?: PdfParagraphPosition[];

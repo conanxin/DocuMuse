@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { ensureDocumentStructure } from "@/lib/documentStructure";
 import { mockOriginalText } from "@/lib/mockData";
-import type { ChatSource, ParsedDocument, ParseDiagnostics } from "@/lib/documentTypes";
+import type { ChatSource, DocumentOutlineNode, ParsedDocument, ParseDiagnostics } from "@/lib/documentTypes";
+import { flattenOutline } from "@/lib/outlineExtractor";
 import { buildParagraphAnchors, buildParagraphAnchorsFromDocument, type ParagraphAnchor } from "@/lib/sourceAnchors";
 
 type SelectedSource = ChatSource | null;
@@ -28,6 +30,11 @@ export function OriginalTextPanel({
   const [hideLowValue, setHideLowValue] = useState(false);
   const fullText = document?.text || text || mockOriginalText.join("\n\n");
   const anchors = useMemo(() => (document ? buildParagraphAnchorsFromDocument(document) : buildParagraphAnchors(fullText)), [document, fullText]);
+  const outlineByParagraphId = useMemo(() => {
+    const structured = document ? ensureDocumentStructure(document) : null;
+    const nodes = structured?.outline?.length ? flattenOutline(structured.outline) : [];
+    return new Map(nodes.map((node) => [node.startParagraphId, node]));
+  }, [document]);
   const selectedAnchor = useMemo(() => resolveSelectedAnchor(anchors, highlight), [anchors, highlight]);
   const diagnostics = document?.parseDiagnostics;
   const resolvedPageCount = document?.pages?.length || pageCount || diagnostics?.pageCount || 1;
@@ -63,6 +70,7 @@ export function OriginalTextPanel({
         <div className="flex flex-wrap gap-2 text-xs text-slate-500">
           <StatPill>{resolvedPageCount} 页</StatPill>
           <StatPill>{anchors.length.toLocaleString()} 段</StatPill>
+          <StatPill>{outlineByParagraphId.size.toLocaleString()} outline</StatPill>
           <StatPill>{(document?.sections?.length ?? 0).toLocaleString()} 节</StatPill>
           <StatPill>{fullText.length.toLocaleString()} 字符</StatPill>
           <StatPill>{parsedAt}</StatPill>
@@ -108,15 +116,17 @@ export function OriginalTextPanel({
         {!anchors.length && <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">暂无可显示的原文内容。</div>}
         {anchors.filter((anchor) => !(hideLowValue && anchor.isLowValue)).map((anchor) => {
           const active = selectedAnchor?.id === anchor.id;
+          const outlineNode = anchor.paragraphId ? outlineByParagraphId.get(anchor.paragraphId) : undefined;
           return (
-            <article id={`source-${anchor.id}`} key={anchor.id} className={`rounded-xl border p-4 text-sm leading-7 transition ${active ? "border-blue-300 bg-yellow-50 shadow-sm" : "border-slate-100 bg-white"}`}>
+            <article id={`source-${anchor.id}`} key={anchor.id} className={`rounded-xl border p-4 text-sm leading-7 transition ${active ? "border-blue-300 bg-yellow-50 shadow-sm" : outlineNode ? "border-blue-100 bg-blue-50/40" : "border-slate-100 bg-white"}`}>
               <div className="mb-2 flex items-center justify-between gap-3 text-xs">
                 <span className={`font-semibold ${active ? "text-blue-700" : "text-slate-500"}`}>{anchor.sourceHint}</span>
-                <span className="text-slate-400">{anchor.sectionTitle ? `章节：${anchor.sectionTitle}` : `${anchor.startChar + 1}-${anchor.endChar}`}</span>
+                <span className="text-slate-400">{anchor.outlineTitle || anchor.sectionTitle ? `Outline: ${anchor.outlineTitle || anchor.sectionTitle}` : `${anchor.startChar + 1}-${anchor.endChar}`}</span>
               </div>
+              <ParagraphOutlineTag node={outlineNode} />
               <ParagraphQualityTags anchor={anchor} />
               <ParagraphCoordinateTag anchor={anchor} />
-              <p className={`${active ? "border-l-4 border-blue-500 pl-3 text-slate-900" : "text-slate-700"}`}>{anchor.text}</p>
+              <p className={`${active ? "border-l-4 border-blue-500 pl-3 text-slate-900" : outlineNode ? "text-base font-semibold text-slate-900" : "text-slate-700"}`}>{anchor.text}</p>
             </article>
           );
         })}
@@ -214,6 +224,26 @@ function DiagnosticList({ title, items }: { title: string; items: string[] }) {
       </ul>
     </div>
   );
+}
+
+function ParagraphOutlineTag({ node }: { node?: DocumentOutlineNode }) {
+  if (!node) return null;
+  return (
+    <div className="mb-2 flex flex-wrap gap-1">
+      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700">Outline heading</span>
+      <span className="rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-blue-100">Level {node.level}</span>
+      <span className="rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-blue-100">{outlineTypeLabel(node.type)}</span>
+    </div>
+  );
+}
+
+function outlineTypeLabel(type?: DocumentOutlineNode["type"]) {
+  if (type === "abstract") return "Abstract";
+  if (type === "introduction") return "Introduction";
+  if (type === "conclusion") return "Conclusion";
+  if (type === "references") return "References";
+  if (type === "appendix") return "Appendix";
+  return "Section";
 }
 
 function ParagraphQualityTags({ anchor }: { anchor: ParagraphAnchor }) {

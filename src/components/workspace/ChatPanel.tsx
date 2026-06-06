@@ -335,7 +335,7 @@ function SourceList({ sources, selectedSource, onSourceClick, onSourcePdfClick }
                   <ExternalLink size={12} />
                   {formatSourceLabel(source)}
                 </span>
-                {source.sectionTitle && <span className="mt-1 block text-[11px] text-slate-400">{source.sectionTitle}</span>}
+                {(source.outlineTitle || source.sectionTitle) && <span className="mt-1 block text-[11px] text-slate-400">{source.outlineTitle || source.sectionTitle}</span>}
                 {source.isLowValue && <span className="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700">来源质量较低</span>}
                 <span className="mt-1 block leading-5">{shortQuote(source.quote, 120)}</span>
                 <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] ${source.coordinateAvailable ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{coordinateStatusLabel(source)}</span>

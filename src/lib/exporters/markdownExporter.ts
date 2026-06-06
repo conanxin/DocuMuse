@@ -36,6 +36,11 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
     lines.push("## Analysis Status", "", "尚未生成分析结果", "");
   }
 
+  if (exported.outline?.length) {
+    lines.push("## 0.1 Document Outline", "");
+    appendOutline(lines, exported.outline);
+  }
+
   const analysis = exported.analysis;
   if (!analysis) {
     lines.push("尚未生成分析结果", "");
@@ -151,6 +156,16 @@ function appendList(lines: string[], items: string[]) {
   }
   items.forEach((item) => lines.push(`- ${item}`));
   lines.push("");
+}
+
+function appendOutline(lines: string[], nodes: NonNullable<SafeDocumentExport["outline"]>, depth = 0) {
+  for (const node of nodes.slice(0, 80)) {
+    const indent = "  ".repeat(Math.max(0, depth));
+    const page = node.pageNumber ? ` (page ${node.pageNumber})` : "";
+    lines.push(`${indent}- ${node.title || "Untitled"}${page}`);
+    if (node.children?.length) appendOutline(lines, node.children, depth + 1);
+  }
+  if (depth === 0) lines.push("");
 }
 
 function formatDate(value: string) {

@@ -37,6 +37,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4D.3 headless browser smoke test confirmed PDF canvas rendering, overlay rendering, diagnostics, and 150% zoom synchronization.
 - [x] Phase 4D.4 coordinate fixture script validates `simple-one-page.pdf` text items, paragraph positions, and positive bounding boxes.
 - [x] Phase 4D.5 coordinate fixture script validates active one-page, multi-page, dense paragraph, and two-column fixtures.
+- [x] Phase 4E build validation passed for heuristic outline extraction, outline-aware sidebar navigation, source metadata, chunk metadata, and safe exports.
 
 ## Upload And Library
 
@@ -44,8 +45,10 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm redirect to `/documents/{id}`.
 - [ ] Confirm original extracted text appears.
 - [ ] Confirm new document JSON includes `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
+- [ ] Confirm new document JSON includes `outline` and `outlineDiagnostics` when headings are detected.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
 - [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
+- [ ] Confirm original text reader can highlight detected heading paragraphs.
 - [ ] Confirm original text reader shows parse quality, score, language guess, and collapsible diagnostics.
 - [ ] Confirm paragraphs can show low-value tags such as page number, header/footer candidate, footnote candidate, or reference candidate.
 - [ ] Confirm `隐藏低价值段落` hides low-value paragraph cards without deleting original text.
@@ -87,6 +90,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Run full analysis on a longer PDF.
 - [ ] Run full analysis from `/settings/validation`.
 - [ ] Confirm chunks are created.
+- [ ] Confirm full-analysis chunks can include `outlineNodeId` and `outlineTitle` when an outline is available.
 - [ ] Confirm chunk metadata can include `skippedLowValueParagraphCount`.
 - [ ] Confirm chunk analyses are saved.
 - [ ] Confirm global synthesis is saved.
@@ -101,6 +105,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm sources are shown.
 - [ ] Confirm source quotes are short and relevant to the question.
 - [ ] Confirm source cards show page / paragraph hints when available.
+- [ ] Confirm source cards show outline / chapter title metadata when available.
 - [ ] Confirm source cards avoid obvious page numbers and repeated headers/footers where possible.
 - [ ] Confirm source cards can show coordinate availability or approximate coordinate confidence when available.
 - [ ] Expand source coordinate details and confirm page number, confidence, and bounding box are shown.
@@ -115,6 +120,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Click a source and confirm the original text tab opens.
 - [ ] Confirm the matching paragraph is highlighted.
 - [ ] Confirm workspace sidebar outline shows detected sections for structured documents.
+- [ ] Confirm workspace sidebar prefers detected outline nodes when `outline` is available.
+- [ ] Click an outline node and confirm the original text tab opens and highlights the target paragraph.
 - [ ] Clear highlight.
 - [ ] Clear chat history.
 - [ ] Refresh and confirm chat history remains empty.
@@ -126,8 +133,10 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Open a real document workspace.
 - [ ] Export Markdown from the top bar.
 - [ ] Confirm the Markdown contains metadata, summaries, key points, section analysis, creative outputs, and Q&A records when available.
+- [ ] Confirm the Markdown can include the detected document outline.
 - [ ] Export structured JSON from the top bar.
 - [ ] Confirm the JSON does not contain full `text`, API keys, prompts, raw model output, or `analysisDiagnostics.rawPreview`.
+- [ ] Confirm the JSON can include safe `outline` and `outlineDiagnostics` without full original text.
 - [ ] Export Q&A-only Markdown from the top bar.
 - [ ] Export PPTX from the top bar.
 - [ ] Open the PPTX in PowerPoint or WPS.

@@ -1,4 +1,4 @@
-import type { ParsedDocument } from "./documentTypes";
+import type { DocumentOutlineNode, ParsedDocument } from "./documentTypes";
 import { buildParagraphAnchors, buildParagraphAnchorsFromDocument } from "./sourceAnchors";
 
 export type SearchChunk = {
@@ -8,6 +8,9 @@ export type SearchChunk = {
   pageNumber?: number;
   sectionId?: string;
   sectionTitle?: string;
+  outlineNodeId?: string;
+  outlineTitle?: string;
+  outlineType?: DocumentOutlineNode["type"];
   qualityFlags?: string[];
   isLowValue?: boolean;
   coordinateAvailable?: boolean;
@@ -85,6 +88,9 @@ export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[]
     pageNumber: anchor.pageNumber,
     sectionId: anchor.sectionId,
     sectionTitle: anchor.sectionTitle,
+    outlineNodeId: anchor.outlineNodeId,
+    outlineTitle: anchor.outlineTitle,
+    outlineType: anchor.outlineType,
     qualityFlags: anchor.qualityFlags,
     isLowValue: anchor.isLowValue,
     coordinateAvailable: anchor.coordinateAvailable,
@@ -94,7 +100,7 @@ export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[]
     text: normalizeText(anchor.text),
     startChar: anchor.startChar,
     endChar: anchor.endChar,
-    sourceHint: anchor.sourceHint
+    sourceHint: formatSourceHint(anchor.sourceHint, anchor.pageNumber, anchor.outlineTitle ?? anchor.sectionTitle, anchor.index)
   }));
 }
 
@@ -126,7 +132,7 @@ export function searchRelevantChunks(question: string, chunks: SearchChunk[], to
 
 function scoreChunk(chunk: SearchChunk, tokens: string[], questionPhrase: string): SearchChunk {
   const text = chunk.text.toLowerCase();
-  const sourceHint = `${chunk.sourceHint} ${chunk.sectionTitle ?? ""}`.toLowerCase();
+  const sourceHint = `${chunk.sourceHint} ${chunk.outlineTitle ?? ""} ${chunk.sectionTitle ?? ""}`.toLowerCase();
   const matchedTerms: string[] = [];
   let score = 0;
 
@@ -160,6 +166,14 @@ function scoreChunk(chunk: SearchChunk, tokens: string[], questionPhrase: string
     matchedTerms: unique(matchedTerms).slice(0, 12),
     retrievalReason: score > 0 ? (coverage > 0.5 ? "high_term_coverage" : "keyword_match") : "low_score"
   };
+}
+
+function formatSourceHint(sourceHint: string, pageNumber?: number, outlineTitle?: string, paragraphIndex?: number) {
+  const parts = [];
+  if (pageNumber) parts.push(`第 ${pageNumber} 页`);
+  if (outlineTitle) parts.push(outlineTitle);
+  if (paragraphIndex) parts.push(`第 ${paragraphIndex} 段`);
+  return parts.length ? parts.join(" · ") : sourceHint;
 }
 
 function proximityBonus(text: string, terms: string[]) {

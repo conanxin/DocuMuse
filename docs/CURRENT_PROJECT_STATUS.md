@@ -18,6 +18,8 @@ PDF text-layer coordinates: best-effort text item extraction, paragraph-to-page-
 
 PDF coordinate regression: local active fixtures now cover simple one-page, simple multi-page, dense paragraph, and lightweight two-column cases. `npm run test:pdf-coordinates` validates text items, paragraph positions, page counts, and bounding boxes.
 
+Document outline extraction: heuristic Chinese / English heading detection now generates `outline` and `outlineDiagnostics`, powers workspace sidebar navigation, enriches source metadata, and gives full-analysis chunking outline-aware boundaries when available.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -25,7 +27,9 @@ DocuMuse currently supports a local PDF reading workflow:
 - Upload local PDFs.
 - Extract selectable PDF text.
 - Store structured parse data for new PDFs: pages, paragraphs, sections, and parse diagnostics.
+- Store heuristic outline data for new PDFs: outline nodes, levels, heading type, ranges, and outline diagnostics.
 - Runtime-generate structure for older plain-text document JSON files.
+- Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
 - Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
 - Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
@@ -41,6 +45,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Ask grounded questions against document text.
 - Show source citations and jump to paragraph anchors in the original text.
 - Show page, paragraph, section, and parser diagnostics in the original text reader.
+- Show page, paragraph, section, outline, and parser context in the original text reader.
 - Render assistant answers as safe Markdown with copy and expanded reading actions.
 - Clear and export chat history as Markdown.
 - Use `/settings/validation` for local real-model validation.
@@ -64,6 +69,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Retrieval: lightweight paragraph keyword matching with query preprocessing, scoring, fallback, and sentence-level quote extraction.
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
+- Outline: heuristic Chinese / English heading extraction with nested nodes, page / paragraph ranges, diagnostics, and backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
 - Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
 - Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, original-text coordinate details, an experimental calibrated canvas preview, and lightweight fixture generation / validation scripts.
@@ -117,6 +123,7 @@ data/settings/    Local LLM settings
 - `CreativeOutputsPanel`
 - `ChatPanel`
 - `ChatAnswerRenderer`
+- `outlineExtractor`
 
 ## Current Limits
 
@@ -133,15 +140,16 @@ data/settings/    Local LLM settings
 - No saved custom preset editor yet.
 - PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
+- Outline detection is heuristic and can miss unusual headings or complex layouts.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
-2. Phase 3C.2 saved custom export presets.
-3. Phase 3B.4 optional speaker notes and richer report outline controls.
-4. Add source history and original-text search.
-5. Add optional streaming responses.
+1. Phase 4E.1 runtime validation for outline extraction across newly uploaded PDFs and older fallback documents.
+2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
+3. Phase 3C.2 saved custom export presets.
+4. Phase 3B.4 optional speaker notes and richer report outline controls.
+5. Add source history and original-text search.
 6. Consider embeddings and vector storage only after the local baseline and export workflow are stable.
