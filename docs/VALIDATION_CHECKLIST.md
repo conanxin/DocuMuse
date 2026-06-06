@@ -41,6 +41,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E build validation passed for heuristic outline extraction, outline-aware sidebar navigation, source metadata, chunk metadata, and safe exports.
 - [x] Phase 4E.1 runtime upload fixture produced 8 outline nodes, detected abstract / introduction / conclusion / references, and verified safe JSON / Markdown / PPTX / ZIP export endpoints.
 - [x] Phase 4E.2 outline regression script passed Chinese paper, Chinese report, English paper, and English report near-real fixtures.
+- [x] Phase 4E.3 existing local real-PDF spot checks reduced numbered-heading false positives while preserving outline-aware source and chunk metadata.
 
 ## Upload And Library
 
@@ -51,6 +52,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm new document JSON includes `outline` and `outlineDiagnostics` when headings are detected.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
+- [ ] Spot-check at least one confidential real PDF and record outline false positives / missed headings without committing the PDF.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
 - [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
 - [ ] Confirm original text reader can highlight detected heading paragraphs.

@@ -86,3 +86,7 @@ Expected behavior remains unchanged:
 - True multi-column academic PDFs, rotated pages, CropBox / MediaBox differences, and scanned PDFs are not covered.
 - Heading detection remains heuristic and can still miss unusual title styles.
 - When PDF extraction merges multiple visible headings into one paragraph, source navigation may highlight the containing paragraph rather than a precise inline heading span.
+
+## Follow-up
+
+Phase 4E.3 extends this work with existing local real-PDF spot checks. The follow-up tuning applies the numbered-heading rejection rules to inline heading detection as well, reducing person-name footnotes, repeated page/header labels, and unit strings as false positives.

@@ -154,6 +154,7 @@ function detectInlineHeadings(paragraph: ParsedParagraph): HeadingCandidate[] {
   const numberedPattern = /(?:^|\s)(\d+(?:\.\d+){0,3})[.)]?\s+([A-Z][A-Za-z0-9,&:()/-]{1,40})(?=\s+[A-Z\u4e00-\u9fff]|\s*$)/g;
   for (const match of Array.from(text.matchAll(numberedPattern))) {
     const prefix = match[1];
+    if (shouldRejectNumberedHeading(prefix, match[2])) continue;
     const title = `${prefix} ${match[2]}`;
     const parts = prefix.split(".").filter(Boolean);
     add(title, (match.index ?? 0) + match[0].indexOf(prefix), Math.min(3, Math.max(1, parts.length)), parts.length === 1 ? "section" : "subsection", "medium");
@@ -185,13 +186,37 @@ function numberedHeading(text: string) {
   const clean = text.trim();
   const spaced = clean.match(/^(\d+(?:\.\d+){0,3})\s+(.{2,100})$/);
   if (spaced) {
+    if (shouldRejectNumberedHeading(spaced[1], spaced[2])) return null;
     const parts = spaced[1].split(".").filter(Boolean);
     return { level: Math.min(3, Math.max(1, parts.length)), type: keywordHeading(spaced[2].toLowerCase()) };
   }
   const match = text.match(/^(\d+(?:\.\d+){0,3})(?:[.)\s]+)(.{0,100})$/);
   if (!match) return null;
+  if (shouldRejectNumberedHeading(match[1], match[2] ?? "")) return null;
   const parts = match[1].split(".").filter(Boolean);
   return { level: Math.min(3, Math.max(1, parts.length)), type: keywordHeading((match[2] ?? "").toLowerCase()) };
+}
+
+function shouldRejectNumberedHeading(prefix: string, title: string) {
+  const cleanTitle = title.trim();
+  const firstNumber = Number(prefix.split(".")[0]);
+  if (!Number.isFinite(firstNumber) || firstNumber < 1 || firstNumber > 20) return true;
+  if (/\b(utc|jstor\.org|https?:|kg|medical)\b/i.test(cleanTitle)) return true;
+
+  const words = cleanTitle.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+  if (words.length === 1) {
+    const word = words[0].replace(/[^A-Za-z0-9\u4e00-\u9fff-]/g, "");
+    if (keywordHeading(word.toLowerCase())) return false;
+    if (commonSectionWord(word)) return false;
+    if (/[\u4e00-\u9fff]/.test(word)) return false;
+    return true;
+  }
+  return false;
+}
+
+function commonSectionWord(word: string) {
+  return /^(method|methods|results|discussion|analysis|recommendations|background|dataset|datasets|experiment|experiments|experimental|evaluation|approach|framework|model|models|contribution|contributions|limitations|rationale|profits|wages|divergence|coding|transfer|memory|memory-based|retrieval|additional)$/i.test(word);
 }
 
 function chineseHeading(text: string) {

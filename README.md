@@ -11,6 +11,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Heuristic document outline extraction for common Chinese / English headings, with sidebar navigation and original-text heading highlights.
 - Outline runtime validation fixture for merged-heading PDFs, including inline heading detection inside large extracted paragraphs.
 - Outline regression validation for Chinese / English near-real paper and report fixtures via `npm run test:outline`.
+- Real-PDF outline spot checks for existing local uploads, with reduced numbered-heading false positives from footnotes, repeated headers, timestamps, and unit strings.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
@@ -213,7 +214,10 @@ DocuMuse is currently a local single-user tool.
 - Phase 4D.3: PDF preview coordinate calibration, diagnostics, and zoom controls are implemented.
 - Phase 4D.4: PDF coordinate regression fixture baseline and validation script are implemented.
 - Phase 4D.5: expanded PDF coordinate fixtures for multi-page, dense paragraph, and lightweight two-column cases are implemented.
-- Phase 4E: optional embeddings and vector database RAG.
+- Phase 4E: heuristic outline extraction and runtime validation is implemented.
+- Phase 4E.1: outline runtime upload validation is recorded.
+- Phase 4E.2: Chinese / English near-real outline fixtures and regression script are implemented.
+- Phase 4E.3: existing local real-PDF outline spot checks and small rule tuning are recorded.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

@@ -37,6 +37,7 @@
 - [Phase 4E Outline Extraction](./PHASE_4E_OUTLINE_EXTRACTION.md): heuristic Chinese / English heading detection, outline metadata, sidebar navigation, outline-aware sources, and chunking boundaries.
 - [Phase 4E.1 Outline Runtime Validation](./PHASE_4E_1_OUTLINE_RUNTIME_VALIDATION.md): runtime upload fixture, inline heading detection fix, source metadata checks, chunk metadata checks, and export compatibility.
 - [Phase 4E.2 Outline Real Doc Validation](./PHASE_4E_2_OUTLINE_REAL_DOC_VALIDATION.md): Chinese / English near-real paper and report fixtures, outline regression script, and rule tuning notes.
+- [Phase 4E.3 Real PDF Outline Validation](./PHASE_4E_3_REAL_PDF_OUTLINE_VALIDATION.md): existing local real-PDF outline spot checks, numbered-heading noise reduction, source metadata, and chunking compatibility.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

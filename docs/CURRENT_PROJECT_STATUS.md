@@ -24,6 +24,8 @@ Outline runtime validation: a small selectable-text fixture with Chinese and Eng
 
 Outline regression validation: `npm run test:outline` generates four Chinese / English near-real fixtures and currently passes 4 / 4 cases.
 
+Real PDF outline validation: existing local uploaded PDFs were spot-checked without copying their contents into git. Numbered-heading noise from person footnotes, repeated medical headers, timestamps, and unit strings was reduced while preserving common academic section headings.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -34,6 +36,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Store heuristic outline data for new PDFs: outline nodes, levels, heading type, ranges, and outline diagnostics.
 - Detect inline heading candidates when PDF extraction merges multiple headings into a larger paragraph.
 - Validate outline extraction against Chinese paper, Chinese report, English paper, and English report near-real fixtures.
+- Spot-check outline extraction against existing local real PDFs and reduce obvious numbered-heading false positives.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
@@ -146,14 +149,14 @@ data/settings/    Local LLM settings
 - No saved custom preset editor yet.
 - PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
-- Outline detection is heuristic and can miss unusual headings or complex layouts.
+- Outline detection is heuristic and can miss unusual headings, sparse older publications, or complex layouts.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 4E.3 manual validation with user-provided real academic / business PDFs.
+1. Phase 4E.4 optional user-facing outline review and correction controls.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

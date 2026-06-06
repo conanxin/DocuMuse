@@ -49,6 +49,12 @@ The extractor currently recognizes:
 - Short uppercase English headings.
 - Inline heading candidates inside larger extracted paragraphs, which can happen when PDF text extraction merges visible headings and body text together.
 
+Phase 4E.3 tightened numbered-heading filtering:
+
+- Inline numbered headings now reuse the same noise rejection rules as paragraph-level numbered headings.
+- Person-name footnote patterns, timestamps / URLs, repeated medical labels, and measurement-like strings are less likely to become outline nodes.
+- Single-word numbered headings are accepted only for known section vocabulary, recognized heading keywords, or Chinese heading text.
+
 Ranges are inferred from each heading paragraph until the next heading at the same or higher level.
 
 ## UI Changes
@@ -100,3 +106,5 @@ Recommended manual checks:
 Phase 4E.1 runtime validation used `.tools/test-fixtures/outline/structured-headings.pdf` and confirmed upload-time outline extraction for merged-heading PDF text.
 
 Phase 4E.2 adds `npm run test:outline`, which generates four Chinese / English near-real PDF fixtures and validates outline extraction without LLM calls.
+
+Phase 4E.3 spot-checked existing local uploaded PDFs and reduced obvious numbered-heading false positives without adding LLM, OCR, or machine-learning detection.
