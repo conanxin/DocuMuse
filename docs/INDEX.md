@@ -31,6 +31,7 @@
 - [Phase 4D.0 PDF Coordinate Extraction](./PHASE_4D_0_PDF_COORDINATE_EXTRACTION.md): pdfjs text-layer coordinates, paragraph position mapping, coordinate diagnostics, and safe JSON export.
 - [Phase 4D.1 Coordinate Source UI](./PHASE_4D_1_COORDINATE_SOURCE_UI.md): coordinate-aware source cards, copyable location data, paragraph coordinate details, and coordinate diagnostics UI.
 - [Phase 4D.2 PDF Viewer Spike](./PHASE_4D_2_PDF_VIEWER_SPIKE.md): secure PDF file API, experimental single-page canvas preview, and bounding-box overlay feasibility validation.
+- [Phase 4D.3 PDF Viewer Coordinate Calibration](./PHASE_4D_3_PDF_VIEWER_COORDINATE_CALIBRATION.md): scale-aware coordinate mapping, overlay clamping, diagnostics, zoom controls, and headless browser smoke validation.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

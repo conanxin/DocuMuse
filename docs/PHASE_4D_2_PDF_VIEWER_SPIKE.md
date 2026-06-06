@@ -40,6 +40,8 @@ convertBoundingBoxToViewportBox(boundingBox, viewport)
 
 This is best-effort. It is enough to validate the data path, but it may be offset for complex PDFs, rotated pages, unusual crop boxes, multi-column layouts, or coordinate systems that differ from the assumed scale-1 viewport.
 
+Phase 4D.3 adds a clearer coordinate mapping helper, safe clamping, minimum visible overlay sizes, a diagnostics panel, source-page mismatch hints, and basic zoom controls.
+
 ## Validation
 
 API-level validation passed with an existing fixture document:

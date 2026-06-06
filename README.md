@@ -12,7 +12,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
 - Coordinate-aware source cards and original-text paragraph details with copyable page-region location metadata.
-- Experimental single-page PDF preview with best-effort bounding-box overlay for coordinate-aware sources; browser smoke validation passed with a local fixture PDF.
+- Experimental single-page PDF preview with best-effort bounding-box overlay for coordinate-aware sources, scale-aware coordinate mapping, diagnostics, and basic zoom controls.
 - Local document library from `data/documents/`.
 - Reopen and delete parsed local documents.
 - Workspace upload entry for adding a new document without returning home.
@@ -139,7 +139,7 @@ data/settings/    Local LLM settings
 ## Not Supported Yet
 
 - OCR for scanned PDFs.
-- Full production PDF viewer with reliable coordinate overlay highlighting.
+- Full production PDF reader with continuous scroll, thumbnails, search, and guaranteed coordinate overlay precision.
 - EPUB and Word parsing.
 - Vector RAG.
 - Embeddings.
@@ -185,6 +185,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4D.0: PDF text-layer coordinate extraction and paragraph mapping is implemented.
 - Phase 4D.1: coordinate-aware source positioning UI is implemented.
 - Phase 4D.2: PDF viewer feasibility spike is implemented.
+- Phase 4D.3: PDF preview coordinate calibration, diagnostics, and zoom controls are implemented.
 - Phase 4E: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.

@@ -34,6 +34,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4D.0 JSON export includes safe coordinate diagnostics and does not export full `pdfTextItems`.
 - [x] Phase 4D.1 source cards and original text paragraphs can display coordinate status when coordinate metadata is available.
 - [x] Phase 4D.2 PDF file API returns `application/pdf` for uploaded documents and JSON 404 for demo / missing documents.
+- [x] Phase 4D.3 headless browser smoke test confirmed PDF canvas rendering, overlay rendering, diagnostics, and 150% zoom synchronization.
 
 ## Upload And Library
 
@@ -53,6 +54,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Open the `PDF 预览` tab for a real uploaded PDF.
 - [ ] Confirm the first page renders in the experimental canvas preview.
 - [ ] Use previous / next page controls.
+- [ ] Use 90% / 100% / 125% / 150% zoom controls and confirm the canvas still renders.
+- [ ] Expand PDF coordinate diagnostics and confirm raw bounding box, overlay box, confidence, and warning fields are visible.
 - [ ] Confirm old document JSON files without structured fields still open through runtime fallback.
 - [ ] Return home and confirm the document appears in Recent Documents.
 - [ ] Reopen the document from the local library.
@@ -99,6 +102,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Use `复制定位信息` and confirm it copies page / paragraph / bounding-box metadata.
 - [ ] For a coordinate-aware source, click `在 PDF 中查看`.
 - [ ] Confirm the workspace switches to `PDF 预览` and draws a translucent highlight rectangle.
+- [ ] Confirm a source from another page does not show an overlay on the wrong page and instead shows a page mismatch hint.
 - [ ] Confirm assistant answers render Markdown headings, bold text, lists, blockquotes, and inline code.
 - [ ] Confirm raw Markdown markers such as `**bold**` are not shown for supported syntax.
 - [ ] Copy an assistant answer.
