@@ -43,6 +43,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E.2 outline regression script passed Chinese paper, Chinese report, English paper, and English report near-real fixtures.
 - [x] Phase 4E.3 existing local real-PDF spot checks reduced numbered-heading false positives while preserving outline-aware source and chunk metadata.
 - [x] Phase 4E.4 editable outline schema, APIs, sidebar edit UI, paragraph-to-heading action, effective-outline search/chunking/export paths, and build validation are implemented.
+- [x] Phase 4E.5 editable outline API runtime-equivalent validation passed, including hidden/manual effective-outline behavior and export compatibility.
 
 ## Upload And Library
 
@@ -57,6 +58,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Enter outline edit mode, rename a node, hide a node, change level/type, save, refresh, and confirm the custom outline persists.
 - [ ] Add a manual heading from an original-text paragraph.
 - [ ] Reset to the automatic outline and confirm custom edits are cleared.
+- [ ] If every custom outline node is hidden, confirm the sidebar does not fall back to automatic outline nodes.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
 - [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
 - [ ] Confirm original text reader can highlight detected heading paragraphs.

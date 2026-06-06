@@ -1,9 +1,11 @@
 import type { DocumentOutlineNode, EditableOutlineNode, ParsedDocument, ParsedSection } from "./documentTypes";
 
 export function getEffectiveOutline(document: ParsedDocument): DocumentOutlineNode[] {
-  if (document.outlineEditState?.mode === "custom" && document.outlineEditState.customOutline?.length) {
-    const filtered = filterHiddenOutline(document.outlineEditState.customOutline);
-    if (filtered.length) return filtered;
+  if (document.outlineEditState?.mode === "custom") {
+    if (document.outlineEditState.customOutline?.length) {
+      return filterHiddenOutline(document.outlineEditState.customOutline);
+    }
+    return [];
   }
 
   if (document.outline?.length) return document.outline;

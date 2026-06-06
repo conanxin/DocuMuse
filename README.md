@@ -13,6 +13,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Outline regression validation for Chinese / English near-real paper and report fixtures via `npm run test:outline`.
 - Real-PDF outline spot checks for existing local uploads, with reduced numbered-heading false positives from footnotes, repeated headers, timestamps, and unit strings.
 - Editable local outline layer: hide false positives, rename headings, adjust level/type, add missed headings from original paragraphs, and reset to automatic outline.
+- Editable outline runtime validation for API behavior, effective-outline search/chunk/export paths, and all-hidden custom outlines.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
@@ -222,6 +223,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4E.2: Chinese / English near-real outline fixtures and regression script are implemented.
 - Phase 4E.3: existing local real-PDF outline spot checks and small rule tuning are recorded.
 - Phase 4E.4: editable local outline corrections are implemented.
+- Phase 4E.5: editable outline runtime-equivalent validation and small reliability fixes are recorded.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

@@ -28,6 +28,8 @@ Real PDF outline validation: existing local uploaded PDFs were spot-checked with
 
 Editable outline: users can save a local custom outline, hide false-positive headings, rename headings, change level / type, add missed headings from original paragraphs, and reset back to the automatic outline.
 
+Editable outline runtime validation: outline APIs, effective-outline source metadata, full-analysis chunking, and Markdown / JSON / PPTX / ZIP export compatibility have been validated through runtime-equivalent checks. Browser click-through still needs local manual verification.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -41,6 +43,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Spot-check outline extraction against existing local real PDFs and reduce obvious numbered-heading false positives.
 - Save local outline corrections in `outlineEditState` without overwriting the automatic outline.
 - Use the effective outline for sidebar navigation, source metadata, full-analysis chunking, and safe exports.
+- Runtime-validate editable outline APIs and effective-outline behavior without modifying API key or LLM flows.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
@@ -165,7 +168,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4E.5 improve outline editing ergonomics: reorder controls, inline node insertion, and validation warnings.
+1. Phase 4E.6 improve outline editing ergonomics: reorder controls, inline node insertion, and validation warnings.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

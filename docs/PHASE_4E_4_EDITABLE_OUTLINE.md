@@ -155,3 +155,7 @@ Runtime checks:
 - Reset to automatic outline.
 - Confirm chat sources and full-analysis chunks use the effective outline.
 - Confirm Markdown / JSON / PPTX / ZIP exports do not crash.
+
+## Phase 4E.5 Runtime Follow-up
+
+Phase 4E.5 validated the outline APIs and effective-outline behavior with a local document. It also fixed the all-hidden custom outline case: when every custom node is hidden, the effective outline stays empty instead of falling back to the automatic outline.
