@@ -7,7 +7,14 @@ dist
 *.log
 coverage
 .DS_Store
-.tools
+.tools/*
+!.tools/scripts/
+.tools/scripts/*
+!.tools/scripts/validate-pdf-coordinates.mjs
+!.tools/test-fixtures/
+.tools/test-fixtures/*
+!.tools/test-fixtures/pdf-coordinate/
+!.tools/test-fixtures/pdf-coordinate/**
 .gitconfig-codex
 .npm-cache
 documuse-ui-demo.zip

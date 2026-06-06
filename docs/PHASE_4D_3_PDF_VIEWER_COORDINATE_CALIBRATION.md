@@ -69,4 +69,4 @@ The smoke test confirmed that canvas and overlay scale together when zoom change
 
 ## Next Suggested Work
 
-Phase 4D.4 can add a small coordinate regression fixture set for rotated PDFs, different page sizes, and multi-column documents before investing in a fuller PDF reader.
+Phase 4D.4 adds the first local coordinate regression fixture baseline and validation script. Later fixture expansion should cover rotated PDFs, different page sizes, dense paragraphs, and multi-column documents before investing in a fuller PDF reader.
