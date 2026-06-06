@@ -6,6 +6,7 @@ import { ensureDocumentStructure } from "@/lib/documentStructure";
 import { mockOriginalText } from "@/lib/mockData";
 import type { ChatSource, DocumentOutlineNode, ParsedDocument, ParseDiagnostics } from "@/lib/documentTypes";
 import { flattenOutline } from "@/lib/outlineExtractor";
+import { getEffectiveOutline } from "@/lib/outlineUtils";
 import { buildParagraphAnchors, buildParagraphAnchorsFromDocument, type ParagraphAnchor } from "@/lib/sourceAnchors";
 
 type SelectedSource = ChatSource | null;
@@ -16,7 +17,8 @@ export function OriginalTextPanel({
   pageCount,
   createdAt,
   highlight,
-  onClearHighlight
+  onClearHighlight,
+  onAddOutlineHeading
 }: {
   text?: string;
   document?: ParsedDocument | null;
@@ -24,15 +26,17 @@ export function OriginalTextPanel({
   createdAt?: string;
   highlight?: SelectedSource;
   onClearHighlight?: () => void;
+  onAddOutlineHeading?: (payload: { anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]> }) => void;
 }) {
   const [pageJump, setPageJump] = useState("");
   const [locateFailed, setLocateFailed] = useState(false);
   const [hideLowValue, setHideLowValue] = useState(false);
+  const [headingDraft, setHeadingDraft] = useState<{ anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]> } | null>(null);
   const fullText = document?.text || text || mockOriginalText.join("\n\n");
   const anchors = useMemo(() => (document ? buildParagraphAnchorsFromDocument(document) : buildParagraphAnchors(fullText)), [document, fullText]);
   const outlineByParagraphId = useMemo(() => {
     const structured = document ? ensureDocumentStructure(document) : null;
-    const nodes = structured?.outline?.length ? flattenOutline(structured.outline) : [];
+    const nodes = structured ? flattenOutline(getEffectiveOutline(structured)) : [];
     return new Map(nodes.map((node) => [node.startParagraphId, node]));
   }, [document]);
   const selectedAnchor = useMemo(() => resolveSelectedAnchor(anchors, highlight), [anchors, highlight]);
@@ -112,6 +116,45 @@ export function OriginalTextPanel({
         </div>
       )}
 
+      {headingDraft && (
+        <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-blue-900">设为章节标题</h3>
+              <p className="mt-1 text-xs text-blue-700">{headingDraft.anchor.sourceHint}</p>
+            </div>
+            <button onClick={() => setHeadingDraft(null)} className="rounded-lg border border-blue-200 px-2 py-1 text-xs text-blue-700 hover:bg-white">
+              取消
+            </button>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_150px_auto]">
+            <input value={headingDraft.title} onChange={(event) => setHeadingDraft({ ...headingDraft, title: event.target.value })} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-slate-700" maxLength={180} />
+            <select value={headingDraft.level} onChange={(event) => setHeadingDraft({ ...headingDraft, level: Number(event.target.value) })} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-slate-700">
+              <option value={1}>Level 1</option>
+              <option value={2}>Level 2</option>
+              <option value={3}>Level 3</option>
+            </select>
+            <select value={headingDraft.type} onChange={(event) => setHeadingDraft({ ...headingDraft, type: event.target.value as NonNullable<DocumentOutlineNode["type"]> })} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-slate-700">
+              {outlineTypeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {outlineTypeLabel(type)}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                if (!headingDraft.title.trim()) return;
+                onAddOutlineHeading?.({ ...headingDraft, title: headingDraft.title.trim() });
+                setHeadingDraft(null);
+              }}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              添加
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-5 max-h-[62vh] space-y-3 overflow-auto rounded-2xl border border-slate-100 bg-slate-50 p-4 thin-scrollbar">
         {!anchors.length && <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">暂无可显示的原文内容。</div>}
         {anchors.filter((anchor) => !(hideLowValue && anchor.isLowValue)).map((anchor) => {
@@ -126,6 +169,21 @@ export function OriginalTextPanel({
               <ParagraphOutlineTag node={outlineNode} />
               <ParagraphQualityTags anchor={anchor} />
               <ParagraphCoordinateTag anchor={anchor} />
+              {document && onAddOutlineHeading && (
+                <button
+                  onClick={() =>
+                    setHeadingDraft({
+                      anchor,
+                      title: anchor.text.slice(0, 80),
+                      level: 1,
+                      type: "section"
+                    })
+                  }
+                  className="mb-2 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-500 hover:border-blue-200 hover:text-blue-700"
+                >
+                  设为章节标题
+                </button>
+              )}
               <p className={`${active ? "border-l-4 border-blue-500 pl-3 text-slate-900" : outlineNode ? "text-base font-semibold text-slate-900" : "text-slate-700"}`}>{anchor.text}</p>
             </article>
           );
@@ -134,6 +192,8 @@ export function OriginalTextPanel({
     </section>
   );
 }
+
+const outlineTypeOptions: NonNullable<DocumentOutlineNode["type"]>[] = ["abstract", "introduction", "section", "subsection", "conclusion", "references", "appendix", "unknown"];
 
 function ParseDiagnosticsPanel({ diagnostics, coordinateDiagnostics }: { diagnostics?: ParseDiagnostics; coordinateDiagnostics?: ParsedDocument["coordinateDiagnostics"] }) {
   if (!diagnostics && !coordinateDiagnostics) {

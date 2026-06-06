@@ -1,6 +1,7 @@
 import { ensureDocumentStructure } from "./documentStructure";
 import { flattenOutline } from "./outlineExtractor";
 import type { DocumentOutlineNode, ParsedDocument } from "./documentTypes";
+import { getEffectiveOutline } from "./outlineUtils";
 
 export type ParagraphAnchor = {
   id: string;
@@ -72,7 +73,7 @@ export function buildParagraphAnchors(text: string): ParagraphAnchor[] {
 export function buildParagraphAnchorsFromDocument(document: ParsedDocument): ParagraphAnchor[] {
   const structured = ensureDocumentStructure(document);
   const positions = new Map((document.paragraphPositions ?? []).map((position) => [position.paragraphId, position]));
-  const outlineNodes = flattenOutline(structured.outline ?? []);
+  const outlineNodes = flattenOutline(getEffectiveOutline(structured));
   return structured.paragraphs.map((paragraph) => {
     const section = structured.sections.find((item) => paragraph.index >= paragraphIndex(item.startParagraphId) && paragraph.index <= paragraphIndex(item.endParagraphId ?? item.startParagraphId));
     const outline = outlineNodes.find((item) => {

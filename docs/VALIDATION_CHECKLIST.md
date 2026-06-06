@@ -42,6 +42,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E.1 runtime upload fixture produced 8 outline nodes, detected abstract / introduction / conclusion / references, and verified safe JSON / Markdown / PPTX / ZIP export endpoints.
 - [x] Phase 4E.2 outline regression script passed Chinese paper, Chinese report, English paper, and English report near-real fixtures.
 - [x] Phase 4E.3 existing local real-PDF spot checks reduced numbered-heading false positives while preserving outline-aware source and chunk metadata.
+- [x] Phase 4E.4 editable outline schema, APIs, sidebar edit UI, paragraph-to-heading action, effective-outline search/chunking/export paths, and build validation are implemented.
 
 ## Upload And Library
 
@@ -53,6 +54,9 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
 - [ ] Spot-check at least one confidential real PDF and record outline false positives / missed headings without committing the PDF.
+- [ ] Enter outline edit mode, rename a node, hide a node, change level/type, save, refresh, and confirm the custom outline persists.
+- [ ] Add a manual heading from an original-text paragraph.
+- [ ] Reset to the automatic outline and confirm custom edits are cleared.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
 - [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
 - [ ] Confirm original text reader can highlight detected heading paragraphs.
@@ -98,6 +102,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Run full analysis from `/settings/validation`.
 - [ ] Confirm chunks are created.
 - [ ] Confirm full-analysis chunks can include `outlineNodeId` and `outlineTitle` when an outline is available.
+- [ ] Confirm full-analysis chunks use custom outline headings when `outlineEditState.mode` is `custom`.
 - [ ] Confirm chunk metadata can include `skippedLowValueParagraphCount`.
 - [ ] Confirm chunk analyses are saved.
 - [ ] Confirm global synthesis is saved.
@@ -113,6 +118,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm source quotes are short and relevant to the question.
 - [ ] Confirm source cards show page / paragraph hints when available.
 - [ ] Confirm source cards show outline / chapter title metadata when available.
+- [ ] Confirm hidden custom outline nodes do not appear in source hints.
 - [ ] Confirm source cards avoid obvious page numbers and repeated headers/footers where possible.
 - [ ] Confirm source cards can show coordinate availability or approximate coordinate confidence when available.
 - [ ] Expand source coordinate details and confirm page number, confidence, and bounding box are shown.
@@ -141,9 +147,11 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Export Markdown from the top bar.
 - [ ] Confirm the Markdown contains metadata, summaries, key points, section analysis, creative outputs, and Q&A records when available.
 - [ ] Confirm the Markdown can include the detected document outline.
+- [ ] Confirm Markdown export uses the effective outline when a custom outline exists.
 - [ ] Export structured JSON from the top bar.
 - [ ] Confirm the JSON does not contain full `text`, API keys, prompts, raw model output, or `analysisDiagnostics.rawPreview`.
 - [ ] Confirm the JSON can include safe `outline` and `outlineDiagnostics` without full original text.
+- [ ] Confirm JSON export includes safe `outlineEditState` summary and `effectiveOutline`, without full original text.
 - [ ] Export Q&A-only Markdown from the top bar.
 - [ ] Export PPTX from the top bar.
 - [ ] Open the PPTX in PowerPoint or WPS.

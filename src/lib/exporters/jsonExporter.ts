@@ -1,5 +1,6 @@
-import type { DocumentChatMessage, ParsedDocument } from "../documentTypes";
+import type { DocumentChatMessage, EditableOutlineNode, ParsedDocument } from "../documentTypes";
 import type { DocumentExportOptions, SafeDocumentExport, SafeExportChatMessage, SafeExportOutlineNode } from "./exportTypes";
+import { getEffectiveOutline, getOutlineMode } from "../outlineUtils";
 
 const DEFAULT_OPTIONS: DocumentExportOptions = {
   includeChat: true,
@@ -37,10 +38,12 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
       analyzedAt: document.analyzedAt,
       parseDiagnostics: safeParseDiagnostics(document.parseDiagnostics),
       coordinateDiagnostics: safeCoordinateDiagnostics(document.coordinateDiagnostics),
-      outlineDiagnostics: safeOutlineDiagnostics(document.outlineDiagnostics)
+      outlineDiagnostics: safeOutlineDiagnostics(document.outlineDiagnostics),
+      outlineEditState: safeOutlineEditState(document)
     },
     paragraphPositions: safeParagraphPositions(document.paragraphPositions),
-    outline: safeOutline(document.outline)
+    outline: safeOutline(document.outline),
+    effectiveOutline: safeOutline(getEffectiveOutline(document))
   };
 
   if (options.only === "chat") {
@@ -230,6 +233,33 @@ function safeOutline(outline: ParsedDocument["outline"]): SafeExportOutlineNode[
     type: node.type,
     children: safeOutline(node.children)
   }));
+}
+
+function safeOutlineEditState(document: ParsedDocument) {
+  if (!document.outlineEditState) return undefined;
+  return {
+    mode: getOutlineMode(document),
+    updatedAt: document.outlineEditState.updatedAt,
+    customOutlineNodeCount: countOutlineNodes(document.outlineEditState.customOutline),
+    hiddenNodeCount: countHiddenOutlineNodes(document.outlineEditState.customOutline),
+    manualNodeCount: countManualOutlineNodes(document.outlineEditState.customOutline),
+    note: typeof document.outlineEditState.note === "string" ? truncate(document.outlineEditState.note, 240) : undefined
+  };
+}
+
+function countOutlineNodes(nodes: ParsedDocument["outline"]): number {
+  if (!nodes?.length) return 0;
+  return nodes.reduce((sum, node) => sum + 1 + countOutlineNodes(node.children), 0);
+}
+
+function countHiddenOutlineNodes(nodes?: EditableOutlineNode[]): number {
+  if (!nodes?.length) return 0;
+  return nodes.reduce((sum, node) => sum + (node.hidden ? 1 : 0) + countHiddenOutlineNodes(node.children), 0);
+}
+
+function countManualOutlineNodes(nodes?: EditableOutlineNode[]): number {
+  if (!nodes?.length) return 0;
+  return nodes.reduce((sum, node) => sum + (node.manual ? 1 : 0) + countManualOutlineNodes(node.children), 0);
 }
 
 function safeParagraphPositions(positions: ParsedDocument["paragraphPositions"]) {

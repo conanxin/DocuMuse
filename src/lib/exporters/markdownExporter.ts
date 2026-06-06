@@ -36,9 +36,10 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
     lines.push("## Analysis Status", "", "尚未生成分析结果", "");
   }
 
-  if (exported.outline?.length) {
+  const outline = exported.effectiveOutline ?? exported.outline;
+  if (outline?.length) {
     lines.push("## 0.1 Document Outline", "");
-    appendOutline(lines, exported.outline);
+    appendOutline(lines, outline);
   }
 
   const analysis = exported.analysis;

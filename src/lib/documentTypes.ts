@@ -126,6 +126,22 @@ export interface DocumentOutlineNode {
     | "unknown";
 }
 
+export interface EditableOutlineNode extends DocumentOutlineNode {
+  children?: EditableOutlineNode[];
+  userEdited?: boolean;
+  hidden?: boolean;
+  manual?: boolean;
+  originalTitle?: string;
+  updatedAt?: string;
+}
+
+export interface OutlineEditState {
+  mode: "auto" | "custom";
+  customOutline?: EditableOutlineNode[];
+  updatedAt?: string;
+  note?: string;
+}
+
 export interface OutlineDiagnostics {
   extractor: string;
   extractedAt: string;
@@ -274,6 +290,7 @@ export type ParsedDocument = {
   sections?: ParsedSection[];
   outline?: DocumentOutlineNode[];
   outlineDiagnostics?: OutlineDiagnostics;
+  outlineEditState?: OutlineEditState;
   parseDiagnostics?: ParseDiagnostics;
   pdfTextItems?: PdfTextItemBox[];
   paragraphPositions?: PdfParagraphPosition[];

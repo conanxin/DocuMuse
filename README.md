@@ -12,6 +12,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Outline runtime validation fixture for merged-heading PDFs, including inline heading detection inside large extracted paragraphs.
 - Outline regression validation for Chinese / English near-real paper and report fixtures via `npm run test:outline`.
 - Real-PDF outline spot checks for existing local uploads, with reduced numbered-heading false positives from footnotes, repeated headers, timestamps, and unit strings.
+- Editable local outline layer: hide false positives, rename headings, adjust level/type, add missed headings from original paragraphs, and reset to automatic outline.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
@@ -46,6 +47,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Document chat retrieval and full-analysis chunking now deweight or skip obvious low-value paragraphs while preserving the original text.
 - JSON export can include safe coordinate diagnostics and paragraph position summaries without exporting full PDF text items.
 - JSON and Markdown exports can include safe outline structure and outline diagnostics without exporting full original text.
+- Markdown and JSON exports use the effective outline when a custom outline is saved.
 
 ## Install
 
@@ -180,6 +182,7 @@ data/settings/    Local LLM settings
 - Multi-user auth.
 - Cloud sync or storage.
 - Saved custom export presets.
+- Drag-and-drop outline tree editing, collaborative outline editing, and cloud-synced outline edits.
 
 ## Security Notes
 
@@ -218,6 +221,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4E.1: outline runtime upload validation is recorded.
 - Phase 4E.2: Chinese / English near-real outline fixtures and regression script are implemented.
 - Phase 4E.3: existing local real-PDF outline spot checks and small rule tuning are recorded.
+- Phase 4E.4: editable local outline corrections are implemented.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

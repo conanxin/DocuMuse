@@ -1,5 +1,6 @@
 import type { DocumentOutlineNode, ParsedDocument } from "./documentTypes";
 import { flattenOutline } from "./outlineExtractor";
+import { getEffectiveOutline } from "./outlineUtils";
 import { buildParagraphAnchors, buildParagraphAnchorsFromDocument } from "./sourceAnchors";
 
 export type SearchChunk = {
@@ -82,7 +83,7 @@ function tokenize(input: string) {
 
 export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[] {
   const anchors = typeof input === "string" ? buildParagraphAnchors(input) : buildParagraphAnchorsFromDocument(input);
-  if (typeof input !== "string" && input.outline?.length) {
+  if (typeof input !== "string" && getEffectiveOutline(input).length) {
     const outlineChunks = buildOutlineSearchChunks(input, anchors);
     if (outlineChunks.length) return outlineChunks;
   }
@@ -110,7 +111,7 @@ export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[]
 }
 
 function buildOutlineSearchChunks(document: ParsedDocument, anchors: ReturnType<typeof buildParagraphAnchorsFromDocument>): SearchChunk[] {
-  const flatOutline = flattenOutline(document.outline ?? []).filter((node) => typeof node.startChar === "number");
+  const flatOutline = flattenOutline(getEffectiveOutline(document)).filter((node) => typeof node.startChar === "number");
   if (!flatOutline.length || !document.text) return [];
 
   const chunks: SearchChunk[] = [];

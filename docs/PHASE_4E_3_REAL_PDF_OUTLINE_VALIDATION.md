@@ -110,3 +110,5 @@ Summary: 4 passed, 3 pending, 0 failed.
 ## Next Step
 
 Phase 4E.4 should focus on an optional user-facing outline review/edit layer, so users can hide false positives, rename headings, or pin missing headings without introducing LLM or OCR dependencies.
+
+Phase 4E.4 follow-up has been implemented as a local editable outline layer with hide, rename, level/type changes, paragraph-to-heading insertion, reset, and effective-outline usage.

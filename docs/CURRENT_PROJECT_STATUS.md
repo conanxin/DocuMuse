@@ -26,6 +26,8 @@ Outline regression validation: `npm run test:outline` generates four Chinese / E
 
 Real PDF outline validation: existing local uploaded PDFs were spot-checked without copying their contents into git. Numbered-heading noise from person footnotes, repeated medical headers, timestamps, and unit strings was reduced while preserving common academic section headings.
 
+Editable outline: users can save a local custom outline, hide false-positive headings, rename headings, change level / type, add missed headings from original paragraphs, and reset back to the automatic outline.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -37,6 +39,8 @@ DocuMuse currently supports a local PDF reading workflow:
 - Detect inline heading candidates when PDF extraction merges multiple headings into a larger paragraph.
 - Validate outline extraction against Chinese paper, Chinese report, English paper, and English report near-real fixtures.
 - Spot-check outline extraction against existing local real PDFs and reduce obvious numbered-heading false positives.
+- Save local outline corrections in `outlineEditState` without overwriting the automatic outline.
+- Use the effective outline for sidebar navigation, source metadata, full-analysis chunking, and safe exports.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
@@ -110,6 +114,9 @@ data/settings/    Local LLM settings
 - `GET /api/documents/[id]/export?format=pptx`: export a basic PPTX deck.
 - `GET /api/documents/[id]/export/presets`: list preset export plans for one document.
 - `GET /api/documents/[id]/export/preset`: download one preset as a ZIP package.
+- `GET /api/documents/[id]/outline`: read automatic, custom, and effective outlines.
+- `PUT /api/documents/[id]/outline`: save a custom outline.
+- `POST /api/documents/[id]/outline/reset`: clear custom outline edits.
 - `GET /api/settings/llm`: read masked LLM settings.
 - `POST /api/settings/llm`: save local LLM settings.
 - `DELETE /api/settings/llm/key`: clear local API Key.
@@ -133,6 +140,7 @@ data/settings/    Local LLM settings
 - `ChatPanel`
 - `ChatAnswerRenderer`
 - `outlineExtractor`
+- `outlineUtils`
 
 ## Current Limits
 
@@ -150,13 +158,14 @@ data/settings/    Local LLM settings
 - PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Outline detection is heuristic and can miss unusual headings, sparse older publications, or complex layouts.
+- Editable outline supports flat list editing only; drag-and-drop tree editing and version history are not implemented.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 4E.4 optional user-facing outline review and correction controls.
+1. Phase 4E.5 improve outline editing ergonomics: reorder controls, inline node insertion, and validation warnings.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

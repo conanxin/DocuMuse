@@ -108,3 +108,5 @@ Phase 4E.1 runtime validation used `.tools/test-fixtures/outline/structured-head
 Phase 4E.2 adds `npm run test:outline`, which generates four Chinese / English near-real PDF fixtures and validates outline extraction without LLM calls.
 
 Phase 4E.3 spot-checked existing local uploaded PDFs and reduced obvious numbered-heading false positives without adding LLM, OCR, or machine-learning detection.
+
+Phase 4E.4 adds a local editable outline layer. The automatic outline remains stored in `outline`, while user corrections are saved in `outlineEditState.customOutline`. Sidebar navigation, source metadata, full-analysis chunking, and Markdown / JSON export can use the effective outline.

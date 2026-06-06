@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AnalysisMode, ChatSource, ParsedDocument } from "@/lib/documentTypes";
+import type { AnalysisMode, ChatSource, DocumentOutlineNode, EditableOutlineNode, ParsedDocument } from "@/lib/documentTypes";
 import type { ExportPresetPlan, PptxExportOptions } from "@/lib/exporters/exportTypes";
+import { createEditableOutlineFromAuto } from "@/lib/outlineUtils";
+import type { ParagraphAnchor } from "@/lib/sourceAnchors";
 import { ChatPanel } from "./ChatPanel";
 import { CreativeOutputsPanel } from "./CreativeOutputsPanel";
 import { GraphPanel } from "./GraphPanel";
@@ -181,6 +183,58 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
+  const handleAddOutlineHeading = async ({ anchor, title, level, type }: { anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]> }) => {
+    if (!document || isDemo) return;
+    const baseOutline =
+      document.outlineEditState?.mode === "custom" && document.outlineEditState.customOutline?.length
+        ? flattenEditableOutline(document.outlineEditState.customOutline)
+        : flattenEditableOutline(createEditableOutlineFromAuto(document.outline ?? []));
+    const now = new Date().toISOString();
+    const manualNode: EditableOutlineNode = {
+      id: `manual-outline-${Date.now()}`,
+      title: title.slice(0, 180),
+      level: Math.min(3, Math.max(1, Math.round(level))),
+      index: baseOutline.length + 1,
+      pageNumber: anchor.pageNumber,
+      startParagraphId: anchor.paragraphId,
+      endParagraphId: anchor.paragraphId,
+      startChar: anchor.startChar,
+      endChar: anchor.endChar,
+      confidence: "low",
+      type,
+      manual: true,
+      userEdited: true,
+      originalTitle: anchor.text.slice(0, 180),
+      updatedAt: now
+    };
+
+    try {
+      const response = await fetch(`/api/documents/${document.id}/outline`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "custom", customOutline: [...baseOutline, manualNode] })
+      });
+      const payload = await safeJson(response);
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "添加章节标题失败。");
+      await loadDocument();
+      setSelectedSourceRange({
+        paragraphId: anchor.paragraphId,
+        anchorId: anchor.id,
+        outlineNodeId: manualNode.id,
+        outlineTitle: manualNode.title,
+        outlineType: manualNode.type,
+        pageNumber: manualNode.pageNumber,
+        sourceHint: manualNode.pageNumber ? `第 ${manualNode.pageNumber} 页 · ${manualNode.title}` : manualNode.title,
+        quote: manualNode.title,
+        startChar: manualNode.startChar ?? anchor.startChar,
+        endChar: manualNode.endChar ?? anchor.endChar
+      });
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "添加章节标题失败。");
+      setLoadState("error");
+    }
+  };
+
   const exportDocument = async (format: "markdown" | "json" | "pptx", only?: "chat", pptxOptions?: PptxExportOptions) => {
     setExportState("loading");
     setExportError("");
@@ -269,7 +323,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         analysisFailed={analysisFailed}
       />
       <div className="grid min-h-0 flex-1 lg:grid-cols-[250px_minmax(0,1fr)_400px]">
-        <WorkspaceSidebar activeTab={activeTab} onChange={setActiveTab} document={document} onSectionClick={handleSectionClick} />
+        <WorkspaceSidebar activeTab={activeTab} onChange={setActiveTab} document={document} onSectionClick={handleSectionClick} onOutlineChanged={() => loadDocument()} isDemo={isDemo} />
         <section className="min-h-0 overflow-auto p-5 thin-scrollbar">
           {loadState === "loading" && <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">正在读取文档...</div>}
           {loadState === "error" && <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">{errorMessage}</div>}
@@ -279,7 +333,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
           {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
-          {loadState === "idle" && activeTab === "original" && <OriginalTextPanel document={document} text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} />}
+          {loadState === "idle" && activeTab === "original" && <OriginalTextPanel document={document} text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} onAddOutlineHeading={isDemo ? undefined : (payload) => void handleAddOutlineHeading(payload)} />}
           {loadState === "idle" && activeTab === "pdf" && <PdfPreviewPanel documentId={documentId} selectedSource={selectedPdfSource ?? selectedSourceRange} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "translation" && <TranslationPanel translation={document?.analysis?.translationZh} />}
@@ -378,6 +432,16 @@ function filenameFromDisposition(disposition: string | null) {
   const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/)?.[1];
   if (encoded) return decodeURIComponent(encoded);
   return disposition.match(/filename="([^"]+)"/)?.[1] ?? null;
+}
+
+function flattenEditableOutline(nodes: EditableOutlineNode[]): EditableOutlineNode[] {
+  const flattened: EditableOutlineNode[] = [];
+  for (const node of nodes) {
+    const { children, ...rest } = node;
+    flattened.push({ ...rest, children: undefined });
+    if (children?.length) flattened.push(...flattenEditableOutline(children as EditableOutlineNode[]));
+  }
+  return flattened.map((node, index) => ({ ...node, index: index + 1 }));
 }
 
 function demoExportFilename(format: "markdown" | "json", only?: "chat") {

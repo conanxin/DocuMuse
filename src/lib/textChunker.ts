@@ -1,5 +1,6 @@
 import { ensureDocumentStructure } from "./documentStructure";
 import { flattenOutline } from "./outlineExtractor";
+import { getEffectiveOutline } from "./outlineUtils";
 import type { DocumentOutlineNode, ParsedDocument, ParsedParagraph } from "./documentTypes";
 
 export type TextChunk = {
@@ -88,7 +89,7 @@ export function chunkText(input: string | ParsedDocument, options: ChunkOptions 
 
 function chunkByOutline(document: ParsedDocument, options: Required<Pick<ChunkOptions, "targetSize" | "maxSize">>): TextChunk[] {
   const structured = ensureDocumentStructure(document);
-  const outlineNodes = flattenOutline(structured.outline ?? []).filter((node) => node.startParagraphId);
+  const outlineNodes = flattenOutline(getEffectiveOutline(structured)).filter((node) => node.startParagraphId);
   if (!outlineNodes.length) return [];
 
   const skippedLowValueParagraphCount = structured.paragraphs.filter((paragraph) => shouldSkipParagraphForChunking(paragraph)).length;

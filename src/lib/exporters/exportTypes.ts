@@ -89,8 +89,17 @@ export type SafeDocumentExport = {
     };
     coordinateDiagnostics?: ParsedDocument["coordinateDiagnostics"];
     outlineDiagnostics?: OutlineDiagnostics;
+    outlineEditState?: {
+      mode: "auto" | "custom";
+      updatedAt?: string;
+      customOutlineNodeCount: number;
+      hiddenNodeCount: number;
+      manualNodeCount: number;
+      note?: string;
+    };
   };
   outline?: SafeExportOutlineNode[];
+  effectiveOutline?: SafeExportOutlineNode[];
   paragraphPositions?: Array<{
     paragraphId: string;
     pageNumber: number;
