@@ -118,11 +118,24 @@ Then:
 10. Refresh and confirm the manual heading persists.
 11. Reset to the automatic outline.
 
+## Phase 4E.6 UX Follow-up
+
+Phase 4E.6 adds small editing ergonomics on top of the validated API foundation:
+
+- Move outline nodes up or down in the flat custom-outline list.
+- Insert manual headings at the end or after an existing outline node.
+- Warn before discarding unsaved edits.
+- Show renamed / hidden / manual-node counts while editing.
+- Show gentle outline quality warnings from diagnostics.
+
+These improvements were build-validated and covered by outline / coordinate regression scripts. Full browser click-through remains a local manual validation item.
+
 ## Known Limits
 
 - No drag-and-drop tree editing.
+- No nested reparenting UI.
 - No outline version history.
 - No collaborative editing.
 - No cloud sync.
-- Manual headings are appended in the first version.
+- Manual headings can be inserted at the end or after an existing node, but there is no drag-and-drop tree placement.
 - Browser UI click-through still needs local manual verification.

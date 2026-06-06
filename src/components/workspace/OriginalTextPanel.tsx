@@ -26,18 +26,22 @@ export function OriginalTextPanel({
   createdAt?: string;
   highlight?: SelectedSource;
   onClearHighlight?: () => void;
-  onAddOutlineHeading?: (payload: { anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]> }) => void;
+  onAddOutlineHeading?: (payload: { anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]>; insertAfterId?: string }) => void;
 }) {
   const [pageJump, setPageJump] = useState("");
   const [locateFailed, setLocateFailed] = useState(false);
   const [hideLowValue, setHideLowValue] = useState(false);
-  const [headingDraft, setHeadingDraft] = useState<{ anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]> } | null>(null);
+  const [headingDraft, setHeadingDraft] = useState<{ anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]>; insertAfterId?: string } | null>(null);
   const fullText = document?.text || text || mockOriginalText.join("\n\n");
   const anchors = useMemo(() => (document ? buildParagraphAnchorsFromDocument(document) : buildParagraphAnchors(fullText)), [document, fullText]);
   const outlineByParagraphId = useMemo(() => {
     const structured = document ? ensureDocumentStructure(document) : null;
     const nodes = structured ? flattenOutline(getEffectiveOutline(structured)) : [];
     return new Map(nodes.map((node) => [node.startParagraphId, node]));
+  }, [document]);
+  const outlineInsertOptions = useMemo(() => {
+    const structured = document ? ensureDocumentStructure(document) : null;
+    return structured ? flattenOutline(getEffectiveOutline(structured)).slice(0, 120) : [];
   }, [document]);
   const selectedAnchor = useMemo(() => resolveSelectedAnchor(anchors, highlight), [anchors, highlight]);
   const diagnostics = document?.parseDiagnostics;
@@ -127,7 +131,7 @@ export function OriginalTextPanel({
               取消
             </button>
           </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_150px_auto]">
+          <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_150px_minmax(180px,240px)_auto]">
             <input value={headingDraft.title} onChange={(event) => setHeadingDraft({ ...headingDraft, title: event.target.value })} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-slate-700" maxLength={180} />
             <select value={headingDraft.level} onChange={(event) => setHeadingDraft({ ...headingDraft, level: Number(event.target.value) })} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-slate-700">
               <option value={1}>Level 1</option>
@@ -138,6 +142,14 @@ export function OriginalTextPanel({
               {outlineTypeOptions.map((type) => (
                 <option key={type} value={type}>
                   {outlineTypeLabel(type)}
+                </option>
+              ))}
+            </select>
+            <select value={headingDraft.insertAfterId ?? ""} onChange={(event) => setHeadingDraft({ ...headingDraft, insertAfterId: event.target.value || undefined })} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-slate-700">
+              <option value="">插入到末尾</option>
+              {outlineInsertOptions.map((node) => (
+                <option key={node.id} value={node.id}>
+                  在「{node.title.slice(0, 32)}」之后
                 </option>
               ))}
             </select>
@@ -176,7 +188,8 @@ export function OriginalTextPanel({
                       anchor,
                       title: anchor.text.slice(0, 80),
                       level: 1,
-                      type: "section"
+                      type: "section",
+                      insertAfterId: undefined
                     })
                   }
                   className="mb-2 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-500 hover:border-blue-200 hover:text-blue-700"

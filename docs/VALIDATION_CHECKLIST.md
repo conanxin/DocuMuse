@@ -44,6 +44,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E.3 existing local real-PDF spot checks reduced numbered-heading false positives while preserving outline-aware source and chunk metadata.
 - [x] Phase 4E.4 editable outline schema, APIs, sidebar edit UI, paragraph-to-heading action, effective-outline search/chunking/export paths, and build validation are implemented.
 - [x] Phase 4E.5 editable outline API runtime-equivalent validation passed, including hidden/manual effective-outline behavior and export compatibility.
+- [x] Phase 4E.6 editable outline UX build validation passed for up/down ordering, manual-heading insert position, unsaved-change prompts, edit summaries, and outline quality warnings.
 
 ## Upload And Library
 
@@ -56,7 +57,12 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
 - [ ] Spot-check at least one confidential real PDF and record outline false positives / missed headings without committing the PDF.
 - [ ] Enter outline edit mode, rename a node, hide a node, change level/type, save, refresh, and confirm the custom outline persists.
+- [ ] Use the outline editor up/down buttons and confirm saved order persists after refresh.
 - [ ] Add a manual heading from an original-text paragraph.
+- [ ] Add a manual heading after a selected existing outline node and confirm it appears in that position.
+- [ ] Modify the outline, click cancel, and confirm the unsaved-change warning appears.
+- [ ] Confirm the edit summary shows renamed, hidden, and manual node counts.
+- [ ] Confirm outline quality warnings appear gently when diagnostics indicate an incomplete or low-confidence automatic outline.
 - [ ] Reset to the automatic outline and confirm custom edits are cleared.
 - [ ] If every custom outline node is hidden, confirm the sidebar does not fall back to automatic outline nodes.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.

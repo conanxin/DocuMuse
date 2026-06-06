@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Eye, EyeOff, FileSearch, FileText, Languages, Lightbulb, Network, RotateCcw, Save, ScrollText, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BarChart3, Eye, EyeOff, FileSearch, FileText, Languages, Lightbulb, Network, RotateCcw, Save, ScrollText, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ensureDocumentStructure } from "@/lib/documentStructure";
 import type { ChatSource, DocumentOutlineNode, EditableOutlineNode, ParsedDocument, ParsedSection } from "@/lib/documentTypes";
@@ -41,15 +41,29 @@ export function WorkspaceSidebar({
   const outlineNodes = structured ? flattenOutline(getEffectiveOutline(structured)) : [];
   const sections = structured?.sections ?? [];
   const outlineMode = structured ? getOutlineMode(structured) : "auto";
+  const qualityWarning = structured ? outlineQualityWarning(structured) : "";
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<EditableOutlineNode[]>([]);
+  const [initialDraftKey, setInitialDraftKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!editing || !structured) return;
-    setDraft(createDraftOutline(structured));
+    const nextDraft = createDraftOutline(structured);
+    setDraft(nextDraft);
+    setInitialDraftKey(draftKey(nextDraft));
   }, [editing, structured]);
+
+  const hasUnsavedChanges = editing && draftKey(draft) !== initialDraftKey;
+
+  const enterEditing = () => {
+    const nextDraft = structured ? createDraftOutline(structured) : [];
+    setDraft(nextDraft);
+    setInitialDraftKey(draftKey(nextDraft));
+    setEditing(true);
+    setMessage("");
+  };
 
   const saveDraft = async () => {
     if (!document || isDemo) return;
@@ -64,6 +78,7 @@ export function WorkspaceSidebar({
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.ok) throw new Error(payload.error || "保存自定义大纲失败。");
       setEditing(false);
+      setInitialDraftKey(draftKey(draft));
       setMessage("自定义大纲已保存。");
       await onOutlineChanged?.();
     } catch (error) {
@@ -73,9 +88,15 @@ export function WorkspaceSidebar({
     }
   };
 
+  const cancelEditing = () => {
+    if (hasUnsavedChanges && !window.confirm("有未保存的大纲修改，确定要放弃吗？")) return;
+    setEditing(false);
+    setMessage("");
+  };
+
   const resetOutline = async () => {
     if (!document || isDemo) return;
-    if (!window.confirm("确定要重置为自动识别大纲吗？自定义修改会被清除。")) return;
+    if (!window.confirm("重置会清除自定义大纲，恢复自动识别结果，确定继续吗？")) return;
     setSaving(true);
     setMessage("");
     try {
@@ -121,11 +142,7 @@ export function WorkspaceSidebar({
           </div>
           {document && !editing && (
             <button
-              onClick={() => {
-                setDraft(structured ? createDraftOutline(structured) : []);
-                setEditing(true);
-                setMessage("");
-              }}
+              onClick={enterEditing}
               disabled={isDemo}
               className="rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -135,10 +152,16 @@ export function WorkspaceSidebar({
         </div>
         {outlineMode === "custom" && !editing && <p className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">当前使用自定义大纲。你可以重置为自动识别结果。</p>}
         {outlineMode === "auto" && !editing && <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">如果大纲有误，可进入编辑模式隐藏误检标题或补充漏检标题。</p>}
+        {qualityWarning && !editing && (
+          <details className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            <summary className="cursor-pointer font-medium">大纲质量提示</summary>
+            <p className="mt-1">{qualityWarning}</p>
+          </details>
+        )}
         {message && <p className="mt-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">{message}</p>}
 
         {editing ? (
-          <OutlineEditor draft={draft} saving={saving} onChange={setDraft} onSave={saveDraft} onCancel={() => setEditing(false)} onReset={resetOutline} />
+          <OutlineEditor draft={draft} initialDraftKey={initialDraftKey} saving={saving} hasUnsavedChanges={hasUnsavedChanges} onChange={setDraft} onSave={saveDraft} onCancel={cancelEditing} onReset={resetOutline} />
         ) : (
           <div className="mt-3 space-y-2">
             {outlineNodes.length
@@ -160,14 +183,18 @@ export function WorkspaceSidebar({
 
 function OutlineEditor({
   draft,
+  initialDraftKey,
   saving,
+  hasUnsavedChanges,
   onChange,
   onSave,
   onCancel,
   onReset
 }: {
   draft: EditableOutlineNode[];
+  initialDraftKey: string;
   saving: boolean;
+  hasUnsavedChanges: boolean;
   onChange: (nodes: EditableOutlineNode[]) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -176,9 +203,20 @@ function OutlineEditor({
   const updateNode = (id: string, patch: Partial<EditableOutlineNode>) => {
     onChange(draft.map((node) => (node.id === id ? { ...node, ...patch, userEdited: true, updatedAt: new Date().toISOString() } : node)));
   };
+  const moveNode = (index: number, direction: -1 | 1) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= draft.length) return;
+    const next = [...draft];
+    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+    onChange(next.map((node, itemIndex) => ({ ...node, index: itemIndex + 1, userEdited: true, updatedAt: new Date().toISOString() })));
+  };
+  const summary = diffSummary(draft, initialDraftKey);
 
   return (
     <div className="mt-3 space-y-3">
+      <div className={`rounded-lg px-3 py-2 text-xs ${hasUnsavedChanges ? "border border-blue-200 bg-blue-50 text-blue-700" : "border border-slate-200 bg-white text-slate-500"}`}>
+        已重命名 {summary.renamed} 个 · 已隐藏 {summary.hidden} 个 · 手动新增 {summary.manual} 个
+      </div>
       <div className="flex flex-wrap gap-2">
         <button onClick={onSave} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-60">
           <Save size={13} />
@@ -194,7 +232,7 @@ function OutlineEditor({
         </button>
       </div>
       <div className="space-y-2">
-        {draft.slice(0, 120).map((node) => (
+        {draft.slice(0, 120).map((node, index) => (
           <div key={node.id} className={`rounded-xl border p-3 ${node.hidden ? "border-slate-200 bg-slate-50 opacity-70" : "border-slate-200 bg-white"}`}>
             <div className="flex items-start gap-2">
               <button type="button" onClick={() => updateNode(node.id, { hidden: !node.hidden })} className="mt-1 rounded-lg border border-slate-200 p-1 text-slate-500 hover:text-blue-700" title={node.hidden ? "恢复" : "隐藏"}>
@@ -217,6 +255,14 @@ function OutlineEditor({
                   </select>
                 </div>
                 <p className="text-[11px] text-slate-400">{node.manual ? "手动添加" : node.originalTitle && node.originalTitle !== node.title ? `原标题：${node.originalTitle}` : "自动识别"}</p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <button type="button" onClick={() => moveNode(index, -1)} disabled={index === 0} className="rounded-lg border border-slate-200 p-1 text-slate-500 hover:text-blue-700 disabled:opacity-30" title="上移">
+                  <ArrowUp size={13} />
+                </button>
+                <button type="button" onClick={() => moveNode(index, 1)} disabled={index === draft.length - 1} className="rounded-lg border border-slate-200 p-1 text-slate-500 hover:text-blue-700 disabled:opacity-30" title="下移">
+                  <ArrowDown size={13} />
+                </button>
               </div>
             </div>
           </div>
@@ -318,4 +364,51 @@ function normalizeDraftIndexes(nodes: EditableOutlineNode[]) {
     index: index + 1,
     children: undefined
   }));
+}
+
+function draftKey(nodes: EditableOutlineNode[]) {
+  return JSON.stringify(
+    nodes.map((node) => ({
+      id: node.id,
+      title: node.title,
+      level: node.level,
+      type: node.type,
+      hidden: Boolean(node.hidden),
+      manual: Boolean(node.manual),
+      startParagraphId: node.startParagraphId
+    }))
+  );
+}
+
+function diffSummary(draft: EditableOutlineNode[], initialKey: string) {
+  let initial: Array<Pick<EditableOutlineNode, "id" | "title" | "hidden" | "manual">> = [];
+  try {
+    initial = JSON.parse(initialKey);
+  } catch {
+    initial = [];
+  }
+  const byId = new Map(initial.map((node) => [node.id, node]));
+  return draft.reduce(
+    (summary, node) => {
+      const original = byId.get(node.id);
+      if (node.manual) summary.manual += 1;
+      if (node.hidden) summary.hidden += 1;
+      if (original && original.title !== node.title) summary.renamed += 1;
+      return summary;
+    },
+    { renamed: 0, hidden: 0, manual: 0 }
+  );
+}
+
+function outlineQualityWarning(document: ParsedDocument) {
+  const count = document.outlineDiagnostics?.outlineNodeCount ?? 0;
+  const warnings = document.outlineDiagnostics?.warnings ?? [];
+  const flat = flattenOutline(document.outline ?? []);
+  const lowConfidence = flat.filter((node) => node.confidence === "low").length;
+  const longDocument = (document.text?.length ?? 0) > 20000;
+
+  if (count === 0 || warnings.length > 0 || lowConfidence > Math.max(2, flat.length / 2) || (longDocument && count < 3)) {
+    return "自动大纲可能不完整，你可以使用编辑大纲补充或修正。";
+  }
+  return "";
 }

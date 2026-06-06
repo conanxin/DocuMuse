@@ -30,6 +30,8 @@ Editable outline: users can save a local custom outline, hide false-positive hea
 
 Editable outline runtime validation: outline APIs, effective-outline source metadata, full-analysis chunking, and Markdown / JSON / PPTX / ZIP export compatibility have been validated through runtime-equivalent checks. Browser click-through still needs local manual verification.
 
+Editable outline UX: the sidebar editor now supports flat-list up/down ordering, unsaved-change prompts, edit-difference summaries, and lightweight outline quality warnings. Manual headings added from original paragraphs can be inserted at the end or after an existing outline node.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -42,6 +44,9 @@ DocuMuse currently supports a local PDF reading workflow:
 - Validate outline extraction against Chinese paper, Chinese report, English paper, and English report near-real fixtures.
 - Spot-check outline extraction against existing local real PDFs and reduce obvious numbered-heading false positives.
 - Save local outline corrections in `outlineEditState` without overwriting the automatic outline.
+- Reorder custom outline nodes with simple up/down controls.
+- Insert missed headings from original paragraphs at the end or after a selected outline node.
+- Show unsaved-change prompts, edit summaries, and gentle automatic-outline quality warnings.
 - Use the effective outline for sidebar navigation, source metadata, full-analysis chunking, and safe exports.
 - Runtime-validate editable outline APIs and effective-outline behavior without modifying API key or LLM flows.
 - Runtime-generate structure for older plain-text document JSON files.
@@ -161,14 +166,14 @@ data/settings/    Local LLM settings
 - PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Outline detection is heuristic and can miss unusual headings, sparse older publications, or complex layouts.
-- Editable outline supports flat list editing only; drag-and-drop tree editing and version history are not implemented.
+- Editable outline supports flat list editing and simple up/down ordering only; drag-and-drop tree editing, nested reparenting, and version history are not implemented.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
 - Export does not include full original text by default.
 
 ## Recommended Next Steps
 
-1. Phase 4E.6 improve outline editing ergonomics: reorder controls, inline node insertion, and validation warnings.
+1. Phase 4E.7 browser manual validation pass for editable outline UX on several real documents.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

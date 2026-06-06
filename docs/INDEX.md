@@ -40,6 +40,7 @@
 - [Phase 4E.3 Real PDF Outline Validation](./PHASE_4E_3_REAL_PDF_OUTLINE_VALIDATION.md): existing local real-PDF outline spot checks, numbered-heading noise reduction, source metadata, and chunking compatibility.
 - [Phase 4E.4 Editable Outline](./PHASE_4E_4_EDITABLE_OUTLINE.md): local custom outline edits, hide / rename / level / type changes, manual headings from paragraphs, reset API, and effective-outline usage.
 - [Phase 4E.5 Editable Outline Runtime Validation](./PHASE_4E_5_EDITABLE_OUTLINE_RUNTIME_VALIDATION.md): API runtime checks, effective-outline source/chunk/export validation, hidden-all fix, and manual browser checklist.
+- [Phase 4E.6 Editable Outline UX](./PHASE_4E_6_EDITABLE_OUTLINE_UX.md): move up/down controls, manual-heading insert position, unsaved-change prompts, edit summaries, and outline quality warnings.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

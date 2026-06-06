@@ -183,7 +183,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
-  const handleAddOutlineHeading = async ({ anchor, title, level, type }: { anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]> }) => {
+  const handleAddOutlineHeading = async ({ anchor, title, level, type, insertAfterId }: { anchor: ParagraphAnchor; title: string; level: number; type: NonNullable<DocumentOutlineNode["type"]>; insertAfterId?: string }) => {
     if (!document || isDemo) return;
     const baseOutline =
       document.outlineEditState?.mode === "custom" && document.outlineEditState.customOutline?.length
@@ -212,7 +212,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
       const response = await fetch(`/api/documents/${document.id}/outline`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "custom", customOutline: [...baseOutline, manualNode] })
+        body: JSON.stringify({ mode: "custom", customOutline: insertOutlineNode(baseOutline, manualNode, insertAfterId) })
       });
       const payload = await safeJson(response);
       if (!response.ok || !payload.ok) throw new Error(payload.error || "添加章节标题失败。");
@@ -442,6 +442,17 @@ function flattenEditableOutline(nodes: EditableOutlineNode[]): EditableOutlineNo
     if (children?.length) flattened.push(...flattenEditableOutline(children as EditableOutlineNode[]));
   }
   return flattened.map((node, index) => ({ ...node, index: index + 1 }));
+}
+
+function insertOutlineNode(nodes: EditableOutlineNode[], node: EditableOutlineNode, insertAfterId?: string) {
+  const next = [...nodes];
+  const targetIndex = insertAfterId ? next.findIndex((item) => item.id === insertAfterId) : -1;
+  if (targetIndex >= 0) {
+    next.splice(targetIndex + 1, 0, node);
+  } else {
+    next.push(node);
+  }
+  return next.map((item, index) => ({ ...item, index: index + 1, children: undefined }));
 }
 
 function demoExportFilename(format: "markdown" | "json", only?: "chat") {

@@ -159,3 +159,7 @@ Runtime checks:
 ## Phase 4E.5 Runtime Follow-up
 
 Phase 4E.5 validated the outline APIs and effective-outline behavior with a local document. It also fixed the all-hidden custom outline case: when every custom node is hidden, the effective outline stays empty instead of falling back to the automatic outline.
+
+## Phase 4E.6 UX Follow-up
+
+Phase 4E.6 improves the editing workflow with flat-list up/down ordering, manual-heading insert position selection, unsaved-change confirmations, edit-difference summaries, and lightweight automatic-outline quality warnings. It still does not implement drag-and-drop tree editing, nested reparenting, version history, collaboration, or cloud sync.
