@@ -20,6 +20,8 @@ PDF coordinate regression: local active fixtures now cover simple one-page, simp
 
 Document outline extraction: heuristic Chinese / English heading detection now generates `outline` and `outlineDiagnostics`, powers workspace sidebar navigation, enriches source metadata, and gives full-analysis chunking outline-aware boundaries when available.
 
+Outline runtime validation: a small selectable-text fixture with Chinese and English headings passed upload-time outline extraction. The extractor now handles headings merged into large PDF text paragraphs.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -28,6 +30,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Extract selectable PDF text.
 - Store structured parse data for new PDFs: pages, paragraphs, sections, and parse diagnostics.
 - Store heuristic outline data for new PDFs: outline nodes, levels, heading type, ranges, and outline diagnostics.
+- Detect inline heading candidates when PDF extraction merges multiple headings into a larger paragraph.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
@@ -147,7 +150,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4E.1 runtime validation for outline extraction across newly uploaded PDFs and older fallback documents.
+1. Phase 4E.2 broader outline validation against real academic reports and Chinese PDFs.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

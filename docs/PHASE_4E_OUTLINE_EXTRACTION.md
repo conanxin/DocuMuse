@@ -47,6 +47,7 @@ The extractor currently recognizes:
 - Numeric headings such as `1.`, `1.1`, `1.1.1`.
 - English headings such as `Abstract`, `Introduction`, `Conclusion`, `References`, `Appendix`.
 - Short uppercase English headings.
+- Inline heading candidates inside larger extracted paragraphs, which can happen when PDF text extraction merges visible headings and body text together.
 
 Ranges are inferred from each heading paragraph until the next heading at the same or higher level.
 
@@ -95,3 +96,5 @@ Recommended manual checks:
 - Ask a document question and confirm source metadata can include outline context.
 - Run full analysis and confirm chunk metadata can include outline node fields.
 - Export Markdown / JSON / PPTX / ZIP and confirm no sensitive fields are leaked.
+
+Phase 4E.1 runtime validation used `.tools/test-fixtures/outline/structured-headings.pdf` and confirmed upload-time outline extraction for merged-heading PDF text.

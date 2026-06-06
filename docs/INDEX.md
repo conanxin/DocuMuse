@@ -35,6 +35,7 @@
 - [Phase 4D.4 PDF Coordinate Regression](./PHASE_4D_4_PDF_COORDINATE_REGRESSION.md): local coordinate fixture baseline, validation script, and overlay smoke-test documentation.
 - [Phase 4D.5 PDF Coordinate Fixtures](./PHASE_4D_5_PDF_COORDINATE_FIXTURES.md): expanded active fixtures for multi-page, dense paragraph, and two-column coordinate regression.
 - [Phase 4E Outline Extraction](./PHASE_4E_OUTLINE_EXTRACTION.md): heuristic Chinese / English heading detection, outline metadata, sidebar navigation, outline-aware sources, and chunking boundaries.
+- [Phase 4E.1 Outline Runtime Validation](./PHASE_4E_1_OUTLINE_RUNTIME_VALIDATION.md): runtime upload fixture, inline heading detection fix, source metadata checks, chunk metadata checks, and export compatibility.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

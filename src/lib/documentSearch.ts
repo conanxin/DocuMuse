@@ -1,4 +1,5 @@
 import type { DocumentOutlineNode, ParsedDocument } from "./documentTypes";
+import { flattenOutline } from "./outlineExtractor";
 import { buildParagraphAnchors, buildParagraphAnchorsFromDocument } from "./sourceAnchors";
 
 export type SearchChunk = {
@@ -81,6 +82,10 @@ function tokenize(input: string) {
 
 export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[] {
   const anchors = typeof input === "string" ? buildParagraphAnchors(input) : buildParagraphAnchorsFromDocument(input);
+  if (typeof input !== "string" && input.outline?.length) {
+    const outlineChunks = buildOutlineSearchChunks(input, anchors);
+    if (outlineChunks.length) return outlineChunks;
+  }
   return anchors.map((anchor) => ({
     id: `search_${anchor.id}`,
     anchorId: anchor.id,
@@ -102,6 +107,42 @@ export function buildSearchChunks(input: string | ParsedDocument): SearchChunk[]
     endChar: anchor.endChar,
     sourceHint: formatSourceHint(anchor.sourceHint, anchor.pageNumber, anchor.outlineTitle ?? anchor.sectionTitle, anchor.index)
   }));
+}
+
+function buildOutlineSearchChunks(document: ParsedDocument, anchors: ReturnType<typeof buildParagraphAnchorsFromDocument>): SearchChunk[] {
+  const flatOutline = flattenOutline(document.outline ?? []).filter((node) => typeof node.startChar === "number");
+  if (!flatOutline.length || !document.text) return [];
+
+  const chunks: SearchChunk[] = [];
+  for (const node of flatOutline) {
+    const startChar = Math.max(0, node.startChar ?? 0);
+    const endChar = Math.min(document.text.length, Math.max(startChar + node.title.length, node.endChar ?? startChar + 1));
+    const text = normalizeText(document.text.slice(startChar, endChar));
+    if (text.length < 8) continue;
+    const anchor = anchors.find((item) => item.paragraphId === node.startParagraphId) ?? anchors.find((item) => startChar >= item.startChar && startChar <= item.endChar);
+    chunks.push({
+      id: `search_outline_${node.id}`,
+      anchorId: anchor?.id,
+      paragraphId: node.startParagraphId,
+      pageNumber: node.pageNumber ?? anchor?.pageNumber,
+      sectionId: anchor?.sectionId,
+      sectionTitle: anchor?.sectionTitle,
+      outlineNodeId: node.id,
+      outlineTitle: node.title,
+      outlineType: node.type,
+      qualityFlags: anchor?.qualityFlags,
+      isLowValue: anchor?.isLowValue,
+      coordinateAvailable: anchor?.coordinateAvailable,
+      boundingBox: anchor?.boundingBox,
+      coordinateConfidence: anchor?.coordinateConfidence,
+      index: chunks.length + 1,
+      text,
+      startChar,
+      endChar,
+      sourceHint: formatSourceHint(anchor?.sourceHint ?? node.title, node.pageNumber ?? anchor?.pageNumber, node.title, anchor?.index)
+    });
+  }
+  return chunks;
 }
 
 export function searchRelevantChunks(question: string, chunks: SearchChunk[], topK = 5) {
@@ -139,6 +180,11 @@ function scoreChunk(chunk: SearchChunk, tokens: string[], questionPhrase: string
   if (questionPhrase.length >= 6 && text.includes(questionPhrase)) {
     score += 30;
     matchedTerms.push(questionPhrase);
+  }
+
+  if (chunk.outlineTitle && questionPhrase.includes(chunk.outlineTitle.toLowerCase())) {
+    score += 24;
+    matchedTerms.push(chunk.outlineTitle.toLowerCase());
   }
 
   for (const token of tokens) {
