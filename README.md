@@ -10,6 +10,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Structured PDF parsing for selectable-text PDFs: pages, paragraphs, sections, parse diagnostics, and paragraph-level source anchors.
 - Heuristic document outline extraction for common Chinese / English headings, with sidebar navigation and original-text heading highlights.
 - Outline runtime validation fixture for merged-heading PDFs, including inline heading detection inside large extracted paragraphs.
+- Outline regression validation for Chinese / English near-real paper and report fixtures via `npm run test:outline`.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
@@ -79,6 +80,12 @@ PDF coordinate regression check:
 
 ```bash
 npm run test:pdf-coordinates
+```
+
+Outline extraction regression check:
+
+```bash
+npm run test:outline
 ```
 
 Regenerate small coordinate fixtures:

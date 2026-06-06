@@ -98,3 +98,5 @@ Recommended manual checks:
 - Export Markdown / JSON / PPTX / ZIP and confirm no sensitive fields are leaked.
 
 Phase 4E.1 runtime validation used `.tools/test-fixtures/outline/structured-headings.pdf` and confirmed upload-time outline extraction for merged-heading PDF text.
+
+Phase 4E.2 adds `npm run test:outline`, which generates four Chinese / English near-real PDF fixtures and validates outline extraction without LLM calls.

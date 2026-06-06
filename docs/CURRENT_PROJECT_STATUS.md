@@ -22,6 +22,8 @@ Document outline extraction: heuristic Chinese / English heading detection now g
 
 Outline runtime validation: a small selectable-text fixture with Chinese and English headings passed upload-time outline extraction. The extractor now handles headings merged into large PDF text paragraphs.
 
+Outline regression validation: `npm run test:outline` generates four Chinese / English near-real fixtures and currently passes 4 / 4 cases.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -31,6 +33,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Store structured parse data for new PDFs: pages, paragraphs, sections, and parse diagnostics.
 - Store heuristic outline data for new PDFs: outline nodes, levels, heading type, ranges, and outline diagnostics.
 - Detect inline heading candidates when PDF extraction merges multiple headings into a larger paragraph.
+- Validate outline extraction against Chinese paper, Chinese report, English paper, and English report near-real fixtures.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
@@ -150,7 +153,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4E.2 broader outline validation against real academic reports and Chinese PDFs.
+1. Phase 4E.3 manual validation with user-provided real academic / business PDFs.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

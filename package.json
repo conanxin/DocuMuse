@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "generate:pdf-coordinate-fixtures": "node .tools/scripts/generate-pdf-coordinate-fixtures.mjs",
-    "test:pdf-coordinates": "node .tools/scripts/validate-pdf-coordinates.mjs"
+    "test:pdf-coordinates": "node .tools/scripts/validate-pdf-coordinates.mjs",
+    "test:outline": "node .tools/scripts/validate-outline-extraction.mjs"
   },
   "dependencies": {
     "jszip": "^3.10.1",

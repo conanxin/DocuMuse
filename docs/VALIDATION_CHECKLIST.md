@@ -9,6 +9,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Open `http://localhost:3000`.
 - [ ] Run `npm run build`.
 - [ ] Open `http://localhost:3000/settings/validation`.
+- [ ] Run `npm run test:outline`.
 
 ## Passed Real Model Validation
 
@@ -39,6 +40,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4D.5 coordinate fixture script validates active one-page, multi-page, dense paragraph, and two-column fixtures.
 - [x] Phase 4E build validation passed for heuristic outline extraction, outline-aware sidebar navigation, source metadata, chunk metadata, and safe exports.
 - [x] Phase 4E.1 runtime upload fixture produced 8 outline nodes, detected abstract / introduction / conclusion / references, and verified safe JSON / Markdown / PPTX / ZIP export endpoints.
+- [x] Phase 4E.2 outline regression script passed Chinese paper, Chinese report, English paper, and English report near-real fixtures.
 
 ## Upload And Library
 
@@ -48,6 +50,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm new document JSON includes `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
 - [ ] Confirm new document JSON includes `outline` and `outlineDiagnostics` when headings are detected.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
+- [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.
 - [ ] Confirm original text reader shows page count, paragraph count, section count, and parser warnings.
 - [ ] Confirm original text reader can highlight detected heading paragraphs.

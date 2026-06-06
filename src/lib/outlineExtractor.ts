@@ -101,7 +101,7 @@ function detectHeading(paragraph: ParsedParagraph, pages: ParsedPage[]): Heading
 
   const numbered = numberedHeading(text);
   if (numbered) {
-    return { paragraph, title: text, level: numbered.level, confidence: "high", type: numbered.level === 1 ? "section" : "subsection" };
+    return { paragraph, title: text, level: numbered.level, confidence: "high", type: numbered.type ?? (numbered.level === 1 ? "section" : "subsection") };
   }
 
   const chinese = chineseHeading(text);
@@ -182,24 +182,36 @@ function keywordHeading(lower: string): HeadingCandidate["type"] | null {
 }
 
 function numberedHeading(text: string) {
-  const match = text.match(/^(\d+(?:\.\d+){0,3})(?:[.)、\s]+)(.{0,100})$/);
+  const clean = text.trim();
+  const spaced = clean.match(/^(\d+(?:\.\d+){0,3})\s+(.{2,100})$/);
+  if (spaced) {
+    const parts = spaced[1].split(".").filter(Boolean);
+    return { level: Math.min(3, Math.max(1, parts.length)), type: keywordHeading(spaced[2].toLowerCase()) };
+  }
+  const match = text.match(/^(\d+(?:\.\d+){0,3})(?:[.)\s]+)(.{0,100})$/);
   if (!match) return null;
   const parts = match[1].split(".").filter(Boolean);
-  return { level: Math.min(3, Math.max(1, parts.length)) };
+  return { level: Math.min(3, Math.max(1, parts.length)), type: keywordHeading((match[2] ?? "").toLowerCase()) };
 }
 
 function chineseHeading(text: string) {
-  if (/^第\s*[一二三四五六七八九十百\d]+\s*章/.test(text)) return { level: 1 };
-  if (/^第\s*[一二三四五六七八九十百\d]+\s*节/.test(text)) return { level: 2 };
-  if (/^[一二三四五六七八九十]+、/.test(text)) return { level: 1 };
-  if (/^（[一二三四五六七八九十\d]+）/.test(text)) return { level: 2 };
+  const chineseNumber = "[\\u4e00\\u4e8c\\u4e09\\u56db\\u4e94\\u516d\\u4e03\\u516b\\u4e5d\\u5341\\u767e\\d]+";
+  if (new RegExp(`^\\u7b2c\\s*${chineseNumber}\\s*[\\u7ae0\\u8282]\\s*.{0,80}$`).test(text)) return { level: /[\u8282]/.test(text) ? 2 : 1 };
+  if (new RegExp(`^[\\u4e00\\u4e8c\\u4e09\\u56db\\u4e94\\u516d\\u4e03\\u516b\\u4e5d\\u5341]+[\\u3001.\\uff0e]\\s*.{1,80}$`).test(text)) return { level: 1 };
+  if (new RegExp(`^[\\uff08(]${chineseNumber}[\\uff09)]\\s*.{1,80}$`).test(text)) return { level: 2 };
   return null;
 }
 
 function isShortHeadingCandidate(text: string, paragraph: ParsedParagraph, pages: ParsedPage[]) {
   if (text.length < 4 || text.length > 48) return false;
-  if (/[。！？!?；;]$/.test(text)) return false;
+  if (/[????!;?]$/.test(text)) return false;
+  if (/^\[\d+\]/.test(text)) return false;
   if (!/[\u4e00-\u9fffa-z]/i.test(text)) return false;
+  if (/[\u4e00-\u9fff]/.test(text)) return false;
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length > 6) return false;
+  const looksLikeEnglishTitle = words.length > 0 && words.every((word) => /^[A-Z][A-Za-z0-9,&:()/-]*$/.test(word) || /^[A-Z]{2,}$/.test(word));
+  if (!looksLikeEnglishTitle) return false;
   const page = pages.find((item) => item.pageNumber === paragraph.pageNumber);
   const nearPageStart = page ? paragraph.startChar <= page.startChar + 400 : paragraph.index <= 3;
   return nearPageStart || paragraph.text.length <= 36;

@@ -12,6 +12,7 @@ coverage
 .tools/scripts/*
 !.tools/scripts/generate-pdf-coordinate-fixtures.mjs
 !.tools/scripts/validate-pdf-coordinates.mjs
+!.tools/scripts/validate-outline-extraction.mjs
 !.tools/test-fixtures/
 .tools/test-fixtures/*
 !.tools/test-fixtures/pdf-coordinate/
