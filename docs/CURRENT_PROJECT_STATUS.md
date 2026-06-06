@@ -16,7 +16,7 @@ Header/footer cleanup and source quality: paragraph quality tagging, low-value p
 
 PDF text-layer coordinates: best-effort text item extraction, paragraph-to-page-region mapping, coordinate-aware source UI, and an experimental single-page PDF preview with calibrated overlay mapping are implemented for new uploads.
 
-PDF coordinate regression: a small local fixture baseline and `npm run test:pdf-coordinates` are available for text item, paragraph position, and bounding-box checks.
+PDF coordinate regression: local active fixtures now cover simple one-page, simple multi-page, dense paragraph, and lightweight two-column cases. `npm run test:pdf-coordinates` validates text items, paragraph positions, page counts, and bounding boxes.
 
 ## Current Version Capabilities
 
@@ -31,7 +31,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
 - Show coordinate-aware source status, copyable location data, and paragraph bounding-box details when available.
 - Preview the uploaded PDF in an experimental single-page canvas tab with best-effort source bounding-box overlays, coordinate diagnostics, page mismatch hints, and basic zoom controls.
-- Run a local PDF coordinate regression check against small fixtures.
+- Run a local PDF coordinate regression check against small one-page, multi-page, dense paragraph, and two-column fixtures.
 - Save original PDFs and parsed document JSON locally.
 - List, reopen, and delete local documents.
 - Configure OpenAI-compatible or MiniMax Token Plan LLM settings.
@@ -66,7 +66,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
 - Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
-- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, original-text coordinate details, an experimental calibrated canvas preview, and a lightweight fixture validation script.
+- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, original-text coordinate details, an experimental calibrated canvas preview, and lightweight fixture generation / validation scripts.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
 - PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
@@ -139,7 +139,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4D.5 add real multi-page, dense-paragraph, rotated-page, and mixed-page-size coordinate fixtures.
+1. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 2. Phase 3C.2 saved custom export presets.
 3. Phase 3B.4 optional speaker notes and richer report outline controls.
 4. Add source history and original-text search.

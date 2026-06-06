@@ -10,6 +10,7 @@ coverage
 .tools/*
 !.tools/scripts/
 .tools/scripts/*
+!.tools/scripts/generate-pdf-coordinate-fixtures.mjs
 !.tools/scripts/validate-pdf-coordinates.mjs
 !.tools/test-fixtures/
 .tools/test-fixtures/*

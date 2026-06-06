@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 
 const rootDir = process.cwd();
 const fixtureDir = path.join(rootDir, ".tools", "test-fixtures", "pdf-coordinate");
-const fixtureNames = ["simple-one-page.pdf", "simple-multipage.pdf", "dense-paragraphs.pdf"];
+const manifestPath = path.join(fixtureDir, "manifest.json");
 const standardFontDataUrl = pathToFileURL(path.join(rootDir, "node_modules", "pdfjs-dist", "standard_fonts") + path.sep).href;
 
 const originalConsoleWarn = console.warn.bind(console);
@@ -18,32 +18,56 @@ console.warn = (...args) => {
 const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
 pdfjs.setVerbosityLevel?.(pdfjs.VerbosityLevel?.ERRORS ?? 0);
 
+const manifest = readManifest();
 const results = [];
 let failures = 0;
 
-for (const fixtureName of fixtureNames) {
-  const filePath = path.join(fixtureDir, fixtureName);
-  if (!fs.existsSync(filePath)) {
+for (const fixture of manifest.fixtures) {
+  const filePath = path.join(fixtureDir, fixture.file);
+
+  if (fixture.status === "pending") {
     results.push({
-      fixture: fixtureName,
-      status: "missing",
-      message: "Fixture is not present yet."
+      fixture: fixture.file,
+      status: "pending",
+      purpose: fixture.purpose
+    });
+    continue;
+  }
+
+  if (fixture.status !== "active") {
+    failures += 1;
+    results.push({
+      fixture: fixture.file,
+      status: "failed",
+      message: `Unknown fixture status: ${fixture.status}`
+    });
+    continue;
+  }
+
+  if (!fs.existsSync(filePath)) {
+    failures += 1;
+    results.push({
+      fixture: fixture.file,
+      status: "failed",
+      message: "Active fixture is missing."
     });
     continue;
   }
 
   try {
-    const result = await validateFixture(filePath);
+    const result = await validateFixture(filePath, fixture);
     results.push({
-      fixture: fixtureName,
+      fixture: fixture.file,
       status: "passed",
+      purpose: fixture.purpose,
       ...result
     });
   } catch (error) {
     failures += 1;
     results.push({
-      fixture: fixtureName,
+      fixture: fixture.file,
       status: "failed",
+      purpose: fixture.purpose,
       message: error instanceof Error ? error.message : String(error)
     });
   }
@@ -53,15 +77,26 @@ for (const result of results) {
   console.log(formatResult(result));
 }
 
-const validated = results.filter((result) => result.status === "passed").length;
-const missing = results.filter((result) => result.status === "missing").length;
-console.log(`\nSummary: ${validated} passed, ${missing} missing, ${failures} failed.`);
+const passed = results.filter((result) => result.status === "passed").length;
+const pending = results.filter((result) => result.status === "pending").length;
+console.log(`\nSummary: ${passed} passed, ${pending} pending, ${failures} failed.`);
 
-if (validated === 0 || failures > 0) {
+if (passed === 0 || failures > 0) {
   process.exitCode = 1;
 }
 
-async function validateFixture(filePath) {
+function readManifest() {
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`Fixture manifest not found: ${manifestPath}`);
+  }
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  if (!Array.isArray(parsed.fixtures)) {
+    throw new Error("Fixture manifest must contain a fixtures array.");
+  }
+  return parsed;
+}
+
+async function validateFixture(filePath, fixture) {
   const data = new Uint8Array(fs.readFileSync(filePath));
   const loadingTask = pdfjs.getDocument({
     data,
@@ -99,9 +134,17 @@ async function validateFixture(filePath) {
 
   await pdf.destroy();
 
-  assert(textItems.length > 0, "No text items were extracted.");
+  assertAtLeast(pdf.numPages, fixture.expectedMinPages ?? 1, "pageCount");
+  assertAtLeast(textItems.length, fixture.expectedMinTextItems ?? 1, "textItemCount");
+
   const paragraphs = buildParagraphs(textItems);
-  assert(paragraphs.length > 0, "No paragraphs were built from text items.");
+  assertAtLeast(paragraphs.length, fixture.expectedMinParagraphs ?? 1, "paragraphCount");
+
+  const distinctPages = new Set(textItems.map((item) => item.pageNumber)).size;
+  if (fixture.expectedMinDistinctPages) {
+    assertAtLeast(distinctPages, fixture.expectedMinDistinctPages, "distinctPageCount");
+  }
+
   const paragraphPositions = mapParagraphsToTextItems(paragraphs, textItems);
   assert(paragraphPositions.length > 0, "No paragraph positions were generated.");
 
@@ -117,6 +160,7 @@ async function validateFixture(filePath) {
     pageCount: pdf.numPages,
     textItemCount: textItems.length,
     paragraphCount: paragraphs.length,
+    distinctPageCount: distinctPages,
     positionedParagraphCount: positioned.length,
     coordinateAvailable: true,
     firstBoundingBox: positioned[0].boundingBox
@@ -124,34 +168,24 @@ async function validateFixture(filePath) {
 }
 
 function buildParagraphs(textItems) {
-  const byPage = new Map();
-  for (const item of textItems) {
-    const items = byPage.get(item.pageNumber) ?? [];
-    items.push(item);
-    byPage.set(item.pageNumber, items);
-  }
-
-  const paragraphs = [];
-  for (const [pageNumber, items] of byPage.entries()) {
-    const text = items.map((item) => item.text).join(" ").replace(/\s+/g, " ").trim();
-    if (!text) continue;
-    paragraphs.push({
-      id: `p-${paragraphs.length + 1}`,
-      pageNumber,
-      text
-    });
-  }
-  return paragraphs;
+  return textItems
+    .filter((item) => item.text.trim().length >= 2)
+    .map((item, index) => ({
+      id: `p-${index + 1}`,
+      pageNumber: item.pageNumber,
+      text: item.text,
+      sourceItem: item
+    }));
 }
 
 function mapParagraphsToTextItems(paragraphs, textItems) {
   return paragraphs.map((paragraph) => {
-    const pageItems = textItems.filter((item) => item.pageNumber === paragraph.pageNumber);
+    const item = paragraph.sourceItem ?? textItems.find((candidate) => candidate.pageNumber === paragraph.pageNumber);
     return {
       paragraphId: paragraph.id,
       pageNumber: paragraph.pageNumber,
       confidence: "medium",
-      boundingBox: pageItems.length ? boundingBox(pageItems) : null
+      boundingBox: item ? boundingBox([item]) : null
     };
   });
 }
@@ -174,8 +208,14 @@ function assertFiniteBox(box, label) {
   for (const key of ["x", "y", "width", "height"]) {
     assert(Number.isFinite(box[key]), `Invalid ${key} in bounding box for ${label}.`);
   }
+  assert(box.x >= 0, `Bounding box x must not be negative for ${label}.`);
+  assert(box.y >= 0, `Bounding box y must not be negative for ${label}.`);
   assert(box.width > 0, `Bounding box width must be positive for ${label}.`);
   assert(box.height > 0, `Bounding box height must be positive for ${label}.`);
+}
+
+function assertAtLeast(actual, expected, label) {
+  assert(actual >= expected, `${label} expected >= ${expected}, got ${actual}.`);
 }
 
 function positiveNumber(value) {
@@ -192,8 +232,8 @@ function assert(condition, message) {
 }
 
 function formatResult(result) {
-  if (result.status === "missing") {
-    return `[missing] ${result.fixture}: ${result.message}`;
+  if (result.status === "pending") {
+    return `[pending] ${result.fixture}: ${result.purpose}`;
   }
   if (result.status === "failed") {
     return `[failed] ${result.fixture}: ${result.message}`;
@@ -201,6 +241,7 @@ function formatResult(result) {
   return [
     `[passed] ${result.fixture}`,
     `pages=${result.pageCount}`,
+    `distinctPages=${result.distinctPageCount}`,
     `textItems=${result.textItemCount}`,
     `paragraphs=${result.paragraphCount}`,
     `positioned=${result.positionedParagraphCount}`,

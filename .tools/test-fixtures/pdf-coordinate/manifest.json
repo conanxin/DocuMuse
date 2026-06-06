@@ -1,0 +1,52 @@
+{
+  "fixtures": [
+    {
+      "file": "simple-one-page.pdf",
+      "status": "active",
+      "expectedMinPages": 1,
+      "expectedMinTextItems": 1,
+      "expectedMinParagraphs": 1,
+      "purpose": "Basic coordinate extraction"
+    },
+    {
+      "file": "simple-multipage.pdf",
+      "status": "active",
+      "expectedMinPages": 2,
+      "expectedMinTextItems": 6,
+      "expectedMinParagraphs": 2,
+      "expectedMinDistinctPages": 2,
+      "purpose": "Multi-page source navigation and pageNumber extraction"
+    },
+    {
+      "file": "dense-paragraphs.pdf",
+      "status": "active",
+      "expectedMinPages": 1,
+      "expectedMinTextItems": 12,
+      "expectedMinParagraphs": 6,
+      "purpose": "Dense paragraph coordinate mapping"
+    },
+    {
+      "file": "two-column.pdf",
+      "status": "active",
+      "expectedMinPages": 1,
+      "expectedMinTextItems": 10,
+      "expectedMinParagraphs": 6,
+      "purpose": "Lightweight two-column text extraction and bounding-box checks"
+    },
+    {
+      "file": "mixed-page-size.pdf",
+      "status": "pending",
+      "purpose": "Different page sizes in one document"
+    },
+    {
+      "file": "rotated-page.pdf",
+      "status": "pending",
+      "purpose": "Rotated PDF page coordinate handling"
+    },
+    {
+      "file": "cropbox-mediabox.pdf",
+      "status": "pending",
+      "purpose": "CropBox / MediaBox coordinate mismatch handling"
+    }
+  ]
+}

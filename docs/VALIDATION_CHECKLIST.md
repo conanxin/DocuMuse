@@ -36,6 +36,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4D.2 PDF file API returns `application/pdf` for uploaded documents and JSON 404 for demo / missing documents.
 - [x] Phase 4D.3 headless browser smoke test confirmed PDF canvas rendering, overlay rendering, diagnostics, and 150% zoom synchronization.
 - [x] Phase 4D.4 coordinate fixture script validates `simple-one-page.pdf` text items, paragraph positions, and positive bounding boxes.
+- [x] Phase 4D.5 coordinate fixture script validates active one-page, multi-page, dense paragraph, and two-column fixtures.
 
 ## Upload And Library
 
@@ -58,8 +59,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Use 90% / 100% / 125% / 150% zoom controls and confirm the canvas still renders.
 - [ ] Expand PDF coordinate diagnostics and confirm raw bounding box, overlay box, confidence, and warning fields are visible.
 - [ ] Run `npm run test:pdf-coordinates`.
-- [ ] Confirm `simple-one-page.pdf` passes.
-- [ ] Confirm planned missing fixtures are reported as missing, not failed.
+- [ ] Confirm `simple-one-page.pdf`, `simple-multipage.pdf`, `dense-paragraphs.pdf`, and `two-column.pdf` pass.
+- [ ] Confirm planned pending fixtures are reported as pending, not failed.
 - [ ] Confirm old document JSON files without structured fields still open through runtime fallback.
 - [ ] Return home and confirm the document appears in Recent Documents.
 - [ ] Reopen the document from the local library.

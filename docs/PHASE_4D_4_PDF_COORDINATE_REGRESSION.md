@@ -12,13 +12,14 @@ Fixtures live in:
 .tools/test-fixtures/pdf-coordinate/
 ```
 
-Current fixture coverage:
+Current Phase 4D.5 fixture coverage:
 
 | Fixture | Status | Purpose |
 | --- | --- | --- |
 | `simple-one-page.pdf` | present | Baseline selectable-text PDF for text item extraction, paragraph position mapping, and overlay smoke testing. |
-| `simple-multipage.pdf` | planned | Page navigation and source-page routing. |
-| `dense-paragraphs.pdf` | planned | Paragraph mapping across denser text blocks. |
+| `simple-multipage.pdf` | active | Page navigation and source-page routing. |
+| `dense-paragraphs.pdf` | active | Paragraph mapping across denser text blocks. |
+| `two-column.pdf` | active | Lightweight two-column text extraction and bounding-box checks. |
 
 The first fixture is intentionally small and was copied from `.tools/test-fixtures/text.pdf`.
 
@@ -40,16 +41,20 @@ The script validates available fixture PDFs by checking:
 - bounding box values are finite
 - bounding box width and height are positive
 
-Expected current output:
+Expected current output after Phase 4D.5:
 
 ```text
 [passed] simple-one-page.pdf ...
-[missing] simple-multipage.pdf ...
-[missing] dense-paragraphs.pdf ...
-Summary: 1 passed, 2 missing, 0 failed.
+[passed] simple-multipage.pdf ...
+[passed] dense-paragraphs.pdf ...
+[passed] two-column.pdf ...
+[pending] mixed-page-size.pdf ...
+[pending] rotated-page.pdf ...
+[pending] cropbox-mediabox.pdf ...
+Summary: 4 passed, 3 pending, 0 failed.
 ```
 
-Missing planned fixtures do not fail the script. A failure in any present fixture fails the script.
+Pending planned fixtures do not fail the script. A failure in any active fixture fails the script.
 
 ## Overlay Smoke Test
 

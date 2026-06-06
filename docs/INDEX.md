@@ -33,6 +33,7 @@
 - [Phase 4D.2 PDF Viewer Spike](./PHASE_4D_2_PDF_VIEWER_SPIKE.md): secure PDF file API, experimental single-page canvas preview, and bounding-box overlay feasibility validation.
 - [Phase 4D.3 PDF Viewer Coordinate Calibration](./PHASE_4D_3_PDF_VIEWER_COORDINATE_CALIBRATION.md): scale-aware coordinate mapping, overlay clamping, diagnostics, zoom controls, and headless browser smoke validation.
 - [Phase 4D.4 PDF Coordinate Regression](./PHASE_4D_4_PDF_COORDINATE_REGRESSION.md): local coordinate fixture baseline, validation script, and overlay smoke-test documentation.
+- [Phase 4D.5 PDF Coordinate Fixtures](./PHASE_4D_5_PDF_COORDINATE_FIXTURES.md): expanded active fixtures for multi-page, dense paragraph, and two-column coordinate regression.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

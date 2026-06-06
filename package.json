@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "generate:pdf-coordinate-fixtures": "node .tools/scripts/generate-pdf-coordinate-fixtures.mjs",
     "test:pdf-coordinates": "node .tools/scripts/validate-pdf-coordinates.mjs"
   },
   "dependencies": {

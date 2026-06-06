@@ -13,7 +13,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
 - Coordinate-aware source cards and original-text paragraph details with copyable page-region location metadata.
 - Experimental single-page PDF preview with best-effort bounding-box overlay for coordinate-aware sources, scale-aware coordinate mapping, diagnostics, and basic zoom controls.
-- Local PDF coordinate regression fixture baseline and `npm run test:pdf-coordinates` for text item / paragraph position / bounding box checks.
+- Local PDF coordinate regression fixtures and `npm run test:pdf-coordinates` for text item / paragraph position / bounding box checks.
 - Local document library from `data/documents/`.
 - Reopen and delete parsed local documents.
 - Workspace upload entry for adding a new document without returning home.
@@ -74,6 +74,12 @@ PDF coordinate regression check:
 
 ```bash
 npm run test:pdf-coordinates
+```
+
+Regenerate small coordinate fixtures:
+
+```bash
+npm run generate:pdf-coordinate-fixtures
 ```
 
 ## API Key Setup
@@ -194,6 +200,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4D.2: PDF viewer feasibility spike is implemented.
 - Phase 4D.3: PDF preview coordinate calibration, diagnostics, and zoom controls are implemented.
 - Phase 4D.4: PDF coordinate regression fixture baseline and validation script are implemented.
+- Phase 4D.5: expanded PDF coordinate fixtures for multi-page, dense paragraph, and lightweight two-column cases are implemented.
 - Phase 4E: optional embeddings and vector database RAG.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
