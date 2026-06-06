@@ -1,13 +1,14 @@
-import { BarChart3, FileText, Languages, Lightbulb, Network, ScrollText } from "lucide-react";
+import { BarChart3, FileSearch, FileText, Languages, Lightbulb, Network, ScrollText } from "lucide-react";
 import { ensureDocumentStructure } from "@/lib/documentStructure";
 import { mockDocumentOutline } from "@/lib/mockData";
 import type { ChatSource, ParsedDocument, ParsedSection } from "@/lib/documentTypes";
 
-export type WorkspaceTab = "overview" | "original" | "translation" | "analysis" | "graph" | "creative";
+export type WorkspaceTab = "overview" | "original" | "pdf" | "translation" | "analysis" | "graph" | "creative";
 
 const navItems = [
   { id: "overview" as const, label: "总览", icon: BarChart3 },
   { id: "original" as const, label: "原文", icon: FileText },
+  { id: "pdf" as const, label: "PDF 预览", icon: FileSearch },
   { id: "translation" as const, label: "翻译", icon: Languages },
   { id: "analysis" as const, label: "分段分析", icon: ScrollText },
   { id: "graph" as const, label: "图谱", icon: Network },

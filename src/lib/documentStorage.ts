@@ -37,6 +37,15 @@ function assertInsideDataRoot(candidatePath: string) {
   return resolvedCandidate;
 }
 
+function assertInsideUploadsDir(candidatePath: string) {
+  const resolvedUploadsDir = path.resolve(uploadsDir);
+  const resolvedCandidate = path.resolve(candidatePath);
+  if (resolvedCandidate !== resolvedUploadsDir && !resolvedCandidate.startsWith(`${resolvedUploadsDir}${path.sep}`)) {
+    throw new Error("Refusing to access a path outside uploads directory.");
+  }
+  return resolvedCandidate;
+}
+
 export function getUploadPath(id: string, filename: string) {
   if (!isValidDocumentId(id)) {
     throw new Error("Invalid document id.");
@@ -71,6 +80,34 @@ export async function saveUploadedPdf(id: string, filename: string, buffer: Buff
   const uploadPath = getUploadPath(id, filename);
   await writeFile(uploadPath, buffer);
   return uploadPath;
+}
+
+export async function readUploadedPdfForDocument(document: ParsedDocument) {
+  await ensureDocumentDirectories();
+
+  if (!isValidDocumentId(document.id)) {
+    throw new Error("Invalid document id.");
+  }
+
+  let uploadPath: string | undefined;
+
+  if (document.uploadPath) {
+    uploadPath = assertInsideUploadsDir(path.join(process.cwd(), document.uploadPath));
+  } else {
+    const possibleUploads = await readdir(uploadsDir).catch(() => []);
+    const match = possibleUploads.find((entry) => entry.startsWith(`${document.id}-`) && entry.toLowerCase().endsWith(".pdf"));
+    if (match) uploadPath = assertInsideUploadsDir(path.join(uploadsDir, match));
+  }
+
+  if (!uploadPath) {
+    const error = new Error("Uploaded PDF file was not found.") as NodeJS.ErrnoException;
+    error.code = "ENOENT";
+    throw error;
+  }
+
+  const buffer = await readFile(uploadPath);
+  const filename = path.basename(uploadPath).replace(`${document.id}-`, "") || sanitizePdfFilename(document.filename || document.title || "document.pdf");
+  return { buffer, filename };
 }
 
 export async function listParsedDocuments() {

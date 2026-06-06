@@ -68,7 +68,8 @@ export function ChatPanel({
   isPlaceholder = false,
   initialMessages = [],
   selectedSource,
-  onSourceClick
+  onSourceClick,
+  onSourcePdfClick
 }: {
   documentId?: string;
   documentTitle?: string;
@@ -76,6 +77,7 @@ export function ChatPanel({
   initialMessages?: DocumentChatMessage[];
   selectedSource?: ChatSource | null;
   onSourceClick?: (source: ChatSource) => void;
+  onSourcePdfClick?: (source: ChatSource) => void;
 }) {
   const isDemo = documentId === "demo";
   const [messages, setMessages] = useState<ChatMessage[]>(isDemo ? mockMessages() : initialMessages);
@@ -250,6 +252,7 @@ export function ChatPanel({
             onCopy={() => void copyAnswer(message)}
             onOpen={() => setModalMessage(message)}
             onSourceClick={onSourceClick}
+            onSourcePdfClick={onSourcePdfClick}
           />
         ))}
       </div>
@@ -261,7 +264,7 @@ export function ChatPanel({
           </button>
         </div>
       </form>
-      {modalMessage && <ChatAnswerModal message={modalMessage} selectedSource={selectedSource} onCopy={() => void copyAnswer(modalMessage)} onClose={() => setModalMessage(null)} onSourceClick={onSourceClick} />}
+      {modalMessage && <ChatAnswerModal message={modalMessage} selectedSource={selectedSource} onCopy={() => void copyAnswer(modalMessage)} onClose={() => setModalMessage(null)} onSourceClick={onSourceClick} onSourcePdfClick={onSourcePdfClick} />}
     </aside>
   );
 }
@@ -272,7 +275,8 @@ function MessageBubble({
   copied,
   onCopy,
   onOpen,
-  onSourceClick
+  onSourceClick,
+  onSourcePdfClick
 }: {
   message: ChatMessage;
   selectedSource?: ChatSource | null;
@@ -280,6 +284,7 @@ function MessageBubble({
   onCopy: () => void;
   onOpen: () => void;
   onSourceClick?: (source: ChatSource) => void;
+  onSourcePdfClick?: (source: ChatSource) => void;
 }) {
   const isAssistant = message.role === "assistant";
 
@@ -301,14 +306,14 @@ function MessageBubble({
               展开阅读
             </button>
           </div>
-          <SourceList sources={message.sources ?? []} selectedSource={selectedSource} onSourceClick={onSourceClick} />
+          <SourceList sources={message.sources ?? []} selectedSource={selectedSource} onSourceClick={onSourceClick} onSourcePdfClick={onSourcePdfClick} />
         </>
       )}
     </div>
   );
 }
 
-function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatSource[]; selectedSource?: ChatSource | null; onSourceClick?: (source: ChatSource) => void }) {
+function SourceList({ sources, selectedSource, onSourceClick, onSourcePdfClick }: { sources: ChatSource[]; selectedSource?: ChatSource | null; onSourceClick?: (source: ChatSource) => void; onSourcePdfClick?: (source: ChatSource) => void }) {
   if (!sources.length) {
     return <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">未找到明确来源。</p>;
   }
@@ -335,6 +340,11 @@ function SourceList({ sources, selectedSource, onSourceClick }: { sources: ChatS
                 <span className="mt-1 block leading-5">{shortQuote(source.quote, 120)}</span>
                 <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] ${source.coordinateAvailable ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{coordinateStatusLabel(source)}</span>
               </button>
+              {source.coordinateAvailable && source.boundingBox && (
+                <button type="button" onClick={() => onSourcePdfClick?.(source)} className="mt-2 rounded-md border border-blue-200 bg-white px-2 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-50">
+                  在 PDF 中查看
+                </button>
+              )}
               <CoordinateSourceDetails source={source} />
             </div>
           );
@@ -386,7 +396,7 @@ function formatCoordinateNumber(value: number) {
   return Number.isFinite(value) ? value.toFixed(1) : "0.0";
 }
 
-function ChatAnswerModal({ message, selectedSource, onCopy, onClose, onSourceClick }: { message: ChatMessage; selectedSource?: ChatSource | null; onCopy: () => void; onClose: () => void; onSourceClick?: (source: ChatSource) => void }) {
+function ChatAnswerModal({ message, selectedSource, onCopy, onClose, onSourceClick, onSourcePdfClick }: { message: ChatMessage; selectedSource?: ChatSource | null; onCopy: () => void; onClose: () => void; onSourceClick?: (source: ChatSource) => void; onSourcePdfClick?: (source: ChatSource) => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
       <div className="flex max-h-[86vh] w-full max-w-3xl flex-col rounded-2xl bg-white shadow-2xl">
@@ -412,6 +422,10 @@ function ChatAnswerModal({ message, selectedSource, onCopy, onClose, onSourceCli
             selectedSource={selectedSource}
             onSourceClick={(source) => {
               onSourceClick?.(source);
+              onClose();
+            }}
+            onSourcePdfClick={(source) => {
+              onSourcePdfClick?.(source);
               onClose();
             }}
           />

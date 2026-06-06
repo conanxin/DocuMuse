@@ -8,6 +8,7 @@ import { CreativeOutputsPanel } from "./CreativeOutputsPanel";
 import { GraphPanel } from "./GraphPanel";
 import { OriginalTextPanel } from "./OriginalTextPanel";
 import { OverviewPanel } from "./OverviewPanel";
+import { PdfPreviewPanel } from "./PdfPreviewPanel";
 import { SectionAnalysisPanel } from "./SectionAnalysisPanel";
 import { TranslationPanel } from "./TranslationPanel";
 import { WorkspaceSidebar, type WorkspaceTab } from "./WorkspaceSidebar";
@@ -26,6 +27,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
   const [exportingPresetId, setExportingPresetId] = useState<string | null>(null);
   const [presetMessage, setPresetMessage] = useState("");
   const [selectedSourceRange, setSelectedSourceRange] = useState<ChatSource | null>(null);
+  const [selectedPdfSource, setSelectedPdfSource] = useState<ChatSource | null>(null);
   const pollRef = useRef<number | null>(null);
   const isDemo = documentId === "demo";
 
@@ -168,6 +170,12 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     setActiveTab("original");
   };
 
+  const handleSourcePdfClick = (source: ChatSource) => {
+    setSelectedSourceRange(source);
+    setSelectedPdfSource(source);
+    setActiveTab("pdf");
+  };
+
   const handleSectionClick = (source: ChatSource) => {
     setSelectedSourceRange(source);
     setActiveTab("original");
@@ -272,6 +280,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
           {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
           {loadState === "idle" && activeTab === "original" && <OriginalTextPanel document={document} text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} />}
+          {loadState === "idle" && activeTab === "pdf" && <PdfPreviewPanel documentId={documentId} selectedSource={selectedPdfSource ?? selectedSourceRange} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "translation" && <TranslationPanel translation={document?.analysis?.translationZh} />}
           {loadState === "idle" && activeTab === "analysis" && <SectionAnalysisPanel analysis={document?.analysis} />}
@@ -280,7 +289,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {loadState === "idle" && !isDemo && activeTab === "creative" && !document?.analysis?.pptOutline?.length && !document?.analysis?.podcastScript && !document?.analysis?.imagePrompts?.length && <PlaceholderNotice />}
           {loadState === "idle" && activeTab === "creative" && <CreativeOutputsPanel analysis={document?.analysis} />}
         </section>
-        <ChatPanel documentId={documentId} documentTitle={document?.title} isPlaceholder={!isDemo} initialMessages={document?.chatMessages ?? []} selectedSource={selectedSourceRange} onSourceClick={handleSourceClick} />
+        <ChatPanel documentId={documentId} documentTitle={document?.title} isPlaceholder={!isDemo} initialMessages={document?.chatMessages ?? []} selectedSource={selectedSourceRange} onSourceClick={handleSourceClick} onSourcePdfClick={handleSourcePdfClick} />
       </div>
     </main>
   );

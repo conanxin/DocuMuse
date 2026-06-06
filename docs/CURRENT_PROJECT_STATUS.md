@@ -14,7 +14,7 @@ PDF parse diagnostics: quality scoring, language guess, page-level diagnostics, 
 
 Header/footer cleanup and source quality: paragraph quality tagging, low-value paragraph deweighting, and chunking skips are implemented.
 
-PDF text-layer coordinates: best-effort text item extraction, paragraph-to-page-region mapping, and coordinate-aware source UI are implemented for new uploads.
+PDF text-layer coordinates: best-effort text item extraction, paragraph-to-page-region mapping, coordinate-aware source UI, and an experimental single-page PDF preview spike are implemented for new uploads.
 
 ## Current Version Capabilities
 
@@ -28,6 +28,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
 - Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
 - Show coordinate-aware source status, copyable location data, and paragraph bounding-box details when available.
+- Preview the uploaded PDF in an experimental single-page canvas tab and draw best-effort source bounding-box overlays.
 - Save original PDFs and parsed document JSON locally.
 - List, reopen, and delete local documents.
 - Configure OpenAI-compatible or MiniMax Token Plan LLM settings.
@@ -62,7 +63,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
 - Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
-- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, and original-text coordinate details.
+- Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, original-text coordinate details, and an experimental canvas preview.
 - Export: server-side Markdown and JSON builders with sensitive-field filtering.
 - PPTX export: `pptxgenjs` generated local files with a card-based 16:9 report template, Chinese report titles, text cleanup, conservative truncation, theme colors, cover styles, and section selection.
 
@@ -117,7 +118,7 @@ data/settings/    Local LLM settings
 ## Current Limits
 
 - No OCR.
-- No full PDF viewer or coordinate-region overlay yet.
+- No full production PDF viewer; the current PDF preview is an experimental single-page spike.
 - No EPUB or Word parsing.
 - No database.
 - No login or multi-user permissions.
@@ -127,7 +128,7 @@ data/settings/    Local LLM settings
 - No generated images, audio generation, animations, or external PPTX template files.
 - No inserted images, speaker notes, brand-kit editor, animations, or complex PPTX template editor.
 - No saved custom preset editor yet.
-- PDF source navigation still uses extracted-text paragraph anchors; coordinates are displayed as metadata and future viewer preparation.
+- PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
@@ -135,7 +136,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4D.2 PDF viewer feasibility spike for page rendering and coordinate overlay.
+1. Phase 4D.3 improve PDF preview reliability with measured coordinate calibration and optional zoom.
 2. Phase 3C.2 saved custom export presets.
 3. Phase 3B.4 optional speaker notes and richer report outline controls.
 4. Add source history and original-text search.

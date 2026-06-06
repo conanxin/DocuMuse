@@ -66,6 +66,16 @@ The safe JSON export keeps coordinate export conservative:
 - Does not export full `document.text`.
 - Does not export PDF binary content.
 
+## Follow-Up Viewer Spike
+
+Phase 4D.2 uses the same coordinate metadata to support an experimental `PDF 预览` tab:
+
+- `GET /api/documents/[id]/file` returns the uploaded PDF for the current document.
+- Coordinate-aware source cards can open the selected source in the PDF preview.
+- The preview renders one PDF page and draws a best-effort bounding-box overlay.
+
+The original text reader remains the default and more reliable source navigation path.
+
 ## Dependency Note
 
 `pdfjs-dist@5.4.296` is pinned as a direct dependency so the coordinate extractor does not rely only on transitive resolution through `pdf-parse`.
