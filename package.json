@@ -11,6 +11,7 @@
     "generate:pdf-coordinate-fixtures": "node .tools/scripts/generate-pdf-coordinate-fixtures.mjs",
     "test:pdf-coordinates": "node .tools/scripts/validate-pdf-coordinates.mjs",
     "test:document-kind": "node .tools/scripts/validate-document-kind.mjs",
+    "test:document-kind-real": "node .tools/scripts/validate-document-kind-real-samples.mjs",
     "test:outline": "node .tools/scripts/validate-outline-extraction.mjs"
   },
   "dependencies": {

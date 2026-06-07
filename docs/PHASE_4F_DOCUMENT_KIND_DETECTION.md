@@ -137,11 +137,22 @@ The test uses pure text fixtures for:
 - fiction
 - manual
 - article
+- interview-like fiction dialogue
+- business-report-like article
+- manual-like technical article
+
+For local parsed document JSON files:
+
+```bash
+npm run test:document-kind-real
+```
+
+The real-sample script reads `data/documents/*.json` in a safe, read-only way. It prints ids, titles, inferred kind, confidence, text length, outline count, and detection reasons without printing full document text or reading API keys.
 
 Current result:
 
 ```text
-6 passed, 0 failed
+9 passed, 0 failed
 ```
 
 ## Current Limits
@@ -152,3 +163,4 @@ Current result:
 - No OCR, EPUB, or Word support.
 - Fiction vs book chapter can still be ambiguous.
 - Articles with sparse text may be marked `unknown`.
+- Real PDFs still need manually annotated expected labels for stronger accuracy measurement.

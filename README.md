@@ -20,6 +20,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Heuristic document kind detection for new uploads and older-document fallback: paper, interview, business report, fiction, manual, book chapter, article, or unknown.
 - Document kind badges, confidence, and detection reasons in the workspace overview.
 - Analysis and chat prompts can receive lightweight document-kind hints without calling an extra model.
+- Document kind regression now includes confusing mixed-style fixtures and a safe local real-sample review script.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
 - Paragraph quality tagging for repeated headers/footers, page numbers, very short low-value text, likely footnotes, and likely references.
 - Best-effort PDF text-layer coordinate extraction and paragraph-to-page-region mapping for future source positioning.
@@ -103,6 +104,12 @@ Document kind regression check:
 
 ```bash
 npm run test:document-kind
+```
+
+Local parsed-document kind review:
+
+```bash
+npm run test:document-kind-real
 ```
 
 Regenerate small coordinate fixtures:
@@ -242,6 +249,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4E.7: editable outline browser-validation checklist and runtime-equivalent downstream validation are recorded.
 - Phase 4E.7.1: user-completed browser validation for editable outline UX is recorded as passed.
 - Phase 4F: heuristic document kind detection, typed UI hints, prompt hints, safe export metadata, and regression tests are implemented.
+- Phase 4F.1: real/local document-kind sample review, confusion-case regression, and small rule tuning are implemented.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

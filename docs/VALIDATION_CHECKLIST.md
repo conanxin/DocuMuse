@@ -11,6 +11,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Open `http://localhost:3000/settings/validation`.
 - [ ] Run `npm run test:outline`.
 - [ ] Run `npm run test:document-kind`.
+- [ ] Run `npm run test:document-kind-real` when local parsed documents are available.
 
 ## Passed Real Model Validation
 
@@ -49,6 +50,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E.7 runtime-equivalent downstream validation passed for custom outline order, renamed / hidden / manual nodes, search metadata, chunking, Markdown / JSON, PPTX, and ZIP.
 - [x] Phase 4E.7.1 user-completed browser validation passed for editable outline entry, rename, hide, level/type edits, up/down ordering, persistence, cancel prompt, reset, manual headings, source navigation, exports, demo, and old documents.
 - [x] Phase 4F document-kind regression script passed paper, interview, business report, fiction, manual, and article fixtures.
+- [x] Phase 4F.1 document-kind regression passed nine fixtures, including interview-like fiction, business-report-like article, and manual-like technical article.
+- [x] Phase 4F.1 local parsed-document review checked 18 document JSON files without printing full document text.
 
 ## Upload And Library
 
@@ -62,7 +65,8 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm workspace topbar / overview display document kind, confidence, and reasons.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
-- [ ] Confirm `npm run test:document-kind` reports 6 passed, 0 failed.
+- [ ] Confirm `npm run test:document-kind` reports 9 passed, 0 failed.
+- [ ] Confirm `npm run test:document-kind-real` prints only metadata, detection reasons, and lengths, not full document text.
 - [ ] Spot-check at least one confidential real PDF and record outline false positives / missed headings without committing the PDF.
 - [ ] Enter outline edit mode, rename a node, hide a node, change level/type, save, refresh, and confirm the custom outline persists.
 - [ ] Use the outline editor up/down buttons and confirm saved order persists after refresh.
