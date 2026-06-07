@@ -42,6 +42,7 @@
 - [Phase 4E.5 Editable Outline Runtime Validation](./PHASE_4E_5_EDITABLE_OUTLINE_RUNTIME_VALIDATION.md): API runtime checks, effective-outline source/chunk/export validation, hidden-all fix, and manual browser checklist.
 - [Phase 4E.6 Editable Outline UX](./PHASE_4E_6_EDITABLE_OUTLINE_UX.md): move up/down controls, manual-heading insert position, unsaved-change prompts, edit summaries, and outline quality warnings.
 - [Phase 4E.7 Editable Outline Browser Validation](./PHASE_4E_7_EDITABLE_OUTLINE_BROWSER_VALIDATION.md): runtime-equivalent downstream checks and user-completed browser validation for editable outline UX.
+- [Phase 4F Document Kind Detection](./PHASE_4F_DOCUMENT_KIND_DETECTION.md): heuristic paper / interview / report / fiction / manual / chapter / article classification, typed UI hints, prompt hints, safe exports, and regression tests.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

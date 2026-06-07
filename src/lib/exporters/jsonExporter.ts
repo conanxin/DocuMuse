@@ -1,5 +1,6 @@
 import type { DocumentChatMessage, EditableOutlineNode, ParsedDocument } from "../documentTypes";
 import type { DocumentExportOptions, SafeDocumentExport, SafeExportChatMessage, SafeExportOutlineNode } from "./exportTypes";
+import { ensureDocumentKind } from "../documentKindDetector";
 import { getEffectiveOutline, getOutlineMode } from "../outlineUtils";
 
 const DEFAULT_OPTIONS: DocumentExportOptions = {
@@ -20,6 +21,7 @@ export function normalizeExportOptions(options: Partial<DocumentExportOptions> =
 export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Partial<DocumentExportOptions> = {}): SafeDocumentExport {
   const options = normalizeExportOptions(rawOptions);
   const exportedAt = new Date().toISOString();
+  const kindAwareDocument = ensureDocumentKind(document);
 
   const base: SafeDocumentExport = {
     exportedAt,
@@ -39,6 +41,7 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
       parseDiagnostics: safeParseDiagnostics(document.parseDiagnostics),
       coordinateDiagnostics: safeCoordinateDiagnostics(document.coordinateDiagnostics),
       outlineDiagnostics: safeOutlineDiagnostics(document.outlineDiagnostics),
+      documentKind: safeDocumentKind(kindAwareDocument.documentKind),
       outlineEditState: safeOutlineEditState(document)
     },
     paragraphPositions: safeParagraphPositions(document.paragraphPositions),
@@ -103,6 +106,17 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
   }
 
   return base;
+}
+
+function safeDocumentKind(kind: ParsedDocument["documentKind"]) {
+  if (!kind) return undefined;
+  return {
+    kind: kind.kind,
+    confidence: kind.confidence,
+    reasons: asStringArray(kind.reasons).map((reason) => truncate(reason, 240)),
+    detectedAt: asString(kind.detectedAt),
+    signals: kind.signals
+  };
 }
 
 export function buildSafeExportFilename(document: Pick<ParsedDocument, "title" | "filename">, ext: string, prefix = "documuse") {

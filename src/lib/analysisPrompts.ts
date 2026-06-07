@@ -1,3 +1,6 @@
+import { documentKindPromptHint } from "./documentKindDetector";
+import type { DocumentKindDetection } from "./documentTypes";
+
 const MAX_ANALYSIS_CHARS = 16000;
 const MAX_REPAIR_INPUT_CHARS = 12000;
 
@@ -54,14 +57,16 @@ export function getAnalysisTextSlice(text: string) {
   };
 }
 
-export function buildDocumentAnalysisMessages(documentTitle: string, text: string) {
+export function buildDocumentAnalysisMessages(documentTitle: string, text: string, documentKind?: DocumentKindDetection) {
   const { textForAnalysis, isPartialAnalysis } = getAnalysisTextSlice(text);
+  const kindHint = documentKindPromptHint(documentKind?.kind);
 
   return [
     {
       role: "system",
       content: [
         "You are DocuMuse, an AI document reading workspace.",
+        kindHint,
         "Return one valid JSON object only.",
         "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
         "Write primarily in Chinese.",
@@ -164,12 +169,13 @@ ${safeOutput}`
   ] as const;
 }
 
-export function buildChunkAnalysisMessages(chunk: { id: string; index: number; text: string; sourceHint: string }, documentTitle: string) {
+export function buildChunkAnalysisMessages(chunk: { id: string; index: number; text: string; sourceHint: string }, documentTitle: string, documentKind?: DocumentKindDetection) {
   return [
     {
       role: "system",
       content: [
         "You analyze one text chunk for DocuMuse.",
+        documentKindPromptHint(documentKind?.kind),
         "Return one valid JSON object only.",
         "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
         "Use Chinese.",
@@ -196,12 +202,13 @@ ${chunk.text}`
   ] as const;
 }
 
-export function buildGlobalSynthesisMessages(chunkAnalyses: unknown[], documentTitle: string) {
+export function buildGlobalSynthesisMessages(chunkAnalyses: unknown[], documentTitle: string, documentKind?: DocumentKindDetection) {
   return [
     {
       role: "system",
       content: [
         "You synthesize chunk analyses for DocuMuse.",
+        documentKindPromptHint(documentKind?.kind),
         "Return one valid JSON object only.",
         "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
         "Use Chinese.",

@@ -1,4 +1,4 @@
-import type { ChunkAnalysis, DocumentChatMessage, DocumentOutlineNode, OutlineDiagnostics, ParsedDocument, ParseDiagnostics } from "../documentTypes";
+import type { ChunkAnalysis, DocumentChatMessage, DocumentKindDetection, DocumentOutlineNode, OutlineDiagnostics, ParsedDocument, ParseDiagnostics } from "../documentTypes";
 
 export type DocumentExportOptions = {
   includeChat: boolean;
@@ -89,6 +89,7 @@ export type SafeDocumentExport = {
     };
     coordinateDiagnostics?: ParsedDocument["coordinateDiagnostics"];
     outlineDiagnostics?: OutlineDiagnostics;
+    documentKind?: DocumentKindDetection;
     outlineEditState?: {
       mode: "auto" | "custom";
       updatedAt?: string;

@@ -1,6 +1,8 @@
+import { documentKindPromptHint } from "./documentKindDetector";
 import type { SearchChunk } from "./documentSearch";
+import type { DocumentKindDetection } from "./documentTypes";
 
-export function buildDocumentChatMessages(question: string, relevantChunks: SearchChunk[], documentTitle: string) {
+export function buildDocumentChatMessages(question: string, relevantChunks: SearchChunk[], documentTitle: string, documentKind?: DocumentKindDetection) {
   const context = relevantChunks
     .map((chunk) => `[${chunk.sourceHint}]\n${chunk.text}`)
     .join("\n\n---\n\n");
@@ -10,6 +12,7 @@ export function buildDocumentChatMessages(question: string, relevantChunks: Sear
       role: "system",
       content: [
         "You answer questions for DocuMuse based only on the provided document excerpts.",
+        documentKindPromptHint(documentKind?.kind),
         "Answer primarily in Chinese, while preserving necessary English terms.",
         "Use Markdown that is easy to render in a chat UI.",
         "Use this structure whenever possible:",

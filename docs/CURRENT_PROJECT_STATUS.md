@@ -34,6 +34,8 @@ Editable outline UX: the sidebar editor now supports flat-list up/down ordering,
 
 Editable outline browser validation: user-completed local browser validation has passed. The workflow now covers edit entry, rename, hide, level/type edits, up/down ordering, persistence after refresh, cancel prompts, reset, manual headings from original paragraphs, original-text navigation, and Markdown / JSON / PPTX / ZIP export compatibility.
 
+Document kind detection: heuristic local classification now records `documentKind` for new uploads and can infer a runtime fallback for older documents. The detector distinguishes paper, interview, business report, fiction, manual, book chapter, article, and unknown, with confidence, reasons, and signal metadata.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -54,6 +56,8 @@ DocuMuse currently supports a local PDF reading workflow:
 - Runtime-equivalent validate editable outline UX downstream paths when browser automation is unavailable.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
+- Detect a document kind during upload and expose kind / confidence / reasons in the workspace overview.
+- Use document-kind hints in analysis and chat prompts without making a separate LLM call.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
 - Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
 - Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
@@ -82,6 +86,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Export preset packs for study notes, presentations, research digests, podcast preparation, and full archives.
 - Download export presets as single server-generated ZIP packages.
 - Phase 4A.1 runtime validation confirmed structured PDF upload and export compatibility at API level.
+- Include safe document-kind metadata in Markdown, JSON, and PPTX exports.
 
 ## Current Architecture
 
@@ -94,6 +99,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Long document analysis: local text chunking plus map-reduce style LLM calls.
 - Structure: heuristic page / paragraph / section generation with backward-compatible runtime fallback.
 - Outline: heuristic Chinese / English heading extraction with nested nodes, page / paragraph ranges, diagnostics, and backward-compatible runtime fallback.
+- Document kind: heuristic local detector based on outline, paragraph, keyword, and structural signals with backward-compatible runtime fallback.
 - Diagnostics: heuristic parse quality scoring, language guess, page-level text density, repeated header/footer candidates, reference section hints, and footnote hints.
 - Source quality: paragraph-level quality flags for repeated headers/footers, page numbers, very short text, footnote candidates, and reference candidates.
 - Coordinates: `pdfjs-dist` text-layer coordinate extraction with safe diagnostics, approximate paragraph mapping, coordinate-aware source cards, original-text coordinate details, an experimental calibrated canvas preview, and lightweight fixture generation / validation scripts.
@@ -152,6 +158,7 @@ data/settings/    Local LLM settings
 - `ChatAnswerRenderer`
 - `outlineExtractor`
 - `outlineUtils`
+- `documentKindDetector`
 
 ## Current Limits
 
@@ -169,6 +176,8 @@ data/settings/    Local LLM settings
 - PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Outline detection is heuristic and can miss unusual headings, sparse older publications, or complex layouts.
+- Document kind detection is heuristic and can misclassify ambiguous hybrids such as essay-style interviews, fictional essays, or business-style articles.
+- Users cannot manually override document kind yet.
 - Editable outline supports flat list editing and simple up/down ordering only; drag-and-drop tree editing, nested reparenting, and version history are not implemented.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
@@ -176,8 +185,8 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
-2. Phase 3C.2 saved custom export presets.
-3. Phase 3B.4 optional speaker notes and richer report outline controls.
-4. Add source history and original-text search.
-5. Consider embeddings and vector storage only after the local baseline and export workflow are stable.
+1. Phase 4F.1 run real PDF document-kind spot checks and tune ambiguous classification rules.
+2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
+3. Phase 3C.2 saved custom export presets.
+4. Phase 3B.4 optional speaker notes and richer report outline controls.
+5. Add source history and original-text search.

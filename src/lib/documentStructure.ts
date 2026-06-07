@@ -1,4 +1,5 @@
 import type { ParsedDocument, ParsedPage, ParsedParagraph, ParsedSection, ParseDiagnostics, PdfParagraphPosition, PdfTextItemBox } from "./documentTypes";
+import { ensureDocumentKind } from "./documentKindDetector";
 import { extractDocumentOutline } from "./outlineExtractor";
 
 export type DocumentStructure = {
@@ -124,7 +125,7 @@ export function ensureDocumentStructure(document: ParsedDocument): ParsedDocumen
   const sections = document.sections?.length ? document.sections : structure.sections;
   const parseDiagnostics = document.parseDiagnostics ?? structure.parseDiagnostics;
   const outlineResult = document.outline && document.outlineDiagnostics ? null : extractDocumentOutline(paragraphs, pages, parseDiagnostics);
-  return {
+  return ensureDocumentKind({
     ...document,
     pageCount: document.pageCount || structure.pageCount,
     pages,
@@ -133,7 +134,7 @@ export function ensureDocumentStructure(document: ParsedDocument): ParsedDocumen
     outline: document.outline ?? outlineResult?.outline,
     outlineDiagnostics: document.outlineDiagnostics ?? outlineResult?.outlineDiagnostics,
     parseDiagnostics
-  };
+  });
 }
 
 function normalizeDocumentText(text: string) {

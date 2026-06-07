@@ -154,6 +154,33 @@ export interface OutlineDiagnostics {
   warnings: string[];
 }
 
+export type DocumentKind =
+  | "paper"
+  | "interview"
+  | "business-report"
+  | "fiction"
+  | "manual"
+  | "book-chapter"
+  | "article"
+  | "unknown";
+
+export interface DocumentKindDetection {
+  kind: DocumentKind;
+  confidence: "high" | "medium" | "low";
+  reasons: string[];
+  detectedAt: string;
+  signals?: {
+    hasAbstract?: boolean;
+    hasReferences?: boolean;
+    hasInterviewPattern?: boolean;
+    hasDialogue?: boolean;
+    hasChapters?: boolean;
+    hasBusinessTerms?: boolean;
+    hasProcedureSteps?: boolean;
+    hasFictionSignals?: boolean;
+  };
+}
+
 export interface PdfTextItemBox {
   id: string;
   pageNumber: number;
@@ -291,6 +318,7 @@ export type ParsedDocument = {
   outline?: DocumentOutlineNode[];
   outlineDiagnostics?: OutlineDiagnostics;
   outlineEditState?: OutlineEditState;
+  documentKind?: DocumentKindDetection;
   parseDiagnostics?: ParseDiagnostics;
   pdfTextItems?: PdfTextItemBox[];
   paragraphPositions?: PdfParagraphPosition[];

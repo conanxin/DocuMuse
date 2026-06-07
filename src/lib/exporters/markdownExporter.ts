@@ -28,6 +28,7 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
     `- Created at: ${formatDate(exported.metadata.createdAt)}`,
     `- Page count: ${exported.metadata.pageCount || 0}`,
     `- Text length: ${exported.metadata.textLength}`,
+    `- Document kind: ${exported.metadata.documentKind?.kind || "unknown"} (${exported.metadata.documentKind?.confidence || "low"})`,
     `- Analyzed at: ${exported.metadata.analyzedAt ? formatDate(exported.metadata.analyzedAt) : "Not generated"}`,
     ""
   ];

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteParsedDocument, isValidDocumentId, readParsedDocument } from "@/lib/documentStorage";
+import { ensureDocumentKind } from "@/lib/documentKindDetector";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 
   try {
     const document = await readParsedDocument(id);
-    return NextResponse.json(document);
+    return NextResponse.json(ensureDocumentKind(document));
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {

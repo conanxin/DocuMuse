@@ -2,6 +2,8 @@
 
 import { Download, Loader2, PackageOpen, Play, Settings, Upload, X } from "lucide-react";
 import { useState } from "react";
+import { documentKindConfidenceLabel, documentKindLabel } from "@/lib/documentKindDetector";
+import type { DocumentKindDetection } from "@/lib/documentTypes";
 import type { ExportPresetPlan, PptxCoverStyle, PptxExportOptions, PptxThemeName } from "@/lib/exporters/exportTypes";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
 import { DocumentUploadPanel } from "../DocumentUploadPanel";
@@ -48,6 +50,7 @@ const CONTENT_OPTIONS: Array<{ key: keyof Pick<PptxExportOptions, "includeSummar
 export function WorkspaceTopbar({
   title = "demo-interview.pdf",
   status = "已解析",
+  documentKind,
   onAnalyze,
   onExport,
   onExportPreset,
@@ -62,6 +65,7 @@ export function WorkspaceTopbar({
 }: {
   title?: string;
   status?: string;
+  documentKind?: DocumentKindDetection;
   onAnalyze?: (mode: AnalyzeMode) => void;
   onExport?: (format: ExportFormat, only?: "chat", pptxOptions?: PptxExportOptions) => void;
   onExportPreset?: (preset: ExportPresetPlan) => void;
@@ -99,7 +103,14 @@ export function WorkspaceTopbar({
             <h1 className="truncate text-lg font-bold text-slate-950">{title}</h1>
             <StatusBadge status={status as never} />
           </div>
-          <p className="mt-1 text-sm text-slate-500">AI document reading workspace</p>
+          <p className="mt-1 text-sm text-slate-500">
+            AI document reading workspace
+            {documentKind && (
+              <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                {documentKindLabel(documentKind.kind)} · {documentKindConfidenceLabel(documentKind.confidence)}
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">

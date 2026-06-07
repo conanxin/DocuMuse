@@ -310,6 +310,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
       <WorkspaceTopbar
         title={document?.title}
         status={topbarStatus}
+        documentKind={document?.documentKind}
         onAnalyze={(mode) => void analyzeDocument(mode)}
         onExport={(format, only, pptxOptions) => void exportDocument(format, only, pptxOptions)}
         onExportPreset={(preset) => void exportPreset(preset)}
@@ -332,7 +333,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {exportState === "error" && exportError && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{exportError}</div>}
           {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
-          {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} />}
+          {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} documentKind={document?.documentKind} />}
           {loadState === "idle" && activeTab === "original" && <OriginalTextPanel document={document} text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} onAddOutlineHeading={isDemo ? undefined : (payload) => void handleAddOutlineHeading(payload)} />}
           {loadState === "idle" && activeTab === "pdf" && <PdfPreviewPanel documentId={documentId} selectedSource={selectedPdfSource ?? selectedSourceRange} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}

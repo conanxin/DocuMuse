@@ -1,4 +1,5 @@
-import pptxgen from "pptxgenjs";
+﻿import pptxgen from "pptxgenjs";
+import { documentKindLabel } from "../documentKindDetector";
 import type { DocumentChatMessage, ParsedDocument } from "../documentTypes";
 import type { PptxCoverStyle, PptxExportOptions, PptxThemeName } from "./exportTypes";
 
@@ -95,10 +96,10 @@ const SLIDE = {
   footerY: 7.08
 };
 
-const EMPTY_ANALYSIS = "尚未生成分析结果";
-const EMPTY_CHAT = "暂无问答记录";
-const EMPTY_OUTLINE = "尚未生成 PPT 大纲";
-const EMPTY_GENERATED = "尚未生成";
+const EMPTY_ANALYSIS = "灏氭湭鐢熸垚鍒嗘瀽缁撴灉";
+const EMPTY_CHAT = "鏆傛棤闂瓟璁板綍";
+const EMPTY_OUTLINE = "灏氭湭鐢熸垚 PPT 澶х翰";
+const EMPTY_GENERATED = "灏氭湭鐢熸垚";
 
 type PptxDocument = InstanceType<typeof pptxgen>;
 type PptxSlide = ReturnType<PptxDocument["addSlide"]>;
@@ -240,6 +241,7 @@ function addStandardCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     h: 1.95,
     rows: [
       ["文件", truncateText(document.filename, 52)],
+      ["类型", documentKindLabel(document.documentKind?.kind)],
       ["服务", document.analysisProvider || "未生成"],
       ["模型", document.analysisModel || "未生成"],
       ["导出", new Date().toLocaleString("zh-CN")]
@@ -294,11 +296,12 @@ function addMinimalCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     h: 1.55,
     rows: [
       ["文件", truncateText(document.filename, 52)],
+      ["类型", documentKindLabel(document.documentKind?.kind)],
       ["服务", document.analysisProvider || "未生成"],
       ["模型", document.analysisModel || "未生成"]
     ]
   });
-  slide.addText(`导出：${new Date().toLocaleString("zh-CN")}`, {
+  slide.addText(`瀵煎嚭锛?{new Date().toLocaleString("zh-CN")}`, {
     x: SLIDE.marginX,
     y: 6.55,
     w: 4.6,
@@ -346,6 +349,7 @@ function addReportCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     h: 1.95,
     rows: [
       ["文件", truncateText(document.filename, 52)],
+      ["类型", documentKindLabel(document.documentKind?.kind)],
       ["服务", document.analysisProvider || "未生成"],
       ["模型", document.analysisModel || "未生成"],
       ["导出", new Date().toLocaleString("zh-CN")]
@@ -362,14 +366,14 @@ function addReportCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
 }
 
 function addSummarySlide(pptx: PptxDocument, document: ParsedDocument, page: number) {
-  const slide = newContentSlide(pptx, "摘要", "Concise reading summary", page);
+  const slide = newContentSlide(pptx, "鎽樿", "Concise reading summary", page);
   const hasAnalysis = document.analysisStatus === "completed";
   addCard(slide, {
     x: SLIDE.marginX,
     y: 1.28,
     w: 12.05,
     h: 1.5,
-    title: "一句话摘要",
+    title: "涓€鍙ヨ瘽鎽樿",
     body: hasAnalysis ? document.analysis?.oneSentenceSummary || EMPTY_ANALYSIS : EMPTY_ANALYSIS,
     fill: THEME.paleBlue,
     accent: true,
@@ -381,7 +385,7 @@ function addSummarySlide(pptx: PptxDocument, document: ParsedDocument, page: num
     y: 3.15,
     w: 12.05,
     h: 2.28,
-    title: "全文摘要",
+    title: "鍏ㄦ枃鎽樿",
     body: hasAnalysis ? document.analysis?.summary || EMPTY_ANALYSIS : EMPTY_ANALYSIS,
     bodySize: 14.8,
     bodyMax: 450
@@ -391,7 +395,7 @@ function addSummarySlide(pptx: PptxDocument, document: ParsedDocument, page: num
 function addKeyPointsSlides(pptx: PptxDocument, document: ParsedDocument, startPage: number) {
   const points = document.analysis?.keyPoints ?? [];
   if (!points.length) {
-    const slide = newContentSlide(pptx, "核心观点", "Top takeaways", startPage);
+    const slide = newContentSlide(pptx, "鏍稿績瑙傜偣", "Top takeaways", startPage);
     addCard(slide, { x: SLIDE.marginX, y: 1.45, w: 12.05, h: 1.4, body: EMPTY_ANALYSIS, bodySize: 16 });
     return startPage + 1;
   }
@@ -586,7 +590,7 @@ function addClosingSlide(pptx: PptxDocument, page: number) {
     color: THEME.gray,
     align: "center"
   });
-  slide.addText(`导出时间：${new Date().toLocaleString("zh-CN")}`, {
+  slide.addText(`瀵煎嚭鏃堕棿锛?{new Date().toLocaleString("zh-CN")}`, {
     x: 3.0,
     y: 4.02,
     w: 7.4,
@@ -722,7 +726,7 @@ function addMetadataCard(slide: PptxSlide, options: { x: number; y: number; w: n
     fill: { color: THEME.lightGray },
     line: { color: THEME.border, width: 1 }
   });
-  slide.addText("导出信息", {
+  slide.addText("瀵煎嚭淇℃伅", {
     x: options.x + 0.24,
     y: options.y + 0.16,
     w: options.w - 0.48,
@@ -910,7 +914,7 @@ export function truncateText(value: unknown, maxLength: number) {
   const text = cleanPptText(value).replace(/\s+/g, " ").trim();
   if (!text) return "";
   if (text.length <= maxLength) return text;
-  return `${text.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+  return `${text.slice(0, Math.max(0, maxLength - 1)).trimEnd()}...`;
 }
 
 export function cleanPptText(value: unknown) {
@@ -925,13 +929,13 @@ export function cleanPptText(value: unknown) {
     .replace(/\*([^*\n]+)\*/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/^>\s?/gm, "")
-    .replace(/^\s*[-*•]\s{0,2}[-*•]\s*/gm, "- ")
+    .replace(/^\s*[-*•]\s*/gm, "- ")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .replace(/[ \t]{2,}/g, " ")
-    .replace(/([一-龥])\s+([，。！？；：、])/g, "$1$2")
-    .replace(/([（【《])\s+/g, "$1")
-    .replace(/\s+([）】》])/g, "$1")
+    .replace(/([\u4e00-\u9fff])\s+([，。！？；：、）】])/g, "$1$2")
+    .replace(/([（【])\s+/g, "$1")
+    .replace(/\s+([）】])/g, "$1")
     .trim();
 }
 
@@ -956,3 +960,4 @@ function cleanAnswerForQa(value: unknown) {
     .replace(/\n{2,}/g, "\n")
     .trim();
 }
+

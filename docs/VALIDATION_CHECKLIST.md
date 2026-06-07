@@ -10,6 +10,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Run `npm run build`.
 - [ ] Open `http://localhost:3000/settings/validation`.
 - [ ] Run `npm run test:outline`.
+- [ ] Run `npm run test:document-kind`.
 
 ## Passed Real Model Validation
 
@@ -47,6 +48,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E.6 editable outline UX build validation passed for up/down ordering, manual-heading insert position, unsaved-change prompts, edit summaries, and outline quality warnings.
 - [x] Phase 4E.7 runtime-equivalent downstream validation passed for custom outline order, renamed / hidden / manual nodes, search metadata, chunking, Markdown / JSON, PPTX, and ZIP.
 - [x] Phase 4E.7.1 user-completed browser validation passed for editable outline entry, rename, hide, level/type edits, up/down ordering, persistence, cancel prompt, reset, manual headings, source navigation, exports, demo, and old documents.
+- [x] Phase 4F document-kind regression script passed paper, interview, business report, fiction, manual, and article fixtures.
 
 ## Upload And Library
 
@@ -55,8 +57,12 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm original extracted text appears.
 - [ ] Confirm new document JSON includes `pages`, `paragraphs`, `sections`, and `parseDiagnostics`.
 - [ ] Confirm new document JSON includes `outline` and `outlineDiagnostics` when headings are detected.
+- [ ] Confirm new document JSON includes `documentKind` with kind, confidence, reasons, detectedAt, and signal metadata.
+- [ ] Confirm older documents without `documentKind` still open through runtime fallback.
+- [ ] Confirm workspace topbar / overview display document kind, confidence, and reasons.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
+- [ ] Confirm `npm run test:document-kind` reports 6 passed, 0 failed.
 - [ ] Spot-check at least one confidential real PDF and record outline false positives / missed headings without committing the PDF.
 - [ ] Enter outline edit mode, rename a node, hide a node, change level/type, save, refresh, and confirm the custom outline persists.
 - [ ] Use the outline editor up/down buttons and confirm saved order persists after refresh.
@@ -114,6 +120,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm chunks are created.
 - [ ] Confirm full-analysis chunks can include `outlineNodeId` and `outlineTitle` when an outline is available.
 - [ ] Confirm full-analysis chunks use custom outline headings when `outlineEditState.mode` is `custom`.
+- [ ] Confirm analysis prompts receive document-kind hints without making an extra classification LLM call.
 - [ ] Confirm chunk metadata can include `skippedLowValueParagraphCount`.
 - [ ] Confirm chunk analyses are saved.
 - [ ] Confirm global synthesis is saved.
@@ -159,10 +166,12 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm the Markdown contains metadata, summaries, key points, section analysis, creative outputs, and Q&A records when available.
 - [ ] Confirm the Markdown can include the detected document outline.
 - [ ] Confirm Markdown export uses the effective outline when a custom outline exists.
+- [ ] Confirm Markdown export can include safe document-kind metadata.
 - [ ] Export structured JSON from the top bar.
 - [ ] Confirm the JSON does not contain full `text`, API keys, prompts, raw model output, or `analysisDiagnostics.rawPreview`.
 - [ ] Confirm the JSON can include safe `outline` and `outlineDiagnostics` without full original text.
 - [ ] Confirm JSON export includes safe `outlineEditState` summary and `effectiveOutline`, without full original text.
+- [ ] Confirm JSON export includes safe `documentKind` metadata.
 - [ ] Export Q&A-only Markdown from the top bar.
 - [ ] Export PPTX from the top bar.
 - [ ] Open the PPTX in PowerPoint or WPS.
@@ -172,6 +181,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm cover metadata is shown in separate rows and does not squeeze into one dense line.
 - [ ] Confirm Summary, Section Analysis, Podcast Script, and Q&A slides do not feel overfilled.
 - [ ] Confirm Q&A answers and sources are visually separated.
+- [ ] Confirm PPTX metadata can show the detected document kind.
 - [ ] Open the PPTX export dialog and confirm theme, cover, and section options are available.
 - [ ] Export with `theme=blue`, `theme=green`, `theme=purple`, and `theme=slate`.
 - [ ] Export with `cover=standard`, `cover=minimal`, and `cover=report`.

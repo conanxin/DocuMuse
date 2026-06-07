@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildChunkAnalysisMessages, buildChunkJsonRepairMessages, buildDocumentAnalysisMessages, buildGlobalSynthesisMessages, buildJsonRepairMessages, getAnalysisTextSlice } from "@/lib/analysisPrompts";
 import { normalizeLlmAnalysis } from "@/lib/analysisResult";
 import { isValidDocumentId, readParsedDocument, saveParsedDocument } from "@/lib/documentStorage";
+import { ensureDocumentKind } from "@/lib/documentKindDetector";
 import { createJsonChatCompletion, toPublicLlmError } from "@/lib/llmClient";
 import { chunkText } from "@/lib/textChunker";
 import type { AnalysisDiagnostics, AnalysisMode, ChunkAnalysis, DocumentAnalysis, ParsedDocument } from "@/lib/documentTypes";
@@ -49,8 +50,9 @@ async function saveProgress(document: ParsedDocument, progress: ParsedDocument["
 
 async function runQuickAnalysis(document: ParsedDocument) {
   const slice = getAnalysisTextSlice(document.text);
+  const kindAwareDocument = ensureDocumentKind(document);
   const result = await createJsonChatCompletion<Partial<DocumentAnalysis>>({
-    messages: buildDocumentAnalysisMessages(document.title, document.text),
+    messages: buildDocumentAnalysisMessages(document.title, document.text, kindAwareDocument.documentKind),
     repairMessages: buildJsonRepairMessages,
     temperature: 0.2,
     maxTokens: 5000
@@ -69,6 +71,7 @@ async function runQuickAnalysis(document: ParsedDocument) {
 }
 
 async function runFullAnalysis(document: ParsedDocument) {
+  const kindAwareDocument = ensureDocumentKind(document);
   const chunks = chunkText(document);
   await saveProgress(
     document,
@@ -99,7 +102,7 @@ async function runFullAnalysis(document: ParsedDocument) {
     }, { chunks: chunkMetadata(chunks), chunkAnalyses });
 
     const result = await createJsonChatCompletion<Partial<ChunkAnalysis>>({
-      messages: buildChunkAnalysisMessages(chunk, document.title),
+      messages: buildChunkAnalysisMessages(chunk, document.title, kindAwareDocument.documentKind),
       repairMessages: buildChunkJsonRepairMessages,
       temperature: 0.2,
       maxTokens: 2200
@@ -150,7 +153,7 @@ async function runFullAnalysis(document: ParsedDocument) {
   );
 
   const synthesis = await createJsonChatCompletion<Partial<DocumentAnalysis>>({
-    messages: buildGlobalSynthesisMessages(chunkAnalyses, document.title),
+    messages: buildGlobalSynthesisMessages(chunkAnalyses, document.title, kindAwareDocument.documentKind),
     repairMessages: buildJsonRepairMessages,
     temperature: 0.2,
     maxTokens: 5000
