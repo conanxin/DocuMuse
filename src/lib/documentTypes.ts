@@ -181,6 +181,22 @@ export interface DocumentKindDetection {
   };
 }
 
+export interface DocumentKindOverride {
+  kind: DocumentKind;
+  reason?: string;
+  updatedAt: string;
+  source: "user";
+}
+
+export interface EffectiveDocumentKind {
+  kind: DocumentKind;
+  confidence: "high" | "medium" | "low";
+  reasons: string[];
+  source: "auto" | "user" | "fallback";
+  auto?: DocumentKindDetection;
+  override?: DocumentKindOverride;
+}
+
 export interface PdfTextItemBox {
   id: string;
   pageNumber: number;
@@ -319,6 +335,7 @@ export type ParsedDocument = {
   outlineDiagnostics?: OutlineDiagnostics;
   outlineEditState?: OutlineEditState;
   documentKind?: DocumentKindDetection;
+  documentKindOverride?: DocumentKindOverride;
   parseDiagnostics?: ParseDiagnostics;
   pdfTextItems?: PdfTextItemBox[];
   paragraphPositions?: PdfParagraphPosition[];

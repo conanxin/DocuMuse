@@ -1,6 +1,6 @@
 import type { DocumentChatMessage, EditableOutlineNode, ParsedDocument } from "../documentTypes";
 import type { DocumentExportOptions, SafeDocumentExport, SafeExportChatMessage, SafeExportOutlineNode } from "./exportTypes";
-import { ensureDocumentKind } from "../documentKindDetector";
+import { ensureDocumentKind, getEffectiveDocumentKind } from "../documentKindDetector";
 import { getEffectiveOutline, getOutlineMode } from "../outlineUtils";
 
 const DEFAULT_OPTIONS: DocumentExportOptions = {
@@ -22,6 +22,7 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
   const options = normalizeExportOptions(rawOptions);
   const exportedAt = new Date().toISOString();
   const kindAwareDocument = ensureDocumentKind(document);
+  const effectiveDocumentKind = getEffectiveDocumentKind(kindAwareDocument);
 
   const base: SafeDocumentExport = {
     exportedAt,
@@ -42,6 +43,8 @@ export function buildDocumentJsonExport(document: ParsedDocument, rawOptions: Pa
       coordinateDiagnostics: safeCoordinateDiagnostics(document.coordinateDiagnostics),
       outlineDiagnostics: safeOutlineDiagnostics(document.outlineDiagnostics),
       documentKind: safeDocumentKind(kindAwareDocument.documentKind),
+      documentKindOverride: safeDocumentKindOverride(kindAwareDocument.documentKindOverride),
+      effectiveDocumentKind: safeEffectiveDocumentKind(effectiveDocumentKind),
       outlineEditState: safeOutlineEditState(document)
     },
     paragraphPositions: safeParagraphPositions(document.paragraphPositions),
@@ -116,6 +119,27 @@ function safeDocumentKind(kind: ParsedDocument["documentKind"]) {
     reasons: asStringArray(kind.reasons).map((reason) => truncate(reason, 240)),
     detectedAt: asString(kind.detectedAt),
     signals: kind.signals
+  };
+}
+
+function safeDocumentKindOverride(override: ParsedDocument["documentKindOverride"]) {
+  if (!override) return undefined;
+  return {
+    kind: override.kind,
+    reason: typeof override.reason === "string" ? truncate(override.reason, 240) : undefined,
+    updatedAt: asString(override.updatedAt),
+    source: override.source
+  };
+}
+
+function safeEffectiveDocumentKind(kind: ReturnType<typeof getEffectiveDocumentKind>) {
+  return {
+    kind: kind.kind,
+    confidence: kind.confidence,
+    reasons: asStringArray(kind.reasons).map((reason) => truncate(reason, 240)),
+    source: kind.source,
+    auto: safeDocumentKind(kind.auto),
+    override: safeDocumentKindOverride(kind.override)
   };
 }
 

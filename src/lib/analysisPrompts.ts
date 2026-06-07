@@ -1,5 +1,5 @@
 import { documentKindPromptHint } from "./documentKindDetector";
-import type { DocumentKindDetection } from "./documentTypes";
+import type { DocumentKind, DocumentKindDetection } from "./documentTypes";
 
 const MAX_ANALYSIS_CHARS = 16000;
 const MAX_REPAIR_INPUT_CHARS = 12000;
@@ -57,9 +57,15 @@ export function getAnalysisTextSlice(text: string) {
   };
 }
 
-export function buildDocumentAnalysisMessages(documentTitle: string, text: string, documentKind?: DocumentKindDetection) {
+type DocumentKindHint = DocumentKind | DocumentKindDetection | undefined;
+
+function resolveKind(kind: DocumentKindHint) {
+  return typeof kind === "string" ? kind : kind?.kind;
+}
+
+export function buildDocumentAnalysisMessages(documentTitle: string, text: string, documentKind?: DocumentKindHint) {
   const { textForAnalysis, isPartialAnalysis } = getAnalysisTextSlice(text);
-  const kindHint = documentKindPromptHint(documentKind?.kind);
+  const kindHint = documentKindPromptHint(resolveKind(documentKind));
 
   return [
     {
@@ -169,13 +175,13 @@ ${safeOutput}`
   ] as const;
 }
 
-export function buildChunkAnalysisMessages(chunk: { id: string; index: number; text: string; sourceHint: string }, documentTitle: string, documentKind?: DocumentKindDetection) {
+export function buildChunkAnalysisMessages(chunk: { id: string; index: number; text: string; sourceHint: string }, documentTitle: string, documentKind?: DocumentKindHint) {
   return [
     {
       role: "system",
       content: [
         "You analyze one text chunk for DocuMuse.",
-        documentKindPromptHint(documentKind?.kind),
+        documentKindPromptHint(resolveKind(documentKind)),
         "Return one valid JSON object only.",
         "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
         "Use Chinese.",
@@ -202,13 +208,13 @@ ${chunk.text}`
   ] as const;
 }
 
-export function buildGlobalSynthesisMessages(chunkAnalyses: unknown[], documentTitle: string, documentKind?: DocumentKindDetection) {
+export function buildGlobalSynthesisMessages(chunkAnalyses: unknown[], documentTitle: string, documentKind?: DocumentKindHint) {
   return [
     {
       role: "system",
       content: [
         "You synthesize chunk analyses for DocuMuse.",
-        documentKindPromptHint(documentKind?.kind),
+        documentKindPromptHint(resolveKind(documentKind)),
         "Return one valid JSON object only.",
         "Do not output Markdown, code fences, explanations, prefaces, suffixes, or extra text.",
         "Use Chinese.",

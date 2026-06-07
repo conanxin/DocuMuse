@@ -1,5 +1,5 @@
 ﻿import pptxgen from "pptxgenjs";
-import { documentKindLabel } from "../documentKindDetector";
+import { documentKindLabel, getEffectiveDocumentKind } from "../documentKindDetector";
 import type { DocumentChatMessage, ParsedDocument } from "../documentTypes";
 import type { PptxCoverStyle, PptxExportOptions, PptxThemeName } from "./exportTypes";
 
@@ -241,7 +241,7 @@ function addStandardCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     h: 1.95,
     rows: [
       ["文件", truncateText(document.filename, 52)],
-      ["类型", documentKindLabel(document.documentKind?.kind)],
+      ["类型", documentKindLabel(getEffectiveDocumentKind(document).kind)],
       ["服务", document.analysisProvider || "未生成"],
       ["模型", document.analysisModel || "未生成"],
       ["导出", new Date().toLocaleString("zh-CN")]
@@ -296,7 +296,7 @@ function addMinimalCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     h: 1.55,
     rows: [
       ["文件", truncateText(document.filename, 52)],
-      ["类型", documentKindLabel(document.documentKind?.kind)],
+      ["类型", documentKindLabel(getEffectiveDocumentKind(document).kind)],
       ["服务", document.analysisProvider || "未生成"],
       ["模型", document.analysisModel || "未生成"]
     ]
@@ -349,7 +349,7 @@ function addReportCoverSlide(pptx: PptxDocument, document: ParsedDocument) {
     h: 1.95,
     rows: [
       ["文件", truncateText(document.filename, 52)],
-      ["类型", documentKindLabel(document.documentKind?.kind)],
+      ["类型", documentKindLabel(getEffectiveDocumentKind(document).kind)],
       ["服务", document.analysisProvider || "未生成"],
       ["模型", document.analysisModel || "未生成"],
       ["导出", new Date().toLocaleString("zh-CN")]

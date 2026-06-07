@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AnalysisMode, ChatSource, DocumentOutlineNode, EditableOutlineNode, ParsedDocument } from "@/lib/documentTypes";
+import type { AnalysisMode, ChatSource, DocumentKind, DocumentOutlineNode, EditableOutlineNode, ParsedDocument } from "@/lib/documentTypes";
 import type { ExportPresetPlan, PptxExportOptions } from "@/lib/exporters/exportTypes";
 import { createEditableOutlineFromAuto } from "@/lib/outlineUtils";
 import type { ParagraphAnchor } from "@/lib/sourceAnchors";
@@ -235,6 +235,26 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
     }
   };
 
+  const saveDocumentKindOverride = async (kind: DocumentKind, reason?: string) => {
+    if (!document || isDemo) return;
+    const response = await fetch(`/api/documents/${document.id}/kind`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind, reason })
+    });
+    const payload = await safeJson(response);
+    if (!response.ok || !payload.ok) throw new Error(payload.error || "保存文档类型失败。");
+    await loadDocument();
+  };
+
+  const resetDocumentKindOverride = async () => {
+    if (!document || isDemo) return;
+    const response = await fetch(`/api/documents/${document.id}/kind`, { method: "DELETE" });
+    const payload = await safeJson(response);
+    if (!response.ok || !payload.ok) throw new Error(payload.error || "重置文档类型失败。");
+    await loadDocument();
+  };
+
   const exportDocument = async (format: "markdown" | "json" | "pptx", only?: "chat", pptxOptions?: PptxExportOptions) => {
     setExportState("loading");
     setExportError("");
@@ -311,6 +331,9 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
         title={document?.title}
         status={topbarStatus}
         documentKind={document?.documentKind}
+        documentKindOverride={document?.documentKindOverride}
+        onSaveDocumentKind={saveDocumentKindOverride}
+        onResetDocumentKind={resetDocumentKindOverride}
         onAnalyze={(mode) => void analyzeDocument(mode)}
         onExport={(format, only, pptxOptions) => void exportDocument(format, only, pptxOptions)}
         onExportPreset={(preset) => void exportPreset(preset)}
@@ -333,7 +356,7 @@ export function DocumentWorkspace({ documentId = "demo" }: { documentId?: string
           {exportState === "error" && exportError && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{exportError}</div>}
           {loadState === "idle" && document?.analysisDiagnostics?.repairedJson && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">模型输出格式已自动修复。</div>}
           {loadState === "idle" && <AnalysisModeNotice document={document} />}
-          {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} documentKind={document?.documentKind} />}
+          {loadState === "idle" && activeTab === "overview" && <OverviewPanel analysis={document?.analysis} documentKind={document?.documentKind} documentKindOverride={document?.documentKindOverride} />}
           {loadState === "idle" && activeTab === "original" && <OriginalTextPanel document={document} text={document?.text} pageCount={document?.pageCount} createdAt={document?.createdAt} highlight={selectedSourceRange} onClearHighlight={() => setSelectedSourceRange(null)} onAddOutlineHeading={isDemo ? undefined : (payload) => void handleAddOutlineHeading(payload)} />}
           {loadState === "idle" && activeTab === "pdf" && <PdfPreviewPanel documentId={documentId} selectedSource={selectedPdfSource ?? selectedSourceRange} />}
           {loadState === "idle" && !isDemo && activeTab === "translation" && !document?.analysis?.translationZh && <PlaceholderNotice />}

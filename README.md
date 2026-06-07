@@ -19,6 +19,7 @@ The current version is a local-first Next.js demo. It does not use a database, a
 - Editable outline browser validation has passed locally, including rename, hide, level/type edits, ordering, reset, manual headings, and export compatibility.
 - Heuristic document kind detection for new uploads and older-document fallback: paper, interview, business report, fiction, manual, book chapter, article, or unknown.
 - Document kind badges, confidence, and detection reasons in the workspace overview.
+- Manual document kind override for real documents, stored separately from automatic detection.
 - Analysis and chat prompts can receive lightweight document-kind hints without calling an extra model.
 - Document kind regression now includes confusing mixed-style fixtures and a safe local real-sample review script.
 - Enhanced PDF parse diagnostics: quality score, quality label, page-level text density, repeated header/footer candidates, reference/footnote hints, and language guess.
@@ -204,7 +205,7 @@ data/settings/    Local LLM settings
 - Cloud sync or storage.
 - Saved custom export presets.
 - Drag-and-drop outline tree editing, nested outline reparenting, outline version history, collaborative outline editing, and cloud-synced outline edits.
-- User-editable document kind override UI. Current document kind detection is heuristic and automatic.
+- Bulk document kind editing and override history.
 
 ## Security Notes
 
@@ -250,6 +251,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4E.7.1: user-completed browser validation for editable outline UX is recorded as passed.
 - Phase 4F: heuristic document kind detection, typed UI hints, prompt hints, safe export metadata, and regression tests are implemented.
 - Phase 4F.1: real/local document-kind sample review, confusion-case regression, and small rule tuning are implemented.
+- Phase 4F.2: manual document kind override, effective kind API/UI, and effective prompt/export usage are implemented.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.

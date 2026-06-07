@@ -100,4 +100,4 @@ The following true real-PDF sample categories still need manual expected labels:
 - Classification is heuristic and best-effort.
 - Hybrid documents may remain low-confidence.
 - `unknown` is preferred when signals are too sparse or ambiguous.
-- There is no UI for users to override document kind yet.
+- Phase 4F.2 adds a local user override for document kind; this helps correct persistent ambiguous cases without changing the automatic detection record.

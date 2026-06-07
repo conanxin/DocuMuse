@@ -1,9 +1,9 @@
 "use client";
 
-import { Download, Loader2, PackageOpen, Play, Settings, Upload, X } from "lucide-react";
+import { Download, Loader2, PackageOpen, Pencil, Play, Settings, Upload, X } from "lucide-react";
 import { useState } from "react";
-import { documentKindConfidenceLabel, documentKindLabel } from "@/lib/documentKindDetector";
-import type { DocumentKindDetection } from "@/lib/documentTypes";
+import { documentKindConfidenceLabel, documentKindLabel, getEffectiveDocumentKind } from "@/lib/documentKindDetector";
+import type { DocumentKind, DocumentKindDetection, DocumentKindOverride } from "@/lib/documentTypes";
 import type { ExportPresetPlan, PptxCoverStyle, PptxExportOptions, PptxThemeName } from "@/lib/exporters/exportTypes";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
 import { DocumentUploadPanel } from "../DocumentUploadPanel";
@@ -23,6 +23,17 @@ const DEFAULT_PPTX_OPTIONS: PptxExportOptions = {
   includeCreative: true,
   includeChat: true
 };
+
+const DOCUMENT_KIND_OPTIONS: Array<{ value: DocumentKind; label: string }> = [
+  { value: "paper", label: "论文" },
+  { value: "interview", label: "采访" },
+  { value: "business-report", label: "企业报告" },
+  { value: "fiction", label: "小说" },
+  { value: "manual", label: "说明书" },
+  { value: "book-chapter", label: "书籍章节" },
+  { value: "article", label: "普通文章" },
+  { value: "unknown", label: "未知" }
+];
 
 const THEME_OPTIONS: Array<{ value: PptxThemeName; label: string; color: string }> = [
   { value: "blue", label: "蓝色", color: "bg-blue-600" },
@@ -51,6 +62,9 @@ export function WorkspaceTopbar({
   title = "demo-interview.pdf",
   status = "已解析",
   documentKind,
+  documentKindOverride,
+  onSaveDocumentKind,
+  onResetDocumentKind,
   onAnalyze,
   onExport,
   onExportPreset,
@@ -66,6 +80,9 @@ export function WorkspaceTopbar({
   title?: string;
   status?: string;
   documentKind?: DocumentKindDetection;
+  documentKindOverride?: DocumentKindOverride;
+  onSaveDocumentKind?: (kind: DocumentKind, reason?: string) => Promise<void> | void;
+  onResetDocumentKind?: () => Promise<void> | void;
   onAnalyze?: (mode: AnalyzeMode) => void;
   onExport?: (format: ExportFormat, only?: "chat", pptxOptions?: PptxExportOptions) => void;
   onExportPreset?: (preset: ExportPresetPlan) => void;
@@ -83,6 +100,12 @@ export function WorkspaceTopbar({
   const [pptxOpen, setPptxOpen] = useState(false);
   const [presetOpen, setPresetOpen] = useState(false);
   const [pptxOptions, setPptxOptions] = useState<PptxExportOptions>(DEFAULT_PPTX_OPTIONS);
+  const [kindOpen, setKindOpen] = useState(false);
+  const [kindDraft, setKindDraft] = useState<DocumentKind>(documentKindOverride?.kind ?? documentKind?.kind ?? "unknown");
+  const [kindReason, setKindReason] = useState(documentKindOverride?.reason ?? "");
+  const [kindStatus, setKindStatus] = useState("");
+  const [kindSaving, setKindSaving] = useState(false);
+  const effectiveKind = getEffectiveDocumentKind({ documentKind, documentKindOverride });
   const quickLabel = hasAnalysis || analysisFailed ? "重新快速分析" : "快速分析";
   const fullLabel = hasAnalysis || analysisFailed ? "重新完整分析" : "完整分析";
 
@@ -95,6 +118,42 @@ export function WorkspaceTopbar({
     setPptxOpen(false);
   };
 
+  const openKindDialog = () => {
+    setKindDraft(effectiveKind.kind);
+    setKindReason(documentKindOverride?.reason ?? "");
+    setKindStatus("");
+    setKindOpen(true);
+  };
+
+  const saveKind = async () => {
+    try {
+      setKindSaving(true);
+      setKindStatus("");
+      await onSaveDocumentKind?.(kindDraft, kindReason);
+      setKindStatus("文档类型已保存。");
+      setKindOpen(false);
+    } catch (error) {
+      setKindStatus(error instanceof Error ? error.message : "保存文档类型失败。");
+    } finally {
+      setKindSaving(false);
+    }
+  };
+
+  const resetKind = async () => {
+    if (!window.confirm("确定要重置为自动识别的文档类型吗？")) return;
+    try {
+      setKindSaving(true);
+      setKindStatus("");
+      await onResetDocumentKind?.();
+      setKindStatus("已重置为自动识别。");
+      setKindOpen(false);
+    } catch (error) {
+      setKindStatus(error instanceof Error ? error.message : "重置文档类型失败。");
+    } finally {
+      setKindSaving(false);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
@@ -105,10 +164,12 @@ export function WorkspaceTopbar({
           </div>
           <p className="mt-1 text-sm text-slate-500">
             AI document reading workspace
-            {documentKind && (
-              <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-                {documentKindLabel(documentKind.kind)} · {documentKindConfidenceLabel(documentKind.confidence)}
-              </span>
+            {effectiveKind && <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">{documentKindLabel(effectiveKind.kind)} · {kindSourceLabel(effectiveKind.source)} · {documentKindConfidenceLabel(effectiveKind.confidence)}</span>}
+            {!isDemo && (
+              <button onClick={openKindDialog} className="ml-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
+                <Pencil size={12} />
+                修改类型
+              </button>
             )}
           </p>
         </div>
@@ -167,6 +228,42 @@ export function WorkspaceTopbar({
         </div>
       </div>
       <ApiSettingsDialog open={apiOpen} onClose={() => setApiOpen(false)} />
+      {kindOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+            <DialogHeader title="修改文档类型" description="保留自动识别结果，同时保存你的手动设置。后续分析、问答和导出会优先使用用户设置。" onClose={() => setKindOpen(false)} />
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-slate-700">
+                文档类型
+                <select value={kindDraft} onChange={(event) => setKindDraft(event.target.value as DocumentKind)} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400">
+                  {DOCUMENT_KIND_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm font-medium text-slate-700">
+                修改原因（可选）
+                <textarea value={kindReason} onChange={(event) => setKindReason(event.target.value)} rows={3} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400" placeholder="例如：用户确认这是一篇采访稿。" />
+              </label>
+              <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-600">
+                自动识别：{documentKindLabel(documentKind?.kind)} · {documentKindConfidenceLabel(documentKind?.confidence)}
+                {documentKindOverride && <div>当前用户设置：{documentKindLabel(documentKindOverride.kind)}</div>}
+              </div>
+              {kindStatus && <p className="text-sm text-slate-600">{kindStatus}</p>}
+              <div className="flex justify-between gap-2">
+                <button onClick={resetKind} disabled={kindSaving || !documentKindOverride || isDemo} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+                  重置为自动识别
+                </button>
+                <button onClick={saveKind} disabled={kindSaving || isDemo} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+                  {kindSaving ? "保存中..." : "保存"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {presetOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
           <div className="max-h-[88vh] w-full max-w-3xl overflow-auto rounded-2xl bg-white p-5 shadow-2xl">
@@ -295,4 +392,10 @@ function labelForFileFormat(format: string) {
   if (format === "json") return "JSON";
   if (format === "pptx") return "PPTX";
   return format;
+}
+
+function kindSourceLabel(source: "auto" | "user" | "fallback") {
+  if (source === "user") return "用户设置";
+  if (source === "fallback") return "fallback 推断";
+  return "自动识别";
 }

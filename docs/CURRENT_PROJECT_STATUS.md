@@ -38,6 +38,8 @@ Document kind detection: heuristic local classification now records `documentKin
 
 Document kind validation: confusing mixed-style fixtures now cover interview-like fiction, business-report-like articles, and manual-like technical articles. `npm run test:document-kind-real` can safely review local parsed document JSON without printing full text.
 
+Manual document kind override: users can now save a local `documentKindOverride` without overwriting automatic detection. The workspace, analysis prompts, chat prompts, Markdown / JSON / PPTX exports, and ZIP preset outputs use the effective kind.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -61,6 +63,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Detect a document kind during upload and expose kind / confidence / reasons in the workspace overview.
 - Use document-kind hints in analysis and chat prompts without making a separate LLM call.
 - Review local parsed documents with `npm run test:document-kind-real` without exposing full document text.
+- Manually override document kind for real documents and reset back to automatic detection.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
 - Mark low-value paragraphs and reduce their impact on chat retrieval and full-analysis chunking.
 - Store best-effort PDF text item coordinates and paragraph position mappings for future coordinate-aware source positioning.
@@ -137,6 +140,9 @@ data/settings/    Local LLM settings
 - `GET /api/documents/[id]/outline`: read automatic, custom, and effective outlines.
 - `PUT /api/documents/[id]/outline`: save a custom outline.
 - `POST /api/documents/[id]/outline/reset`: clear custom outline edits.
+- `GET /api/documents/[id]/kind`: read automatic, override, and effective document kind.
+- `PUT /api/documents/[id]/kind`: save a user document-kind override.
+- `DELETE /api/documents/[id]/kind`: clear the user document-kind override.
 - `GET /api/settings/llm`: read masked LLM settings.
 - `POST /api/settings/llm`: save local LLM settings.
 - `DELETE /api/settings/llm/key`: clear local API Key.
@@ -179,8 +185,8 @@ data/settings/    Local LLM settings
 - PDF source navigation still defaults to extracted-text paragraph anchors; coordinate sources can also be opened in the experimental PDF preview.
 - Page boundaries may be approximate when per-page text is unavailable from the parser.
 - Outline detection is heuristic and can miss unusual headings, sparse older publications, or complex layouts.
-- Document kind detection is heuristic and can misclassify ambiguous hybrids such as essay-style interviews, fictional essays, or business-style articles.
-- Users cannot manually override document kind yet.
+- Document kind detection is heuristic and can misclassify ambiguous hybrids, but users can now manually override the detected kind locally.
+- Document kind overrides do not keep version history.
 - Editable outline supports flat list editing and simple up/down ordering only; drag-and-drop tree editing, nested reparenting, and version history are not implemented.
 - Parse diagnostics are heuristic and do not guarantee perfect PDF quality classification.
 - Low-value paragraph labels are heuristic and do not modify the original extracted text.
@@ -188,7 +194,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4F.2 add optional user override for document kind if real validation shows persistent ambiguous cases.
+1. Phase 4F.3 browser-validate manual document-kind override on real documents.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

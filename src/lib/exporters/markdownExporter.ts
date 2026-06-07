@@ -28,7 +28,7 @@ function buildFullMarkdown(exported: SafeDocumentExport) {
     `- Created at: ${formatDate(exported.metadata.createdAt)}`,
     `- Page count: ${exported.metadata.pageCount || 0}`,
     `- Text length: ${exported.metadata.textLength}`,
-    `- Document kind: ${exported.metadata.documentKind?.kind || "unknown"} (${exported.metadata.documentKind?.confidence || "low"})`,
+    `- Document kind: ${exported.metadata.effectiveDocumentKind?.kind || exported.metadata.documentKind?.kind || "unknown"} (${exported.metadata.effectiveDocumentKind?.source || "auto"})`,
     `- Analyzed at: ${exported.metadata.analyzedAt ? formatDate(exported.metadata.analyzedAt) : "Not generated"}`,
     ""
   ];

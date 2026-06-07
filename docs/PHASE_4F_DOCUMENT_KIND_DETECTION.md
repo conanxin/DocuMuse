@@ -98,6 +98,8 @@ The workspace now shows document-kind information in:
 
 Low-confidence detection shows a gentle warning that analysis may use a general mode.
 
+Phase 4F.2 adds a manual override dialog for real documents and shows whether the current kind comes from automatic detection, user setting, or fallback inference.
+
 ## Prompt Integration
 
 Analysis and chat prompts receive a short optional kind hint:
@@ -112,11 +114,14 @@ Analysis and chat prompts receive a short optional kind hint:
 
 The API response structure is unchanged.
 
+When `documentKindOverride` exists, prompt builders use the effective user-selected kind instead of the automatic kind.
+
 ## Export Compatibility
 
 - Markdown export includes document kind and confidence in metadata.
 - JSON export includes safe `documentKind`.
 - PPTX cover metadata can show document kind.
+- Phase 4F.2 exports use the effective kind. JSON includes safe `documentKind`, `documentKindOverride`, and `effectiveDocumentKind`.
 - ZIP preset export remains compatible because it reuses safe exporters.
 
 Exports still avoid API keys, prompts, raw model output, full original document text, `data/settings`, and local absolute paths.
@@ -159,7 +164,7 @@ Current result:
 
 - Heuristic only; not guaranteed to be perfect.
 - No LLM classification.
-- No user override UI for document kind yet.
+- No override history or bulk document-kind editing yet.
 - No OCR, EPUB, or Word support.
 - Fiction vs book chapter can still be ambiguous.
 - Articles with sparse text may be marked `unknown`.

@@ -52,6 +52,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4F document-kind regression script passed paper, interview, business report, fiction, manual, and article fixtures.
 - [x] Phase 4F.1 document-kind regression passed nine fixtures, including interview-like fiction, business-report-like article, and manual-like technical article.
 - [x] Phase 4F.1 local parsed-document review checked 18 document JSON files without printing full document text.
+- [x] Phase 4F.2 build validation passed for manual document-kind override API, topbar dialog, overview display, prompt usage, and safe exports.
 
 ## Upload And Library
 
@@ -63,6 +64,9 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm new document JSON includes `documentKind` with kind, confidence, reasons, detectedAt, and signal metadata.
 - [ ] Confirm older documents without `documentKind` still open through runtime fallback.
 - [ ] Confirm workspace topbar / overview display document kind, confidence, and reasons.
+- [ ] Use `修改类型` to set a user document kind and confirm the workspace shows `用户设置`.
+- [ ] Confirm `GET /api/documents/{id}/kind` returns auto, override, and effective kind.
+- [ ] Reset document kind and confirm the workspace returns to automatic or fallback detection.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
 - [ ] Confirm `npm run test:document-kind` reports 9 passed, 0 failed.
@@ -125,6 +129,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm full-analysis chunks can include `outlineNodeId` and `outlineTitle` when an outline is available.
 - [ ] Confirm full-analysis chunks use custom outline headings when `outlineEditState.mode` is `custom`.
 - [ ] Confirm analysis prompts receive document-kind hints without making an extra classification LLM call.
+- [ ] Confirm analysis prompts use the user override when `documentKindOverride` exists.
 - [ ] Confirm chunk metadata can include `skippedLowValueParagraphCount`.
 - [ ] Confirm chunk analyses are saved.
 - [ ] Confirm global synthesis is saved.
@@ -176,6 +181,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm the JSON can include safe `outline` and `outlineDiagnostics` without full original text.
 - [ ] Confirm JSON export includes safe `outlineEditState` summary and `effectiveOutline`, without full original text.
 - [ ] Confirm JSON export includes safe `documentKind` metadata.
+- [ ] Confirm JSON export includes safe `documentKindOverride` and `effectiveDocumentKind`.
 - [ ] Export Q&A-only Markdown from the top bar.
 - [ ] Export PPTX from the top bar.
 - [ ] Open the PPTX in PowerPoint or WPS.
@@ -186,6 +192,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Confirm Summary, Section Analysis, Podcast Script, and Q&A slides do not feel overfilled.
 - [ ] Confirm Q&A answers and sources are visually separated.
 - [ ] Confirm PPTX metadata can show the detected document kind.
+- [ ] Confirm PPTX metadata uses the effective document kind when a user override exists.
 - [ ] Open the PPTX export dialog and confirm theme, cover, and section options are available.
 - [ ] Export with `theme=blue`, `theme=green`, `theme=purple`, and `theme=slate`.
 - [ ] Export with `cover=standard`, `cover=minimal`, and `cover=report`.

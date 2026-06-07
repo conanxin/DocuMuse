@@ -1,8 +1,16 @@
-import { documentKindConfidenceLabel, documentKindLabel } from "@/lib/documentKindDetector";
+import { documentKindConfidenceLabel, documentKindLabel, getEffectiveDocumentKind } from "@/lib/documentKindDetector";
 import { mockOverview } from "@/lib/mockData";
-import type { DocumentAnalysis, DocumentKindDetection } from "@/lib/documentTypes";
+import type { DocumentAnalysis, DocumentKindDetection, DocumentKindOverride } from "@/lib/documentTypes";
 
-export function OverviewPanel({ analysis, documentKind }: { analysis?: DocumentAnalysis; documentKind?: DocumentKindDetection }) {
+export function OverviewPanel({
+  analysis,
+  documentKind,
+  documentKindOverride
+}: {
+  analysis?: DocumentAnalysis;
+  documentKind?: DocumentKindDetection;
+  documentKindOverride?: DocumentKindOverride;
+}) {
   const overview = analysis
     ? {
         oneLineSummary: analysis.oneSentenceSummary,
@@ -13,6 +21,7 @@ export function OverviewPanel({ analysis, documentKind }: { analysis?: DocumentA
         sectionSummaries: analysis.sectionSummaries
       }
     : mockOverview;
+  const effectiveKind = getEffectiveDocumentKind({ documentKind, documentKindOverride });
 
   return (
     <div className="space-y-5">
@@ -39,21 +48,22 @@ export function OverviewPanel({ analysis, documentKind }: { analysis?: DocumentA
           <dl className="mt-4 grid gap-3 text-sm">
             <InfoRow label="分析类型" value={overview.docType} />
             <InfoRow label="语言" value={overview.language} />
-            <InfoRow label="类型识别" value={documentKindLabel(documentKind?.kind)} />
-            <InfoRow label="置信度" value={documentKindConfidenceLabel(documentKind?.confidence)} />
+            <InfoRow label="当前类型" value={documentKindLabel(effectiveKind.kind)} />
+            <InfoRow label="来源" value={kindSourceLabel(effectiveKind.source)} />
+            <InfoRow label="置信度" value={documentKindConfidenceLabel(effectiveKind.confidence)} />
+            {documentKindOverride && <InfoRow label="自动识别" value={documentKindLabel(documentKind?.kind)} />}
           </dl>
 
-          {documentKind && (
-            <details className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-              <summary className="cursor-pointer font-medium text-slate-700">查看类型识别理由</summary>
-              {documentKind.confidence === "low" && <p className="mt-2 text-amber-700">文档类型识别置信度较低，后续分析可能以通用模式处理。</p>}
-              <ul className="mt-2 list-disc space-y-1 pl-4">
-                {(documentKind.reasons?.length ? documentKind.reasons : ["暂无明确识别理由。"]).map((reason) => (
-                  <li key={reason}>{reason}</li>
-                ))}
-              </ul>
-            </details>
-          )}
+          <details className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            <summary className="cursor-pointer font-medium text-slate-700">查看类型识别理由</summary>
+            {effectiveKind.source === "user" && <p className="mt-2 text-blue-700">当前文档类型由用户手动设置，分析、问答和导出会优先使用该类型。</p>}
+            {effectiveKind.confidence === "low" && <p className="mt-2 text-amber-700">文档类型识别置信度较低，后续分析可能以通用模式处理。</p>}
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              {(effectiveKind.reasons?.length ? effectiveKind.reasons : ["暂无明确识别理由。"]).map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          </details>
 
           <div className="mt-5 flex flex-wrap gap-2">
             {overview.keywords.map((keyword) => (
@@ -80,11 +90,17 @@ export function OverviewPanel({ analysis, documentKind }: { analysis?: DocumentA
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex justify-between gap-4">
       <dt className="text-slate-500">{label}</dt>
-      <dd className="font-medium text-slate-900">{value}</dd>
+      <dd className="font-medium text-slate-900">{value || "-"}</dd>
     </div>
   );
+}
+
+function kindSourceLabel(source: "auto" | "user" | "fallback") {
+  if (source === "user") return "用户设置";
+  if (source === "fallback") return "fallback 推断";
+  return "自动识别";
 }

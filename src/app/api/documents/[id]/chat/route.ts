@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { buildDocumentChatMessages } from "@/lib/chatPrompts";
 import { buildSearchChunks, searchRelevantChunks, sourceQuote } from "@/lib/documentSearch";
 import { isValidDocumentId, readParsedDocument, saveParsedDocument } from "@/lib/documentStorage";
-import { ensureDocumentKind } from "@/lib/documentKindDetector";
+import { ensureDocumentKind, getEffectiveDocumentKind } from "@/lib/documentKindDetector";
 import { chatCompletionText, toPublicLlmError } from "@/lib/llmClient";
 import type { ChatSource, DocumentChatMessage } from "@/lib/documentTypes";
 
@@ -41,7 +41,7 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
   }
 
   try {
-    const document = await readParsedDocument(id);
+    const document = ensureDocumentKind(await readParsedDocument(id));
     await saveParsedDocument({
       ...document,
       chatMessages: []
@@ -82,7 +82,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     const result = await chatCompletionText({
-      messages: buildDocumentChatMessages(question, relevantChunks, document.title, document.documentKind),
+      messages: buildDocumentChatMessages(question, relevantChunks, document.title, getEffectiveDocumentKind(document).kind),
       temperature: 0.2,
       maxTokens: 1200
     });

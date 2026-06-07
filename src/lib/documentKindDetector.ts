@@ -1,4 +1,4 @@
-import type { DocumentKind, DocumentKindDetection, ParsedDocument } from "./documentTypes";
+import type { DocumentKind, DocumentKindDetection, DocumentKindOverride, EffectiveDocumentKind, ParsedDocument } from "./documentTypes";
 
 type DocumentKindInput = Partial<Pick<ParsedDocument, "text" | "paragraphs" | "outline" | "parseDiagnostics" | "outlineDiagnostics" | "documentKind">>;
 
@@ -68,6 +68,49 @@ export function ensureDocumentKind<T extends ParsedDocument>(document: T): T & {
   return {
     ...document,
     documentKind: detectDocumentKind(document)
+  };
+}
+
+export function getEffectiveDocumentKind(document: Partial<ParsedDocument>): EffectiveDocumentKind {
+  const auto = document.documentKind?.kind ? document.documentKind : detectDocumentKind(document);
+  const override = document.documentKindOverride;
+
+  if (override?.kind) {
+    return {
+      kind: override.kind,
+      confidence: "high",
+      reasons: [override.reason || "用户手动设置文档类型。"],
+      source: "user",
+      auto,
+      override
+    };
+  }
+
+  if (document.documentKind?.kind) {
+    return {
+      kind: document.documentKind.kind,
+      confidence: document.documentKind.confidence,
+      reasons: document.documentKind.reasons,
+      source: "auto",
+      auto: document.documentKind
+    };
+  }
+
+  return {
+    kind: auto.kind,
+    confidence: auto.confidence,
+    reasons: auto.reasons,
+    source: "fallback",
+    auto
+  };
+}
+
+export function createDocumentKindOverride(kind: DocumentKind, reason?: string): DocumentKindOverride {
+  return {
+    kind,
+    reason: reason?.trim() || undefined,
+    updatedAt: new Date().toISOString(),
+    source: "user"
   };
 }
 
