@@ -1,10 +1,10 @@
 # Phase 4E.7: Editable Outline Browser Validation
 
-Phase 4E.7 is a browser-focused validation pass for the editable outline workflow introduced in Phase 4E.4 and improved in Phase 4E.6.
+Phase 4E.7 validates the editable outline workflow introduced in Phase 4E.4 and improved in Phase 4E.6.
 
 ## Scope
 
-This phase does not add new outline features. It validates and documents:
+This phase records browser validation and downstream compatibility for:
 
 - Entering outline edit mode.
 - Renaming, hiding, restoring, level changes, and type changes.
@@ -19,28 +19,32 @@ No LLM calls, OCR, EPUB / Word parsing, PDF viewer changes, API key changes, dra
 
 ## Browser Validation Status
 
-Full browser click-through could not be completed inside the current sandboxed run because the local dev server could not be kept reachable for the in-app browser. Attempts to keep a `next dev -p 3031` process alive were blocked or terminated by the environment.
+Browser click-through could not be completed inside the sandboxed run because the local dev server could not be kept reachable for the in-app browser.
 
-The following browser checklist remains for local manual validation:
+The user later completed the browser validation locally. Phase 4E.7.1 records that result.
 
-1. Open a real document with detected outline nodes.
-2. Click `编辑大纲`.
-3. Rename a node.
-4. Hide and restore a node.
-5. Change level and type.
-6. Move a node up and down.
-7. Save and refresh.
-8. Confirm `自定义大纲` persists.
-9. Cancel with unsaved edits and confirm the warning.
-10. Reset to automatic outline and confirm the custom outline is cleared.
-11. Add a manual heading from the original text view.
-12. Insert the manual heading after a selected outline node.
-13. Click the manual node and confirm original-text navigation.
-14. Confirm demo and older documents do not crash.
+## Phase 4E.7.1 Manual Browser Result
+
+Local browser validation passed on the user's machine.
+
+Validated behavior:
+
+- The editable outline entry opens normally.
+- Renaming nodes works.
+- Hiding nodes works.
+- Changing level and type works.
+- Moving nodes up and down works.
+- Saved custom outline changes persist after refresh.
+- Canceling unsaved changes shows a confirmation prompt.
+- Resetting back to the automatic outline works.
+- Adding a heading from an original-text paragraph works.
+- Custom outline nodes navigate back to and highlight the original paragraph.
+- Markdown, JSON, PPTX, and ZIP exports do not crash.
+- Demo and older documents do not crash.
 
 ## Runtime-Equivalent Validation
 
-A local fixture document was used for a non-browser equivalent validation. The script temporarily wrote a custom `outlineEditState`, validated downstream behavior, and restored the original document JSON.
+A local fixture document was used for non-browser equivalent validation before the local browser pass. The script temporarily wrote a custom `outlineEditState`, validated downstream behavior, and restored the original document JSON.
 
 Validated behavior:
 
@@ -72,13 +76,13 @@ Results:
 
 ## Findings
 
-No code bug was found during the runtime-equivalent validation.
+No code bug was found during runtime-equivalent validation or user-completed browser validation.
 
-The only open validation gap is true browser click-through on the user's machine.
+The editable outline workflow is now considered stable enough for the current local MVP.
 
 ## Security
 
-The validation did not call LLMs and did not change API key handling. Exports were checked through safe exporters and continue to avoid:
+The validation did not call LLMs and did not change API key handling. Exports continue to avoid:
 
 - API keys
 - prompts
@@ -88,7 +92,6 @@ The validation did not call LLMs and did not change API key handling. Exports we
 
 ## Current Limits
 
-- Browser click-through still needs local manual verification.
 - No drag-and-drop outline tree editor.
 - No nested reparenting UI.
 - No outline version history.

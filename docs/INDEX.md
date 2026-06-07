@@ -41,7 +41,7 @@
 - [Phase 4E.4 Editable Outline](./PHASE_4E_4_EDITABLE_OUTLINE.md): local custom outline edits, hide / rename / level / type changes, manual headings from paragraphs, reset API, and effective-outline usage.
 - [Phase 4E.5 Editable Outline Runtime Validation](./PHASE_4E_5_EDITABLE_OUTLINE_RUNTIME_VALIDATION.md): API runtime checks, effective-outline source/chunk/export validation, hidden-all fix, and manual browser checklist.
 - [Phase 4E.6 Editable Outline UX](./PHASE_4E_6_EDITABLE_OUTLINE_UX.md): move up/down controls, manual-heading insert position, unsaved-change prompts, edit summaries, and outline quality warnings.
-- [Phase 4E.7 Editable Outline Browser Validation](./PHASE_4E_7_EDITABLE_OUTLINE_BROWSER_VALIDATION.md): browser validation checklist, sandbox limitation note, runtime-equivalent downstream checks, and export compatibility.
+- [Phase 4E.7 Editable Outline Browser Validation](./PHASE_4E_7_EDITABLE_OUTLINE_BROWSER_VALIDATION.md): runtime-equivalent downstream checks and user-completed browser validation for editable outline UX.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.
