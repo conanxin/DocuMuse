@@ -32,6 +32,8 @@ Editable outline runtime validation: outline APIs, effective-outline source meta
 
 Editable outline UX: the sidebar editor now supports flat-list up/down ordering, unsaved-change prompts, edit-difference summaries, and lightweight outline quality warnings. Manual headings added from original paragraphs can be inserted at the end or after an existing outline node.
 
+Editable outline browser validation: full browser click-through remains pending in the current sandboxed environment, but a runtime-equivalent validation confirmed custom outline order, renamed / hidden / manual nodes, effective-outline source metadata, full-analysis chunking, and Markdown / JSON / PPTX / ZIP export compatibility.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -49,6 +51,7 @@ DocuMuse currently supports a local PDF reading workflow:
 - Show unsaved-change prompts, edit summaries, and gentle automatic-outline quality warnings.
 - Use the effective outline for sidebar navigation, source metadata, full-analysis chunking, and safe exports.
 - Runtime-validate editable outline APIs and effective-outline behavior without modifying API key or LLM flows.
+- Runtime-equivalent validate editable outline UX downstream paths when browser automation is unavailable.
 - Runtime-generate structure for older plain-text document JSON files.
 - Runtime-generate missing structure and outline data for older document JSON files without writing back.
 - Score PDF text-layer parse quality and show diagnostics in the original text reader.
@@ -173,7 +176,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4E.7 browser manual validation pass for editable outline UX on several real documents.
+1. Complete local manual browser click-through for editable outline UX on several real documents.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

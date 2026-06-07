@@ -130,6 +130,10 @@ Phase 4E.6 adds small editing ergonomics on top of the validated API foundation:
 
 These improvements were build-validated and covered by outline / coordinate regression scripts. Full browser click-through remains a local manual validation item.
 
+## Phase 4E.7 Validation Follow-up
+
+Phase 4E.7 attempted browser validation, but the local dev server could not be kept reachable in the sandboxed environment. A runtime-equivalent validation temporarily wrote a custom outline to a local fixture document, verified custom order / hidden / renamed / manual nodes across source metadata, full-analysis chunking, Markdown / JSON export, PPTX export, and ZIP export, then restored the original document JSON.
+
 ## Known Limits
 
 - No drag-and-drop tree editing.

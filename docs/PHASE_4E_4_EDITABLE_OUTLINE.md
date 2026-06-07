@@ -163,3 +163,7 @@ Phase 4E.5 validated the outline APIs and effective-outline behavior with a loca
 ## Phase 4E.6 UX Follow-up
 
 Phase 4E.6 improves the editing workflow with flat-list up/down ordering, manual-heading insert position selection, unsaved-change confirmations, edit-difference summaries, and lightweight automatic-outline quality warnings. It still does not implement drag-and-drop tree editing, nested reparenting, version history, collaboration, or cloud sync.
+
+## Phase 4E.7 Validation Follow-up
+
+Phase 4E.7 records the browser-validation checklist and confirms, through runtime-equivalent checks, that custom outline order, renamed / hidden / manual nodes, source metadata, chunking, Markdown / JSON export, PPTX export, and ZIP export remain compatible. Full browser click-through still needs local manual verification.

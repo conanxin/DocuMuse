@@ -45,6 +45,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4E.4 editable outline schema, APIs, sidebar edit UI, paragraph-to-heading action, effective-outline search/chunking/export paths, and build validation are implemented.
 - [x] Phase 4E.5 editable outline API runtime-equivalent validation passed, including hidden/manual effective-outline behavior and export compatibility.
 - [x] Phase 4E.6 editable outline UX build validation passed for up/down ordering, manual-heading insert position, unsaved-change prompts, edit summaries, and outline quality warnings.
+- [x] Phase 4E.7 runtime-equivalent downstream validation passed for custom outline order, renamed / hidden / manual nodes, search metadata, chunking, Markdown / JSON, PPTX, and ZIP.
 
 ## Upload And Library
 
@@ -63,6 +64,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Modify the outline, click cancel, and confirm the unsaved-change warning appears.
 - [ ] Confirm the edit summary shows renamed, hidden, and manual node counts.
 - [ ] Confirm outline quality warnings appear gently when diagnostics indicate an incomplete or low-confidence automatic outline.
+- [ ] Complete full browser click-through for Phase 4E.7 on a real document once local `npm run dev -- -p 3031` is reachable.
 - [ ] Reset to the automatic outline and confirm custom edits are cleared.
 - [ ] If every custom outline node is hidden, confirm the sidebar does not fall back to automatic outline nodes.
 - [ ] Confirm `parseDiagnostics` includes `qualityScore`, `qualityLabel`, `languageGuess`, and `pageDiagnostics`.

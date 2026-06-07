@@ -102,6 +102,10 @@ Results:
 
 Browser click-through validation remains pending in the current sandboxed environment. The local dev-server/browser path should be manually rechecked on the user's machine.
 
+## Phase 4E.7 Follow-up
+
+Phase 4E.7 records the manual browser checklist and validates the downstream behavior with a runtime-equivalent custom outline. The check confirmed that reordered, renamed, hidden, and manual nodes flow through effective outline usage, source metadata, full-analysis chunking, Markdown / JSON export, PPTX export, and ZIP export. True browser click-through remains a local validation item.
+
 ## Current Limits
 
 - No drag-and-drop tree editing.
