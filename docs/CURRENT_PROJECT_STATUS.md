@@ -40,6 +40,8 @@ Document kind validation: confusing mixed-style fixtures now cover interview-lik
 
 Manual document kind override: users can now save a local `documentKindOverride` without overwriting automatic detection. The workspace, analysis prompts, chat prompts, Markdown / JSON / PPTX exports, and ZIP preset outputs use the effective kind.
 
+Manual document kind validation: runtime-equivalent validation passed for kind API save / read / reset, persisted override fields, effective kind resolution, Markdown export, and JSON export. Full browser click-through is still recommended locally.
+
 ## Current Version Capabilities
 
 DocuMuse currently supports a local PDF reading workflow:
@@ -194,7 +196,7 @@ data/settings/    Local LLM settings
 
 ## Recommended Next Steps
 
-1. Phase 4F.3 browser-validate manual document-kind override on real documents.
+1. Phase 4F.4 user-machine browser confirmation for manual kind override if further UI polish is needed.
 2. Phase 4D.6 add true rotated-page, mixed-page-size, and CropBox / MediaBox fixtures.
 3. Phase 3C.2 saved custom export presets.
 4. Phase 3B.4 optional speaker notes and richer report outline controls.

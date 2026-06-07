@@ -53,6 +53,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [x] Phase 4F.1 document-kind regression passed nine fixtures, including interview-like fiction, business-report-like article, and manual-like technical article.
 - [x] Phase 4F.1 local parsed-document review checked 18 document JSON files without printing full document text.
 - [x] Phase 4F.2 build validation passed for manual document-kind override API, topbar dialog, overview display, prompt usage, and safe exports.
+- [x] Phase 4F.3 runtime-equivalent validation passed for kind API save/read/reset, persisted override, effective kind, Markdown export, and JSON export.
 
 ## Upload And Library
 
@@ -67,6 +68,7 @@ Use this checklist before tagging a release or sharing a demo build.
 - [ ] Use `修改类型` to set a user document kind and confirm the workspace shows `用户设置`.
 - [ ] Confirm `GET /api/documents/{id}/kind` returns auto, override, and effective kind.
 - [ ] Reset document kind and confirm the workspace returns to automatic or fallback detection.
+- [ ] Complete browser click-through for manual document kind override on a real document.
 - [ ] Confirm merged-heading PDFs still produce outline nodes through inline heading detection.
 - [ ] Confirm `npm run test:outline` reports 4 passed, 0 failed.
 - [ ] Confirm `npm run test:document-kind` reports 9 passed, 0 failed.

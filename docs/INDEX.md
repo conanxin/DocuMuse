@@ -45,6 +45,7 @@
 - [Phase 4F Document Kind Detection](./PHASE_4F_DOCUMENT_KIND_DETECTION.md): heuristic paper / interview / report / fiction / manual / chapter / article classification, typed UI hints, prompt hints, safe exports, and regression tests.
 - [Phase 4F.1 Document Kind Real Validation](./PHASE_4F_1_DOCUMENT_KIND_REAL_VALIDATION.md): local parsed-document review, mixed-style confusion fixtures, and small rule tuning for document-kind detection.
 - [Phase 4F.2 Manual Document Kind Override](./PHASE_4F_2_MANUAL_DOCUMENT_KIND_OVERRIDE.md): local user overrides, effective kind API/UI, prompt integration, and safe export behavior.
+- [Phase 4F.3 Manual Kind Browser Validation](./PHASE_4F_3_MANUAL_KIND_BROWSER_VALIDATION.md): runtime-equivalent validation for save / refresh / reset, effective kind exports, and browser checklist.
 - [Roadmap](./ROADMAP.md): longer-term feature plan.
 - [Validation Checklist](./VALIDATION_CHECKLIST.md): manual test checklist for local validation.
 - [Current Project Status](./CURRENT_PROJECT_STATUS.md): current architecture, routes, components, limits, and next steps.

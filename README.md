@@ -252,6 +252,7 @@ DocuMuse is currently a local single-user tool.
 - Phase 4F: heuristic document kind detection, typed UI hints, prompt hints, safe export metadata, and regression tests are implemented.
 - Phase 4F.1: real/local document-kind sample review, confusion-case regression, and small rule tuning are implemented.
 - Phase 4F.2: manual document kind override, effective kind API/UI, and effective prompt/export usage are implemented.
+- Phase 4F.3: manual document kind runtime-equivalent validation is recorded; local browser click-through is still recommended.
 - Phase 5: audio generation.
 - Phase 6: image prompt to image generation.
 - Phase 7: EPUB / Word support.
